@@ -1,0 +1,3 @@
+gitignore 不起作用可以执行如下命令清除缓存：
+git rm -rf --cached .
+git add .
