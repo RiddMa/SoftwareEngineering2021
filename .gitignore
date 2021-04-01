@@ -45,7 +45,6 @@ buildNumber.properties
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
-*.log
 *.lot
 *.fls
 *.out
@@ -333,7 +332,6 @@ TSWLatexianTemp*
 bin/
 tmp/
 *.tmp
-*.bak
 *.swp
 *~.nib
 local.properties
