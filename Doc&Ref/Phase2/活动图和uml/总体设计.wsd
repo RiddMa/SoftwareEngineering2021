@@ -1,0 +1,15 @@
+@startuml
+ 
+start
+ 
+if (业务类型) then (顾客)
+  :办理入住;
+  :使用空调服务;
+  :办理退房;
+else (酒店管理)
+  :查看空调状态,\n格式统计报表;
+endif
+ 
+stop
+ 
+@enduml

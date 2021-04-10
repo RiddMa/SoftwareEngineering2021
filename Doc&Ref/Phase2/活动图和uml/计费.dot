@@ -1,0 +1,22 @@
+/*
+digraph G{
+    node [shape="record"];
+    graph [label="费用计算过程"]
+    v0 [label = "空调"]
+    v1 [label = "服务器"]
+    v2 [label = "数据库"]
+    v0 -> v1[label = "状态变化反馈"]
+    v1 -> v0[label = "发送计费结果"]
+    v1 -> v2[label = "写入费用和空调变化历史信息"]
+}
+*/
+digraph G{
+    graph [rankdir=TB,label="\n费用计算逻辑"]
+    v0 [label = "服务器"]
+    v0 -> v1 [label = "检测到空调变化"]
+    v1 [label = "更新计费金额"]
+    v0 -> v2 [label = "即将发送金额信息"]
+    v2 [label = "更新计费金额"]
+    v3 [label = "发送金额信息"]
+    v0 -> v3 [label = "周期性发送"]
+}
