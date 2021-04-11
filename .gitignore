@@ -525,3 +525,14 @@ $RECYCLE.BIN/
 
 # Used by previous versions of JEnv
 .jenv-version
+
+
+.idea/
+node_modules/
+.project
+dist
+dist/*
+src/config/*.tmp
+src/config/env.js
+/index.html
+/index_prod.html
