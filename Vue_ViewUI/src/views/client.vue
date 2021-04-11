@@ -51,7 +51,7 @@
 <template>
   <div class="index">
     <Row type="flex" justify="center" align="middle">
-      <Col :xs="20" :sm="18" :md="16" :lg="12">
+      <Col :xs="20" :sm="18" :md="15" :lg="13" :xl="10">
         <Card class="CtrlPanel">
           <h1 slot="title">
             <img src="../images/logo.png">
