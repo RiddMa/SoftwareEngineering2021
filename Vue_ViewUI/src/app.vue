@@ -13,9 +13,17 @@
 
 </template>
 <script>
+import admin from './views/adminView/admin.vue';
+import clientLogin from "./views/clientView/clientLogin";
+import client from "./views/clientView/client";
 export default {
   data() {
     return {}
+  },
+  components:{
+    'admin':admin,
+    'clientLogin':clientLogin,
+    'client':client
   },
   mounted() {
 

@@ -91,6 +91,7 @@
 </template>
 <script>
 export default {
+  name:'admin',
   data () {
     return {
       isCollapsed: false

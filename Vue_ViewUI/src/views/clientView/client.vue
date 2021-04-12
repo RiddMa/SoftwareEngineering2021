@@ -1,16 +1,14 @@
 <style scoped lang="less">
 .index {
   width: 100%;
-  //position: absolute;
-  //top: 0;
-  //bottom: 0;
-  //left: 0;
+  margin-top: 5vh;
+  margin-bottom: 5vh;
   text-align: center;
   font-size: x-large;
   font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
 
   h1 {
-    height: 150px;
+    height: 100px;
 
     img {
       height: 100%;
@@ -18,12 +16,11 @@
   }
 
   h2 {
-    color: #666;
-    margin-top: 25px;
-    margin-bottom: 25px;
+    margin-top: 1vh;
+    margin-bottom: 1vh;
 
     p {
-      margin: 0 0 20px;
+      margin: 0 0 1vh;
     }
   }
 
@@ -32,8 +29,8 @@
   }
 
   .CtrlPanel {
-    margin-top: 10%;
-    margin-bottom: 10%;
+    margin-top: 5vh;
+    margin-bottom: 5vh;
     //font-size: xx-large;
   }
 
@@ -42,8 +39,8 @@
   }
 
   .CtrlGroup {
-    margin-top: 2%;
-    margin-bottom: 2%;
+    margin-top: 1vh;
+    margin-bottom: 1vh;
   }
 
 }
@@ -54,16 +51,14 @@
       <Col :xs="20" :sm="18" :md="15" :lg="13" :xl="10">
         <Card class="CtrlPanel">
           <h1 slot="title">
-            <img src="../images/logo.png">
+            <img src="../../images/logo.png">
           </h1>
           <h2 class="CardTitle" slot="title">空调状态</h2>
           <h2 slot="extra"></h2>
           <h2>
-            当前温度:{{ curnTemp }}<br>
-            <br>
-            当前风速:{{ curnWind }}<br>
-            <br>
-            当前模式:{{ curnMode }}<br>
+            <p>当前温度:{{ curnTemp }}<br></p>
+            <p>当前风速:{{ curnWind }}<br></p>
+            <p>当前模式:{{ curnMode }}<br></p>
           </h2>
         </Card>
 
@@ -115,7 +110,11 @@
   </div>
 </template>
 <script>
+import {client_turnonoff} from '../connect.vue';
+import {foo} from '../connect.vue';
+
 export default {
+  name: 'client',
   data: function () {
     return {
       curnTemp: 26,
@@ -123,13 +122,16 @@ export default {
       curnMode: '致冷',
       buttonType: 'primary',
       acSwitch: false,
-      acDisabled: true
+      acDisabled: true,
+      title: null
     }
   },
   methods: {
     //空调的总控开关
     handleSwitch(status) {
       this.acDisabled = !status;
+      foo();
+      // client_turnonoff(1,'on');
     },
     //空调温度控制，turnUp为升高的温度值，取值+1、-1
     changeTemp: function (event, turnUp) {
@@ -166,7 +168,7 @@ export default {
       // }
       // target.blur();
       //可以忽略。
-    }
+    },
 
   }
 }

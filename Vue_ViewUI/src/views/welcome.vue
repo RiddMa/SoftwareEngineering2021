@@ -3,7 +3,7 @@
   <Row type="flex" justify="center" align="middle">
     <Col span="12">
       <Card class="WelcomeNav">
-        <router-link to="/client">
+        <router-link to="/client/login">
           <h1>
             <Icon type="ios-contacts" />
             Client
