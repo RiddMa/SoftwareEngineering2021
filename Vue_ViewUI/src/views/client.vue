@@ -136,11 +136,11 @@ export default {
       this.curnTemp += turnUp;
 
       //下面是用于修复按钮点击后不失焦bug的代码：
-      let target = event.target;
-      if (target.nodeName === "SPAN") {
-        target = event.target.parentNode;
-      }
-      target.blur();
+      // let target = event.target;
+      // if (target.nodeName === "SPAN") {
+      //   target = event.target.parentNode;
+      // }
+      // target.blur();
       //可以忽略。
     },
     //空调风速控制，turnUp为升高的风速档位，取值+1、-1
@@ -148,11 +148,11 @@ export default {
       this.curnWind += turnUp;
 
       //下面是用于修复按钮点击后不失焦bug的代码：
-      let target = event.target;
-      if (target.nodeName === "SPAN") {
-        target = event.target.parentNode;
-      }
-      target.blur();
+      // let target = event.target;
+      // if (target.nodeName === "SPAN") {
+      //   target = event.target.parentNode;
+      // }
+      // target.blur();
       //可以忽略。
     },
     //空调模式控制，toMode为目标模式，取值 致冷、制热
@@ -160,11 +160,11 @@ export default {
       this.curnMode = toMode;
 
       //下面是用于修复按钮点击后不失焦bug的代码：
-      let target = event.target;
-      if (target.nodeName === "SPAN") {
-        target = event.target.parentNode;
-      }
-      target.blur();
+      // let target = event.target;
+      // if (target.nodeName === "SPAN") {
+      //   target = event.target.parentNode;
+      // }
+      // target.blur();
       //可以忽略。
     }
 

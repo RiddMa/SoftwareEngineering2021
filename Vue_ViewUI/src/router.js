@@ -20,6 +20,13 @@ const routers = [
         },
         component: (resolve) => require(['./views/welcome.vue'], resolve)
     },
+    {
+        path:'/admin-antd',
+        meta:{
+            title:'admin-antd'
+        },
+        component: (resolve) => require(['./views/admin-antd.vue'], resolve)
+    },
 
 ];
 export default routers;
