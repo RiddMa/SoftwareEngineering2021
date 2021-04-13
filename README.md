@@ -32,3 +32,25 @@ npm run dev
 * babelrc等：配置文件
 
 ## 后端
+
+* 目录：flask_project
+* 使用方法：
+
+需要提前装好python工具包
+
+```
+python -m pip install flask
+python -m pip install flask_cors
+python -m pip install sqlalchemy
+python -m pip install flask_sqlalchemy
+python app.py
+```
+### 目录树
+* app.py：主函数入口，通信模块
+* db.py：数据库操作模块
+* model.py：服务器处理模块
+* \_\_pycache\_\_：编译字节码
+* templates：某些零碎的东西
+
+
+

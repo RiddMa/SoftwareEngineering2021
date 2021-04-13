@@ -68,14 +68,11 @@ class Acunit:
         addBill(rid,self.last - self.total,self.last,cost)
         return
 
-flow = 
 roomlist = []
 for j in range(1,6):
     for i in range(1,11):
         roomlist.append(str(j) + ('0' + str(i))[-2:])
 roomstate = {i : 0 for i in roomlist}
-for i in roomlist:
-    print(i)
 Store = { i : Acunit(i,0,23,'L',int(time.time()),0,1.0) for i in roomlist}
 
 class Admin:
