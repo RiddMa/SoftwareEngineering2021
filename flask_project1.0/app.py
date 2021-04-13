@@ -19,15 +19,15 @@ def admin_login():
     username = form['username']
     password = form['password']
 
-    res = map()
+    res = dict()
     error_code, admin = Admin.get_admin(username, password)
     if error_code == 1:
         res['error_code'] = 1
     else:
         res['error_code'] = 0
-        res['data'] = map()
+        res['data'] = dict()
         res['data']['uid'] = admin.id
-        res['data']['username'] = admin.name
+        res['data']['username'] = admin.username
         res['data']['token'] = admin.token
 
     return jsonify(res)
@@ -48,7 +48,7 @@ def create_report():
     time = form['timestamp']
 
     error_code, room_states = Admin.get_report(time)
-    res = map()
+    res = dict()
     if error_code == 1:
         res['error_code'] = 1
     else:
@@ -116,12 +116,12 @@ def reception_signin():
     ph_num = form['phonenumber']
 
     error_code, card = Reception.get_card(ph_num)
-    res = map()
+    res = dict()
     if error_code == 1:
         res['error_code'] = 1
     else:
         res['error_code'] = 0
-        res['data'] = map()
+        res['data'] = dict()
         res['data']['name'] = card.username
         res['data']['rid'] = card.rid
         res['data']['password'] = card.password
@@ -193,12 +193,12 @@ def user_show_cost():
     rid = form['rid']
 
     error_code, cost, onoff = User.show_cost(rid)
-    res = map()
+    res = dict()
     if error_code == 1:
         res['error_code'] = 1
     else:
         res['error_code'] = 0
-        res['data'] = map()
+        res['data'] = dict()
         res['data']['onoff'] = onoff
         res['data']['cost'] = cost
 
