@@ -1,4 +1,7 @@
 <script type="text/javascript">
+import axios from "axios";
+import VueAxios from 'vue-axios'
+
 export function foo(){
   console.log("hello");
 }
