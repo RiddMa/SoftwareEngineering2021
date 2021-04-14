@@ -13,7 +13,7 @@ class Acunit:
         self.temp = temp
         #风速
         self.mode = mode
-        #上次记录时间
+        #上次结算金额时间
         self.last = last
         #运行到现在的金额
         self.cost = cost
@@ -21,6 +21,8 @@ class Acunit:
         self.discount = discount
         #总使用时长
         self.totaltime = 0
+        #本次开机的时间
+        self.starttime
 
     def settemp(self,newtemp):
         self.temp = newtemp
@@ -40,8 +42,9 @@ class Acunit:
         return
 
     def setmode(self,newmode):
-        self.changecost(self.Costcalc(time.time() - self.last))
-        self.changelasttime(time.time())
+        newtime = time.time()
+        self.changecost(self.Costcalc(newtime - self.last))
+        self.changelasttime(newtime)
         self.mode = newmode
         return
 
@@ -58,14 +61,17 @@ class Acunit:
     def Turnon(self):
         self.state = 1
         self.cost = 0.5
-        self.last = time.time()
+        newtime = time.time()
+        self.last = newtime
+        self.starttime = newtime
         return
 
     def Turnoff(self):
         self.state = 0
-        self.cost += self.Costcalc(time.time())
-        self.changelasttime(time.time())
-        addBill(rid,self.last - self.total,self.last,cost)
+        newtime = time.time()
+        self.changecost(self.Costcalc(newtime - self.last))
+        self.changelasttime(newtime)
+        addBill(rid,self.starttime,self.last,cost)
         return
 
 roomlist = []
@@ -91,7 +97,7 @@ class Admin:
     # (token可先随意设置一个值，以后再改进)
     def get_admin(username, password):
         error_code = 0
-        res = json.load(getUser(username,password))
+        res = json.loads(getUser(username,password))
         if 'userid' in res:
             return error_code, Admin(res['userid'],username,password,'token')
         else:
@@ -103,7 +109,7 @@ class Admin:
     def get_report(time):
         error_code = 0
         # 房间信息列表(空调状态与折扣)
-        list = []
+        reslist = []
         for rid,value in Store.items():
             tpvar = dict()
             tpvar['rid'] = rid
@@ -111,11 +117,11 @@ class Admin:
             tpvar['temp'] = value.temp
             tpvar['mode'] = value.mode
             tpvar['discount'] = value.discount
-            list.append(tpvar)
-        return error_code, list
+            reslist.append(tpvar)
+        return error_code, reslist
 
     #这里我不太理解流水是啥，接口可能设置不正确
-    #巧了我也不清楚
+    #应该是每天的实际入账金额，先空着
     @staticmethod
     def water_bills(time):
         error_code = 1
@@ -138,14 +144,12 @@ class Admin:
     @staticmethod
     def center_turn_on_off(state):
         error_code = 0
-        if state == 0:
-            for i in roomlist:
-                if Store[i].state == 0:
+        for i in roomlist:
+            if Store[i].state != state:
+                if state == 1:
                     Store[i].Turnon()
-        else:
-            for i in roomlist:
-                if Store[i].state == 1:
-                    Store[i].Turnoff()
+                else:
+                    Store[i].Turnoff()                
         return error_code
 
 # 房卡信息
@@ -158,8 +162,8 @@ class Card:
         # 密码
         self.password = password
 
-Orderedcards = dict()
 
+'''
 class Reception:
     # 根据预留电话号码返回一个房卡对象
     @staticmethod
@@ -178,19 +182,28 @@ class Reception:
         # 消费金额
         price = Store[rid].cost
         return error_code, str(duration), str(price)
-
+'''
 
 class User:
 
     # 顾客设置空调开关
     @staticmethod
+    def user_login(rid,password):
+        error_code = 0
+        res = json.loads(getUser(rid,password))
+        if 'msg' in res:
+            error_code = 1
+        else:
+            return error_code,res['username']
+
+    @staticmethod
     def turn_on_off(rid, state):
         error_code = 0
         if state != Store[rid].state:
             if state:
-                Store[rid].Turnon
+                Store[rid].Turnon()
             else:
-                Store[rid].Turnoff
+                Store[rid].Turnoff()
         return error_code
 
     # 顾客设置温度
