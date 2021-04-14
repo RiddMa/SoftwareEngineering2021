@@ -71,7 +71,7 @@ class Acunit:
         newtime = time.time()
         self.changecost(self.Costcalc(newtime - self.last))
         self.changelasttime(newtime)
-        addBill(rid,self.starttime,self.last,cost)
+        addBill(self.rid,self.starttime,newtime,int(self.cost))
         return
 
 roomlist = []
@@ -127,7 +127,7 @@ class Admin:
         error_code = 1
         starttime = time // 60 // 24 * 60 * 24
         endtime = time // 60 // 24 * 60 * 24 + 60 * 24
-        return error_code, res
+        return error_code
 
     #设置某个房间的折扣
     @staticmethod
@@ -162,6 +162,7 @@ class Card:
         # 密码
         self.password = password
 
+Orderedcards = dict()
 
 class Reception:
     # 根据预留电话号码返回一个房卡对象
@@ -188,7 +189,7 @@ class User:
     @staticmethod
     def user_login(rid,password):
         error_code = 0
-        res = json.loads(getUser(rid,password))
+        res = json.loads(getClient(rid,password))
         if 'msg' in res:
             error_code = 1
         else:
