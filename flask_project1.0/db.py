@@ -4,6 +4,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, jsonify, abort, make_response
+import pymysql
 app=Flask(__name__) #创建1个Flask实例
 
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:xzc19991208@localhost/rg"
@@ -15,8 +16,14 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 #防止jsonify出现中文乱码
 app.config['JSON_AS_ASCII'] = False
 mydb = SQLAlchemy()
-mydb.init_app(app)
 
+class Card(mydb.Model):
+  __tablename__ = 'card'
+  name = mydb.Column(mydb.String(255), primary_key=True)
+  roomid = mydb.Column(mydb.String(255), nullable=False)
+  password = mydb.Column(mydb.String(255), nullable=False)
+  def __repr__(self):
+    return '<Card %r>' % self.roomid #= self.func_wxplhdyt()
 class User(mydb.Model):
   __tablename__ = 'user'
   user_id = mydb.Column(mydb.String(255), primary_key=True)
@@ -29,21 +36,32 @@ class Client(mydb.Model):
   __tablename__ = 'client'
   room_id = mydb.Column(mydb.String(255), primary_key=True)
   client_name = mydb.Column(mydb.String(255), nullable=False)
-  client_password = mydb.Column(mydb.String(255), nullable=False)
+  client_passward = mydb.Column(mydb.String(255), nullable=False)
   client_idcard = mydb.Column(mydb.String(255), nullable=True)
   client_phonenumber = mydb.Column(mydb.String(255), nullable=True)
   def __repr__(self):
     return '<room %r>' % self.room_id   
 class Bill(mydb.Model):
   __tablename__ = 'bill'
-  room = mydb.Column(mydb.String(255), nullable=False)
-  start_time = mydb.Column(mydb.String(255), nullable=False)
-  end_time = mydb.Column(mydb.String(255), nullable=False)
+  room = mydb.Column(mydb.String(255), primary_key=True)
+  start_time = mydb.Column(mydb.String(255), primary_key=True)
+  end_time = mydb.Column(mydb.String(255), primary_key=True)
   cost = mydb.Column(mydb.Integer, nullable=False)
   def __repr__(self):
-    return '<room %r>' % self.bill_room
+    return '<room %r>' % self.room
+mydb.init_app(app)
+with app.app_context():
+  mydb.init_app(app)
+  mydb.create_all()
+def getCard(roomid,password):
+  card = Card.query.filter_by(roomid=roomid,password=password).first()
+  if(card is None):
+    result = {'msg': '房间号或或密码错误'}
+  else:
+    result = {'name': card.name}
+  return jsonify(result)
 def getClient(roomid,password):
-  client = Client.query.filter_by(room_id=roomid,client_password=password).first()
+  client = Client.query.filter_by(room_id=roomid,client_passward=passward).first()
   if (user is None):
     result = {'msg': '用户名或密码错误'}
   else:
@@ -55,15 +73,14 @@ def getClients():
   for q in data:
     datas.append({'room_id': q.romm_id, 'client_name': q.client_name})
   return jsonify(data=datas)
-
 #@app.route('/') 感觉用不到路由
-def getUser(username,password):
-  #也可以先加密password再查询，数据库保存加密后的内容
-  user = User.query.filter_by(user_name=username,user_password=password).first()
+def getUser(userId,password):
+  #也可以先加密passward再查询，数据库保存加密后的内容
+  user = User.query.filter_by(user_id=userId,user_passward=passward).first()
   if (user is None):
     result = {'msg': '用户名或密码错误'}
   else:
-    result = {'userid': user.user_id}
+    result = {'username': user.user_name}
   return jsonify(result)
 
 def getBill(roomid,starttime,endtime):
@@ -89,20 +106,8 @@ def addBill(room,start_time,endtime,cost):
     mydb.session.flush()
     result={'msg': '插入失败'}
   return jsonify(result)
-def addClient(roomid,name,password,idcard,phonenumber):
-  client = Client(room_id=roomid,client_name=name,client_password=password,client_idcard=idcard,client_phonenumber=phonenumber) 
-  try:
-    mydb.session.add(client)
-    mydb.session.commit()
-    result={'msg': 'accept'}
-  except:
-    #插入失败的话进行回滚
-    mydb.session.rollback()
-    mydb.session.flush()
-    result={'msg': '插入失败'}
-  return jsonify(result)
-def addUser(userid,password,name,kind):
-  user = User(user_id=userid,user_password=password,user_name=name,user_kind=kind)
+def addClient():
+  client = Client() 
   try:
     mydb.session.add(user)
     mydb.session.commit()
@@ -111,9 +116,21 @@ def addUser(userid,password,name,kind):
     #插入失败的话进行回滚
     mydb.session.rollback()
     mydb.session.flush()
+    result={'msg': '插入失败'}
+  return jsonify(result)
+def addUser():
+  user = User()
+  try:
+    mydb.session.add(client)
+    mydb.session.commit()
+    result={'msg': 'accept'}
+  except:
+    #插入失败的话进行回滚
+    mydb.session.rollback()
+    mydb.session.flush()
     result={'msg': 'fail'}
   return jsonify(result)
-def updateUser(userId,name,password,kind):#改变用户名,密码，kind
+def updateUser(userId,name,passward,kind):#改变用户名,密码，kind
   try:
     user = User.query.filter_by(user_id=userId).first()
     if (user is None):
@@ -121,7 +138,7 @@ def updateUser(userId,name,password,kind):#改变用户名,密码，kind
       return jsonify(data=result)
     else:
       user.user_name = name
-      user.user_password=password
+      user.user_passward=passward
       user.user_kind = kind
       mydb.session.commit()
       result = {'msg': 'accept'}
@@ -133,9 +150,22 @@ def updateUser(userId,name,password,kind):#改变用户名,密码，kind
 def deleteUser(userId):
   User.query.filter_by(user_id=userId).delete()
   mydb.session.commit()
+  result = {'msg': '已删除'}
+  return jsonify(result)
 def deleteClient(roomid):
-  User.query.filter_by(room_id=roomid).delete()
+  Client.query.filter_by(room_id=roomid).delete()
   mydb.session.commit()
+  result = {'msg': '已删除'}
+  return jsonify(result)
 def deleteBill(roomid,starttime,endtime):
-  User.query.filter_by(room_id=roomid,start_time=starttime,end_time=endtime).delete()
+  Bill.query.filter_by(room_id=roomid,start_time=starttime,end_time=endtime).delete()
   mydb.session.commit()
+  result = {'msg': '已删除'}
+  return jsonify(result)
+def deletecard(name,roomid,password):
+  Card.query.filter_by(name=name,roomid=roomid,password=password).delete()
+  mydb.session.commit()
+  result = {'msg': '已删除'}
+  return jsonify(result)
+if __name__ == '__main__':
+  app.run()     
