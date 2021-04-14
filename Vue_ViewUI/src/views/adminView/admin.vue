@@ -16,11 +16,12 @@
 /*  color:#001529;*/
 /*}*/
 
-.layout-con{
+.layout-con {
   height: 100%;
   width: 100%;
 }
-.menu-item span{
+
+.menu-item span {
   display: inline-block;
   overflow: hidden;
   width: 100px;
@@ -30,23 +31,27 @@
   transition: width .2s ease .2s;
 
 }
-.menu-item i{
+
+.menu-item i {
   transform: translateX(0px);
   transition: font-size .2s ease, transform .2s ease;
   vertical-align: middle;
   font-size: 16px;
 }
-.collapsed-menu span{
+
+.collapsed-menu span {
   width: 0px;
   transition: width .2s ease;
 }
-.collapsed-menu i{
+
+.collapsed-menu i {
   transform: translateX(5px);
   transition: font-size .2s ease .2s, transform .2s ease .2s;
   vertical-align: middle;
   font-size: 22px;
 }
-.SiderText{
+
+.SiderText {
   font-size: large;
   font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
 
@@ -91,8 +96,8 @@
 </template>
 <script>
 export default {
-  name:'admin',
-  data () {
+  name: 'admin',
+  data() {
     return {
       isCollapsed: false
     };
