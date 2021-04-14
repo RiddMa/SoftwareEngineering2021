@@ -60,9 +60,9 @@ def getCard(roomid,password):
   else:
     result = {'name': card.name}
   return jsonify(result)
-def getClient(roomid,password):
+def getClient(roomid,password):Client
   client = Client.query.filter_by(room_id=roomid,client_passward=passward).first()
-  if (user is None):
+  if (Client is None):
     result = {'msg': '用户名或密码错误'}
   else:
     result = {'msg': 'accept!' }
