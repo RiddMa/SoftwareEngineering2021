@@ -1,4 +1,5 @@
 <script type="text/javascript">
+import axios from "axios";
 const url = "http://101.32.75.165:8080/"
 //管理员登录接口
 export function login_a(username, password)

@@ -110,8 +110,7 @@
   </div>
 </template>
 <script>
-import {client_turnonoff} from '../connect.vue';
-import {foo} from '../connect.vue';
+import {foo} from '../../connect.vue';
 
 export default {
   name: 'client',
