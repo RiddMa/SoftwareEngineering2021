@@ -163,7 +163,6 @@ class Card:
         self.password = password
 
 
-'''
 class Reception:
     # 根据预留电话号码返回一个房卡对象
     @staticmethod
@@ -182,7 +181,6 @@ class Reception:
         # 消费金额
         price = Store[rid].cost
         return error_code, str(duration), str(price)
-'''
 
 class User:
 
