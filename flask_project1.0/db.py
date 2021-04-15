@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.sql.functions import user
 
 app = Flask(__name__)  # 创建1个Flask实例
 # 43463
@@ -66,7 +67,7 @@ with app.app_context():
 
 def getCard(roomid, password):
     card = Card.query.filter_by(roomid=roomid, password=password).first()
-    if (card is None):
+    if card is None:
         result = {'msg': '房间号或或密码错误'}
     else:
         result = {'name': card.name}
@@ -75,7 +76,7 @@ def getCard(roomid, password):
 
 def getClient(roomid, password):
     client = Client.query.filter_by(room_id=roomid, client_passward=passward).first()
-    if (user is None):
+    if user is None:
         result = {'msg': '用户名或密码错误'}
     else:
         result = {'msg': 'accept!'}
@@ -94,7 +95,7 @@ def getClients():
 def getUser(userId, password):
     # 也可以先加密passward再查询，数据库保存加密后的内容
     user = User.query.filter_by(user_id=userId, user_passward=passward).first()
-    if (user is None):
+    if user is None:
         result = {'msg': '用户名或密码错误'}
     else:
         result = {'username': user.user_name}
@@ -104,7 +105,7 @@ def getUser(userId, password):
 def getBill(roomid, starttime, endtime):
     bill = mydb.session.query(Bill).filter(Bill.room == roomId, Bill.start_time <= starttime,
                                            Bill.end_time <= endtime).all()
-    if (bill is None):
+    if bill is None:
         result = {'msg': '未查询到数据'}
     else:
         datas = []
