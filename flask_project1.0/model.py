@@ -5,7 +5,7 @@ import db
 
 
 class Acunit:
-    def __init__(self, rid, state, temp, mode, last, cost, discount, totaltime, starttime):
+    def __init__(self, rid, state, temp, mode, last, cost, discount, totaltime = 0, starttime = 0):
         # 房号
         self.rid = rid
         # 开关状态
@@ -43,7 +43,7 @@ class Acunit:
         return
 
     def setmode(self, newmode):
-        newtime = time.time()
+        newtime = int(time.time())
         self.changecost(self.Costcalc(newtime - self.last))
         self.changelasttime(newtime)
         self.mode = newmode
@@ -55,24 +55,24 @@ class Acunit:
         return res
 
     def updatecost(self):
-        timenow = time.time()
+        timenow = int(time.time())
         self.changecost(self.Costcalc(timenow - self.last))
         self.changelasttime(timenow)
 
     def Turnon(self):
         self.state = 1
         self.cost = 0.5
-        newtime = time.time()
+        newtime = int(time.time())
         self.last = newtime
         self.starttime = newtime
         return
 
     def Turnoff(self):
         self.state = 0
-        newtime = time.time()
+        newtime = int(time.time())
         self.changecost(self.Costcalc(newtime - self.last))
         self.changelasttime(newtime)
-        db.addBill(self.rid, self.starttime, newtime, int(self.cost))
+        db.addBill(self.rid, self.starttime, newtime, self.cost)
         return
 
 
