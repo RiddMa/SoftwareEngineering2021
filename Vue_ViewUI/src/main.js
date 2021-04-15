@@ -41,25 +41,44 @@ router.afterEach((to, from, next) => {
 // Vuex仓库配置
 const store = new Vuex.Store({
     state: {
-        count: 0,
-        roomId:104,
-        token:'',
-
+        // count: 0,
+        // roomId: '104',
+        // userId: '',
+        // /**
+        //  * 测试用，实际两个token不会同时出现
+        //  */
+        // tokenAdmin: '',
+        // tokenUser: '',
+        sessionData: Object.create(null),
     },
     mutations: {
-        // s代表store里的mutation
-        setRoomId (state,roomId) {
-            state.roomId=roomId;
+        /**
+         *
+         * @param state Vuex的仓库状态对象，原样传入即可
+         * @param newData 一个包含key和value键的键值对，const testData = {key: 'uid123', value: '456username'};
+         * 传入之后在sessionData里存储结构是 uid123:'456username'
+         */
+        addSessionData(state, newData) {
+            Vue.set(state.sessionData,newData.key,newData.value)
         },
-        // setRoomId_s (state,roomId) {
-        //     state.roomId=roomId;
+        delSessionData(state, delData) {
+            Vue.delete(state.sessionData,delData.key)
+        },
+        /**
+         * 以上方法可以存入任意键值对
+         * 如果不行则采用下面方法向Vuex已经声明好的变量写入值
+         */
+        // setRoomId(state, roomId) {
+        //     state.roomId = roomId;
         // },
-        // setRoomId_s (state,roomId) {
-        //     state.roomId=roomId;
+        // setTokenAdmin(state, tokenAdmin) {
+        //     state.tokenAdmin = tokenAdmin;
+        // },
+        // setTokenUser(state, tokenUser) {
+        //     state.tokenUser = tokenUser;
         // }
     }
 })
-
 
 
 new Vue({
