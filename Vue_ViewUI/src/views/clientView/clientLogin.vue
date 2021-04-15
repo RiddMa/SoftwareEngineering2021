@@ -21,6 +21,7 @@
 
 <script>
 import {checkin_u} from '../../connect.vue';
+import {send_checkin_u} from '../../connect.vue';
 
 export default {
   name: "clientLogin",
@@ -33,9 +34,24 @@ export default {
   methods: {
     userLogin(event) {
       // this.checkIntegrity();
-      this.$store.commit('setRoomId',233);
+      this.$store.commit('setRoomId', 233);
       console.log(this.$store.state.roomId);
-      console.log(checkin_u(this.userName, this.userPassword));
+      send_checkin_u(this.userName, this.userPassword)
+          .then(response => {
+            console.log(response.data);
+            let error_code;
+            error_code= 0;
+            let data;
+            data = {
+              uid: response.data.uid,
+              username: response.data.username,
+              token: response.data.token
+            };
+            console.log(data);
+          })
+          .catch(error => {
+            console.log(error);
+          });
 
       this.$router.push({path: '/client'});
     },

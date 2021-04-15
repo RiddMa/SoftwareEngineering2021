@@ -247,6 +247,11 @@ export function send_checkin_u(rid, password) {
   }));
 }
 
+/**
+ * 用户刷卡进入房间
+ * @param rid
+ * @param password
+ */
 export function checkin_u(rid, password) {
   send_checkin_u(rid, password)
       .then(response => {
@@ -262,6 +267,7 @@ export function checkin_u(rid, password) {
       .catch(error => {
         console.log(error);
       });
+  console.log()
 }
 
 //用户控制空调开关
