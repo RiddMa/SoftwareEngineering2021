@@ -1,10 +1,9 @@
 from flask import Flask, request, jsonify, make_response, sessions
 import json
 from flask_cors import CORS
-
 from model import Admin, User
+from myglobal import app
 
-app = Flask(__name__)
 CORS(app)
 
 
