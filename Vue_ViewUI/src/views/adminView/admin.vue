@@ -54,7 +54,11 @@
 .SiderText {
   font-size: large;
   font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+}
 
+.acCard{
+  margin-top: 1vh;
+  margin-bottom: 1vh;
 }
 </style>
 <template>
@@ -83,11 +87,24 @@
         <Content :style="{padding: '0 16px 16px'}">
           <Breadcrumb :style="{margin: '16px  1%'}">
             <BreadcrumbItem>空调概览</BreadcrumbItem>
-            <BreadcrumbItem>Components</BreadcrumbItem>
-
+            <BreadcrumbItem>BreadcrumbTest</BreadcrumbItem>
           </Breadcrumb>
           <Card>
-            <div style="height: 600px">Content</div>
+            <div style="height: 600px">
+              <Card class="acCard">
+                <p slot="title">房间{{roomId}}</p>
+                <Icon type="ios-settings" slot="extra"></Icon>
+
+                <p>当前温度：</p>
+                <p>当前风速：</p>
+              </Card><br>
+              <Card class="acCard">
+                <p slot="title">房间{{roomId}}</p>
+              </Card><br>
+              <Card class="acCard">
+                <p slot="title">房间{{roomId}}</p>
+              </Card><br>
+            </div>
           </Card>
         </Content>
       </Layout>
@@ -99,7 +116,8 @@ export default {
   name: 'admin',
   data() {
     return {
-      isCollapsed: false
+      isCollapsed: false,
+      roomId:104
     };
   },
   computed: {
