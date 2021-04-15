@@ -192,17 +192,18 @@ class Reception:
 
 class User:
 
-    # 顾客设置空调开关
+
     @staticmethod
     def user_login(rid, password):
         error_code = 0
-        res = json.dumps(db.getClient(rid, password).get_json())
+        res = json.dumps(db.getCard(rid, password).get_json())
         if 'msg' in res:
             error_code = 1
             return error_code, None
         else:
-            return error_code, res['username']
+            return error_code, res['name']
 
+    # 顾客设置空调开关
     @staticmethod
     def turn_on_off(rid, state):
         error_code = 0
