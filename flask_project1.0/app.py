@@ -3,14 +3,21 @@ import json
 from flask_cors import CORS
 from model import Admin, User, Reception
 from myglobal import app
+import hashlib
+import time
 
 CORS(app)
 
 
 admin_tokens = set()
 user_tokens = set()
-admin_tokens.add('XXXXXX')
-user_tokens.add('XXXXXX')
+
+
+def new_token(username):
+    ctime = str(time.time())
+    m = hashlib.md5(bytes(username, encoding="utf-8"))
+    m.update(bytes(ctime, encoding="utf-8"))
+    return m.hexdigest()
 
 
 def set_token(is_admin, token):
@@ -48,8 +55,8 @@ def admin_login():
         res['data'] = dict()
         res['data']['uid'] = admin.id
         res['data']['username'] = admin.name
-        res['data']['token'] = 'XXXXXX'
-        set_token(True, 'XXXXXX')
+        res['data']['token'] = new_token(username)
+        set_token(True, res['data']['token'])
     #
     #
     return jsonify(res)
@@ -215,7 +222,7 @@ def enter_room():
     res = dict()
     res['uid'] = user.id
     res['username'] = user.name
-    res['token'] = 'XXXXXX'
+    res['token'] = new_token(user.name)
 
     set_token(False,res['token'])
     return jsonify({'error_code': error_code, 'data': res})
