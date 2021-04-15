@@ -5,6 +5,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, jsonify, abort, make_response
 import pymysql
+from app import app
 #app=Flask(__name__) #创建1个Flask实例
 #
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:xzc19991208@localhost/rg"
