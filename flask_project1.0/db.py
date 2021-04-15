@@ -44,7 +44,7 @@ class Client(mydb.Model):
     __tablename__ = 'client'
     room_id = mydb.Column(mydb.String(255), primary_key=True)
     client_name = mydb.Column(mydb.String(255), nullable=False)
-    client_passward = mydb.Column(mydb.String(255), nullable=False)
+    client_password = mydb.Column(mydb.String(255), nullable=False)
     client_idcard = mydb.Column(mydb.String(255), nullable=True)
     client_phonenumber = mydb.Column(mydb.String(255), nullable=True)
 
@@ -55,7 +55,7 @@ class Client(mydb.Model):
 class Bill(mydb.Model):
     __tablename__ = 'bill'
     room = mydb.Column(mydb.String(255), primary_key=True)
-    start_time = mydb.Column(mydb.Integer, primary_key=True)
+    start_time = mydb.Column(mydb.Integer, primary_key=True)o
     end_time = mydb.Column(mydb.Integer, primary_key=True)
     cost = mydb.Column(mydb.Float, nullable=False)
 
@@ -97,7 +97,7 @@ def getClients():
 
 # @app.route('/') 感觉用不到路由
 def getUser(userId, password):
-    # 也可以先加密passward再查询，数据库保存加密后的内容
+    # 也可以先加密password再查询，数据库保存加密后的内容
     user = User.query.filter_by(user_id=userId, user_password=password).first()
     if (user is None):
         result = {'msg': '用户名或密码错误'}
@@ -161,7 +161,7 @@ def addUser():
     return jsonify(result)
 
 
-def updateUser(userId, name, passward, kind):  # 改变用户名,密码，kind
+def updateUser(userId, name, password, kind):  # 改变用户名,密码，kind
     try:
         user = User.query.filter_by(user_id=userId).first()
         if (user is None):
@@ -169,7 +169,7 @@ def updateUser(userId, name, passward, kind):  # 改变用户名,密码，kind
             return jsonify(data=result)
         else:
             user.user_name = name
-            user.user_passward = passward
+            user.user_password = password
             user.user_kind = kind
             mydb.session.commit()
             result = {'msg': 'accept'}
