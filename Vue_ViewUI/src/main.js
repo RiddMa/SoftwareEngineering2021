@@ -1,4 +1,6 @@
+import 'es6-promise/auto';
 import Vue from 'vue';
+import Vuex from 'vuex';
 import ViewUI from 'view-design';
 import VueRouter from 'vue-router';
 import axios from 'axios'
@@ -11,9 +13,11 @@ import clientLogin from "./views/clientView/clientLogin";
 import client from "./views/clientView/client";
 import 'view-design/dist/styles/iview.css';
 
+Vue.use(Vuex);
 Vue.use(VueRouter);
 Vue.use(ViewUI);
 Vue.use(VueAxios, axios);
+
 
 // 路由配置
 const RouterConfig = {
@@ -22,6 +26,7 @@ const RouterConfig = {
 };
 const router = new VueRouter(RouterConfig);
 
+// 进度条配置
 router.beforeEach((to, from, next) => {
     ViewUI.LoadingBar.start();
     Util.title(to.meta.title);
@@ -33,8 +38,23 @@ router.afterEach((to, from, next) => {
     window.scrollTo(0, 0);
 });
 
+// Vuex仓库配置
+const store = new Vuex.Store({
+    state: {
+        count: 0
+    },
+    mutations: {
+        increment (state) {
+            state.count++
+        }
+    }
+})
+
+
+
 new Vue({
     el: '#app',
     router: router,
+    store: store,
     render: h => h(App)
 });

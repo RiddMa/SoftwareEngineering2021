@@ -110,7 +110,10 @@
   </div>
 </template>
 <script>
-import {foo} from '../../connect.vue';
+import {turnonoff_u} from '../../connect.vue';
+import {settemp_u} from '../../connect.vue';
+import {setmode_u} from '../../connect.vue';
+import {showcast_u} from '../../connect.vue';
 
 export default {
   name: 'client',
@@ -129,13 +132,18 @@ export default {
     //空调的总控开关
     handleSwitch(status) {
       this.acDisabled = !status;
-      foo();
-      // client_turnonoff(1,'on');
+      //TODO:传入用户名
+      if(status===true){
+        console.log(turnonoff_u('testOnly',1));
+      }else{
+        console.log(turnonoff_u('testOnly',0));
+      }
     },
     //空调温度控制，turnUp为升高的温度值，取值+1、-1
     changeTemp: function (event, turnUp) {
       this.curnTemp += turnUp;
-
+      //TODO:传入用户名
+      console.log(settemp_u('testOnly',this.curnTemp));
       //下面是用于修复按钮点击后不失焦bug的代码：
       // let target = event.target;
       // if (target.nodeName === "SPAN") {
@@ -147,7 +155,8 @@ export default {
     //空调风速控制，turnUp为升高的风速档位，取值+1、-1
     changeWind: function (event, turnUp) {
       this.curnWind += turnUp;
-
+      //TODO:用户名和传入风速
+      console.log(setmode_u('testOnly','H'));
       //下面是用于修复按钮点击后不失焦bug的代码：
       // let target = event.target;
       // if (target.nodeName === "SPAN") {
@@ -159,7 +168,7 @@ export default {
     //空调模式控制，toMode为目标模式，取值 致冷、制热
     changeMode: function (event, toMode) {
       this.curnMode = toMode;
-
+      //TODO:目前还没有这个功能
       //下面是用于修复按钮点击后不失焦bug的代码：
       // let target = event.target;
       // if (target.nodeName === "SPAN") {

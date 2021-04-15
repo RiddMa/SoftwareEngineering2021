@@ -32,13 +32,18 @@ export default {
   },
   methods: {
     userLogin(e) {
-      //
       // this.checkIntegrity();
+      this.increment();
       console.log(checkin_u(this.userName, this.userPassword));
-      this.$router.push({path: '/client'});
-    }
-  }
 
+      this.$router.push({path: '/client'});
+    },
+    increment() {
+      this.$store.commit('increment')
+      console.log(this.$store.state.count)
+    },
+
+  }
 }
 </script>
 

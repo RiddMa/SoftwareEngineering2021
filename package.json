@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "es6-promise": "^4.2.8",
+    "vuex": "^3.6.2"
+  }
+}
