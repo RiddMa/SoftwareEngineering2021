@@ -1,5 +1,6 @@
 import json
 import time
+import db
 
 
 class Acunit:
@@ -70,7 +71,7 @@ class Acunit:
         newtime = time.time()
         self.changecost(self.Costcalc(newtime - self.last))
         self.changelasttime(newtime)
-        addBill(self.rid, self.starttime, newtime, int(self.cost))
+        db.addBill(self.rid, self.starttime, newtime, int(self.cost))
         return
 
 
@@ -98,7 +99,7 @@ class Admin:
     # (token可先随意设置一个值，以后再改进)
     def get_admin(username, password):
         error_code = 0
-        res = json.loads(getUser(username, password))
+        res = json.loads(db.getUser(username, password))
         if 'userid' in res:
             return error_code, Admin(res['userid'], username, password, 'token')
         else:
@@ -194,7 +195,7 @@ class User:
     @staticmethod
     def user_login(rid, password):
         error_code = 0
-        res = json.loads(getClient(rid, password))
+        res = json.loads(db.getClient(rid, password))
         if 'msg' in res:
             error_code = 1
         else:
