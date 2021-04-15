@@ -151,7 +151,7 @@ def center_switch():
     form = request.get_json()
     state = form['state']
     token = request.headers['authorization']
-
+    print(form,token)
     if not verify_token(True, token):
         return jsonify({'error_code': 1})
 
@@ -258,7 +258,6 @@ def user_turn_on_off():
 @app.route('/user/settemp', methods=['POST'])
 def user_set_temp():
     form = request.get_json()
-    print(form)
     rid = form['rid']
     temp = form['settemp']
     token = request.headers['authorization']

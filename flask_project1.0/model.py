@@ -126,9 +126,9 @@ class Admin:
     @staticmethod
     def water_bills(time):
         error_code = 0
-        starttime = time // 60 // 24 * 60 * 24
-        endtime = time // 60 // 24 * 60 * 24 + 60 * 24
-        res = db.getTurnover(starttime,endtime).get_json()
+        starttime = float(time) // 60 // 24 * 60 * 24
+        endtime = float(time) // 60 // 24 * 60 * 24 + 60 * 24
+        res = db.getTurnover(int(starttime),int(endtime)).get_json()
         if 'msg' in res:
             error_code = 1
             return error_code,None
