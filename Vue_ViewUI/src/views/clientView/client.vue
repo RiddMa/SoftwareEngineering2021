@@ -144,6 +144,7 @@ export default {
       this.curnTemp += turnUp;
       //TODO:传入用户名
       console.log(settemp_u('testOnly',this.curnTemp));
+      //TODO:这段代码后期要尽量封装一下
       //下面是用于修复按钮点击后不失焦bug的代码：
       // let target = event.target;
       // if (target.nodeName === "SPAN") {

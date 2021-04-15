@@ -214,12 +214,41 @@ export function logout_r(rid) {
 }
 
 //用户刷卡进入房间
-export function checkin_u(rid, password) {
+/**
+ * @deprecated 外部调用无法获取异步请求返回值
+ * @param rid
+ * @param password
+ */
+export function checkin_u_d(rid, password) {
   axios
       .post(url + "user/checkin", {
         rid: rid,
         password: password
       })
+      .then(response => {
+        return {
+          error_code: 0,
+          data: {
+            uid: response.data.uid,
+            username: response.data.username,
+            token: response.data.token
+          }
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
+}
+
+export function send_checkin_u(rid, password) {
+  return (axios.post(url + "user/checkin", {
+    rid: rid,
+    password: password
+  }));
+}
+
+export function checkin_u(rid, password) {
+  send_checkin_u(rid, password)
       .then(response => {
         return {
           error_code: 0,

@@ -31,18 +31,14 @@ export default {
     }
   },
   methods: {
-    userLogin(e) {
+    userLogin(event) {
       // this.checkIntegrity();
-      this.increment();
+      this.$store.commit('setRoomId',233);
+      console.log(this.$store.state.roomId);
       console.log(checkin_u(this.userName, this.userPassword));
 
       this.$router.push({path: '/client'});
     },
-    increment() {
-      this.$store.commit('increment')
-      console.log(this.$store.state.count)
-    },
-
   }
 }
 </script>

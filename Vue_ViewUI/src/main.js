@@ -41,12 +41,22 @@ router.afterEach((to, from, next) => {
 // Vuex仓库配置
 const store = new Vuex.Store({
     state: {
-        count: 0
+        count: 0,
+        roomId:104,
+        token:'',
+
     },
     mutations: {
-        increment (state) {
-            state.count++
-        }
+        // s代表store里的mutation
+        setRoomId (state,roomId) {
+            state.roomId=roomId;
+        },
+        // setRoomId_s (state,roomId) {
+        //     state.roomId=roomId;
+        // },
+        // setRoomId_s (state,roomId) {
+        //     state.roomId=roomId;
+        // }
     }
 })
 
