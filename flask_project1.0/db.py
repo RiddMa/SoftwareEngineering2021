@@ -21,8 +21,8 @@ mydb = SQLAlchemy()
 
 class Card(mydb.Model):
     __tablename__ = 'card'
-    name = mydb.Column(mydb.String(255), primary_key=True)
-    roomid = mydb.Column(mydb.String(255), nullable=False)
+    name = mydb.Column(mydb.String(255), nullable=False)
+    roomid = mydb.Column(mydb.String(255), primary_key=True)
     password = mydb.Column(mydb.String(255), nullable=False)
 
     def __repr__(self):
@@ -118,7 +118,18 @@ def getBill(roomid, starttime, endtime):
         return jsonify(data=datas)
     return
 
-
+def addCard(name,roomid,password):
+    card = Card(name=name,roomid=roomid,password=password)
+    try:
+        mydb.session.add(card)
+        mydb.session.commit()
+        result = {'msg': 'accept'}
+    except:
+        # 插入失败的话进行回滚
+        mydb.session.rollback()
+        mydb.session.flush()
+        result = {'msg': '插入失败'}
+    return jsonify(result)
 def addBill(room, start_time, endtime, cost):
     bill = Bill(room=room, start_time=start_time, end_time=endtime, cost=cost)
     try:
