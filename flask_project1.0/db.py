@@ -84,12 +84,12 @@ def getInfomation(phonenumber):
 def getTurnover(starttime,endtime):
     turnover = mydb.session.query(Turnover).filter(Turnover.time >= starttime,
                                            Turnover.time <= endtime).all()
-    if (bill is None):
+    if (turnover is None):
         result = {'msg': '未查询到数据'}
     else:
         datas = []
-        for q in bill:
-            datas.append({'rid': q.room,'date': q.time,'price': q.price})
+        for q in turnover:
+            datas.append({'rid': q.room,'time': q.time,'account': q.price})
         return jsonify(data=datas)
     return result
 

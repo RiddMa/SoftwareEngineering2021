@@ -1,29 +1,30 @@
 from flask import Flask, request, jsonify, make_response, sessions
 import json
 from flask_cors import CORS
-from model import Admin, User
+from model import Admin, User, Reception
 from myglobal import app
 
 CORS(app)
 
 
-# admin_tokens = set()
-# user_tokens = set()
-# admin_tokens.add('XXXXXX')
-# user_tokens.add('XXXXXX')
+admin_tokens = set()
+user_tokens = set()
+admin_tokens.add('XXXXXX')
+user_tokens.add('XXXXXX')
 
-# def set_token(is_admin, token):
-#     if is_admin == True:
-#         admin_tokens.add(token)
-#     else:
-#         user_tokens.add(token)
-#
-#
-# def verify_token(is_admin, token):
-#     if is_admin == True:
-#         return token in admin_tokens
-#     else:
-#         return token in user_tokens
+
+def set_token(is_admin, token):
+    if is_admin:
+        admin_tokens.add(token)
+    else:
+        user_tokens.add(token)
+
+
+def verify_token(is_admin, token):
+    if is_admin:
+        return token in admin_tokens
+    else:
+        return token in user_tokens
 
 
 @app.route('/')
@@ -38,17 +39,17 @@ def admin_login():
     username = form['username']
     password = form['password']
 
-    res = map()
+    res = dict()
     error_code, admin = Admin.get_admin(username, password)
     if error_code == 1:
         res['error_code'] = 1
     else:
         res['error_code'] = 0
-        res['data'] = map()
+        res['data'] = dict()
         res['data']['uid'] = admin.id
         res['data']['username'] = admin.name
-    #     res['data']['token'] = admin.token
-    #     set_token(True, admin.token)
+        res['data']['token'] = 'XXXXXX'
+        set_token(True, 'XXXXXX')
     #
     #
     return jsonify(res)
@@ -69,13 +70,13 @@ def admin_login():
 def create_report():
     form = request.get_json()
     time = form['timestamp']
-    token = request.cookies.get('token')
+    token = request.headers['authorization']
 
-    # if not verify_token(True, token):
-    #     return jsonify({'error_code' : 1})
+    if not verify_token(True, token):
+        return jsonify({'error_code' : 1})
 
     error_code, room_states = Admin.get_report(time)
-    res = map()
+    res = dict()
     if error_code == 1:
         res['error_code'] = 1
     else:
@@ -104,22 +105,23 @@ def create_report():
     #                 })
 
 
-# @app.route('/admin/createwaterbills', methods=['POST'])
-# def create_water_bills():
-#     # form = request.get_json()
-#     # date = form['date']
-#     #
-#     # return {
-#     #         "error_code": 0,
-#     #         "data":[
-#     #                 {
-#     #                     "rid":"101",
-#     #                     "time":"2021-04-03 23:42:50",
-#     #                     "account":"87.60"
-#     #                 }
-#     #             ]
-#     #         }
-#     return jsonify({})
+@app.route('/admin/createwaterbills', methods=['POST'])
+def create_water_bills():
+    form = request.get_json()
+    date = form['date']
+    error_code,data = Admin.water_bills(date)
+    return jsonify({"error_code": error_code,"data":data})
+    #
+    # return {
+    #         "error_code": 0,
+    #         "data":[
+    #                 {
+    #                     "rid":"101",
+    #                     "time":"2021-04-03 23:42:50",
+    #                     "account":"87.60"
+    #                 }
+    #             ]
+    #         }
 
 
 @app.route('/admin/discount', methods=['POST'])
@@ -127,10 +129,10 @@ def admin_discount():
     form = request.get_json()
     rid = form['rid']
     discount = form['discount']
-    # token = request.cookies.get('token')
+    token = request.headers['authorization']
 
-    # if not verify_token(True, token):
-    #     return jsonify({'error_code' : 1})
+    if not verify_token(True, token):
+        return jsonify({'error_code' : 1})
 
     error_code = Admin.set_discount(rid, discount)
 
@@ -141,10 +143,10 @@ def admin_discount():
 def center_switch():
     form = request.get_json()
     state = form['state']
-    # token = request.cookies.get('token')
+    token = request.headers['authorization']
 
-    # if not verify_token(True, token):
-    #     return jsonify({'error_code': 1})
+    if not verify_token(True, token):
+        return jsonify({'error_code': 1})
 
     error_code = Admin.center_turn_on_off(state)
 
@@ -152,64 +154,70 @@ def center_switch():
 
 
 # 前台模块
-# @app.route('/reception/signin', methods=['POST'])
-# def reception_signin():
-#     form = request.get_json()
-#     ph_num = form['phonenumber']
-#
-#     # error_code, card = Reception.get_card(ph_num)
-#     # res = map()
-#     # if error_code == 1:
-#     #     res['error_code'] = 1
-#     # else:
-#     #     res['error_code'] = 0
-#     #     res['data'] = map()
-#     #     res['data']['name'] = card.username
-#     #     res['data']['rid'] = card.rid
-#     #     res['data']['password'] = card.password
-#     #
-#     # return jsonify(res)
-#     return jsonify({
-#                         "error_code": 0,
-#                         "data": {
-#                             "name": "liming",
-#                             "rid": "101",
-#                             "password":"26"
-#                          }
-#                     })
-#
-#
-# @app.route('/reception/logout', methods=['POST'])
-# def reception_logout():
-#     form = request.get_json()
-#     rid = form['rid']
-#
-#     # error_code, duration, price = Reception.get_total_cost(rid)
-#
-#     return jsonify({
-#                         "error_code": 0,
-#                         "data": {
-#                                 "duration": 0,
-#                                 "price": 0
-#                             }
-#                     })
+@app.route('/reception/signin', methods=['POST'])
+def reception_signin():
+    form = request.get_json()
+    ph_num = form['phonenumber']
+    error_code, card = Reception.get_card(ph_num)
+    res = dict()
+    if error_code == 1:
+        res['error_code'] = 1
+    else:
+        res['error_code'] = 0
+        res['data'] = dict()
+        res['data']['name'] = card.username
+        res['data']['rid'] = card.rid
+        res['data']['password'] = card.password
+
+    return jsonify(res)
+    # return jsonify({
+    #                     "error_code": 0,
+    #                     "data": {
+    #                         "name": "liming",
+    #                         "rid": "101",
+    #                         "password":"26"
+    #                      }
+    #                 })
+
+
+@app.route('/reception/logout', methods=['POST'])
+def reception_logout():
+    form = request.get_json()
+    rid = form['rid']
+
+    error_code, duration, price = Reception.get_total_cost(rid)
+
+    return jsonify({
+                        "error_code": error_code,
+                        "data": {
+                                "duration": duration,
+                                "price": price
+                            }
+                    })
 
 
 # 顾客模块
 @app.route('/user/checkin', methods=['POST'])
 def enter_room():
     form = request.get_json()
+    token = request.headers['authorization']
     rid = form['rid']
     password = form['password']
 
+    if not verify_token(False, token):
+        return jsonify({'error_code': 1})
+
     error_code, user = User.user_login(rid,password)
+
     if error_code == 1:
         return jsonify({'error_code': 1})
 
-    res = map()
+    res = dict()
     res['uid'] = user.id
     res['username'] = user.name
-    # res['token'] = token
+    res['token'] = 'XXXXXX'
+
+    set_token(False,res['token'])
     return jsonify({'error_code': error_code, 'data': res})
 
     # resp = make_response(jsonify({
@@ -230,10 +238,10 @@ def user_turn_on_off():
     form = request.get_json()
     rid = form['rid']
     state = form['state']
-    # token = request.cookies.get('token')
+    token = request.headers['authorization']
 
-    # if not verify_token(False, token):
-    #     return jsonify({'error_code': 1})
+    if not verify_token(False, token):
+        return jsonify({'error_code': 1})
 
     error_code = User.turn_on_off(rid, state)
 
@@ -245,10 +253,10 @@ def user_set_temp():
     form = request.get_json()
     rid = form['rid']
     temp = form['settemp']
-    # token = request.cookies.get('token')
+    token = request.headers['authorization']
 
-    # if not verify_token(False, token):
-    #     return jsonify({'error_code': 1})
+    if not verify_token(False, token):
+        return jsonify({'error_code': 1})
 
     error_code = User.set_temp(rid, temp)
 
@@ -260,10 +268,10 @@ def user_set_mode():
     form = request.get_json()
     rid = form['rid']
     mode = form['setmode']
-    # token = request.cookies.get('token')
+    token = request.headers['authorization']
 
-    # if not verify_token(False, token):
-    #     return jsonify({'error_code': 1})
+    if not verify_token(False, token):
+        return jsonify({'error_code': 1})
 
     error_code = User.set_mode(rid, mode)
 
@@ -274,10 +282,10 @@ def user_set_mode():
 def user_show_cost():
     form = request.get_json()
     rid = form['rid']
-    # token = request.cookies.get('token')
+    token = request.headers['authorization']
 
-    # if not verify_token(False, token):
-    #     return jsonify({'error_code': 1})
+    if not verify_token(False, token):
+        return jsonify({'error_code': 1})
 
     error_code, cost, onoff = User.show_cost(rid)
     res = map()
