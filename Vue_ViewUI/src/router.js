@@ -5,39 +5,37 @@ const routers = [
             title: '客户端登录'
         },
         component: (resolve) => require(['./views/clientView/clientLogin.vue'], resolve),
-        children:[
-
-        ]
+        children: []
     },
 
 
     {
-        path:'/client',
-        meta:{
+        path: '/client',
+        meta: {
             title: '客户端'
         },
-        component:(resolve) => require(['./views/clientView/client.vue'], resolve),
+        component: (resolve) => require(['./views/clientView/client.vue'], resolve),
     },
 
 
     {
-        path:'/admin',
-        meta:{
-            title:'admin'
+        path: '/admin',
+        meta: {
+            title: 'admin'
         },
         component: (resolve) => require(['./views/adminView/admin.vue'], resolve)
     },
     {
-        path:'/',
-        meta:{
-            title:'welcome'
+        path: '/',
+        meta: {
+            title: 'welcome'
         },
         component: (resolve) => require(['./views/welcome.vue'], resolve)
     },
     {
-        path:'/admin-antd',
-        meta:{
-            title:'admin-antd'
+        path: '/admin-antd',
+        meta: {
+            title: 'admin-antd'
         },
         component: (resolve) => require(['./views/adminView/admin-antd.vue'], resolve)
     },
