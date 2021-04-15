@@ -1,10 +1,11 @@
 import json
 import time
+
 import db
 
 
 class Acunit:
-    def __init__(self, rid, state, temp, mode, last, cost, discount):
+    def __init__(self, rid, state, temp, mode, last, cost, discount, totaltime, starttime):
         # 房号
         self.rid = rid
         # 开关状态
@@ -20,9 +21,9 @@ class Acunit:
         # 当前折扣
         self.discount = discount
         # 总使用时长
-        self.totaltime = 0
+        self.totaltime = totaltime
         # 本次开机的时间
-        self.starttime
+        self.starttime = starttime
 
     def settemp(self, newtemp):
         self.temp = newtemp
