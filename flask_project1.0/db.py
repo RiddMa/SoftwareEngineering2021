@@ -55,7 +55,7 @@ class Client(mydb.Model):
 class Bill(mydb.Model):
     __tablename__ = 'bill'
     room = mydb.Column(mydb.String(255), primary_key=True)
-    start_time = mydb.Column(mydb.Integer, primary_key=True)o
+    start_time = mydb.Column(mydb.Integer, primary_key=True)
     end_time = mydb.Column(mydb.Integer, primary_key=True)
     cost = mydb.Column(mydb.Float, nullable=False)
 
