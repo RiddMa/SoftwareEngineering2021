@@ -62,7 +62,7 @@ class Bill(mydb.Model):
     def __repr__(self):
         return '<room %r>' % self.room
 class Turnover(mydb.Model):
-    __tablename__ = 'bill'
+    __tablename__ = 'turnover'
     room = mydb.Column(mydb.String(255), primary_key=True)
     time = mydb.Column(mydb.Integer, primary_key=True)
     price = mydb.Column(mydb.Float, nullable=False)
