@@ -299,5 +299,5 @@ def user_show_cost():
     #                 })
 
 
-if __name__ == '__main__':
-    app.run()
+# if __name__ == '__main__':
+#     app.run()
