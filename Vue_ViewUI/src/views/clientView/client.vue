@@ -176,7 +176,7 @@ export default {
       // }
       // target.blur();
       //可以忽略。
-    },
+    }
 
   }
 }
