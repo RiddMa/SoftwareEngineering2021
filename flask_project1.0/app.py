@@ -202,7 +202,7 @@ def enter_room():
     rid = form['rid']
     password = form['password']
 
-    error_code, user = User.user_login()
+    error_code, user = User.user_login(rid,password)
     if error_code == 1:
         return jsonify({'error_code': 1})
 
@@ -300,4 +300,4 @@ def user_show_cost():
 
 
 if __name__ == '__main__':
-    app.run(host='10.128.233.233',port=8080)
+    app.run(host='127.0.0.1',port=8080)
