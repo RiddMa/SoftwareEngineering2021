@@ -1,9 +1,10 @@
-from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, jsonify, abort, make_response
-import pymysql
+from flask import jsonify
+from flask_sqlalchemy import SQLAlchemy
+
 from app import app
-#app=Flask(__name__) #创建1个Flask实例
+
+# app=Flask(__name__) #创建1个Flask实例
 #
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:xzc19991208@localhost/rg"
 # 指定当视图执行完毕后,自动提交数据库操作
@@ -185,7 +186,6 @@ def deleteUser(userId):
 
 
 def deleteClient(roomid):
-<<<<<<< HEAD
     Client.query.filter_by(room_id=roomid).delete()
     mydb.session.commit()
     result = {'msg': '已删除'}
@@ -204,25 +204,5 @@ def deletecard(name, roomid, password):
     mydb.session.commit()
     result = {'msg': '已删除'}
     return jsonify(result)
-
-
-if __name__ == '__main__':
-    app.run()
-=======
-  Client.query.filter_by(room_id=roomid).delete()
-  mydb.session.commit()
-  result = {'msg': '已删除'}
-  return jsonify(result)
-def deleteBill(roomid,starttime,endtime):
-  Bill.query.filter_by(room_id=roomid,start_time=starttime,end_time=endtime).delete()
-  mydb.session.commit()
-  result = {'msg': '已删除'}
-  return jsonify(result)
-def deletecard(name,roomid,password):
-  Card.query.filter_by(name=name,roomid=roomid,password=password).delete()
-  mydb.session.commit()
-  result = {'msg': '已删除'}
-  return jsonify(result)
-#if __name__ == '__main__':
-  #app.run()     
->>>>>>> 7e16a243a21e85852c874fc4a27b1f6cd82760c5
+# if __name__ == '__main__':
+# app.run()
