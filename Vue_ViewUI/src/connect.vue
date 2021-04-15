@@ -253,21 +253,15 @@ export function send_checkin_u(rid, password) {
  * @param password
  */
 export function checkin_u(rid, password) {
+  let res;
   send_checkin_u(rid, password)
       .then(response => {
-        return {
-          error_code: 0,
-          data: {
-            uid: response.data.uid,
-            username: response.data.username,
-            token: response.data.token
-          }
-        }
+        res = response.data;
       })
       .catch(error => {
         console.log(error);
       });
-  console.log()
+  return res;
 }
 
 //用户控制空调开关
@@ -288,11 +282,11 @@ export function turnonoff_u(rid, state) {
 }
 
 //用户控制房间空调温度
-export function settemp_u(rid, state) {
+export function settemp_u(rid, settemp) {
   axios
       .post(url + "user/settemp", {
         rid: rid,
-        state: state
+        settemp: settemp
       })
       .then(response => {
         return {

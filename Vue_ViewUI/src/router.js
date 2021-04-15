@@ -33,12 +33,13 @@ const routers = [
         component: (resolve) => require(['./views/welcome.vue'], resolve)
     },
     {
-        path: '/admin-antd',
+        path: '/netInterfaceTest',
         meta: {
-            title: 'admin-antd'
+            title: '全按钮测试'
         },
-        component: (resolve) => require(['./views/adminView/admin-antd.vue'], resolve)
+        component: (resolve) => require(['./views/netInterfaceTest'], resolve)
     },
+
 
 ];
 export default routers;

@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import {checkin_u} from '../../connect.vue';
+import {checkin_u} from '../../connect_token.vue';
 import {send_checkin_u} from '../../connect.vue';
 
 export default {

@@ -110,10 +110,10 @@
   </div>
 </template>
 <script>
-import {turnonoff_u} from '../../connect.vue';
-import {settemp_u} from '../../connect.vue';
-import {setmode_u} from '../../connect.vue';
-import {showcast_u} from '../../connect.vue';
+import {turnonoff_u} from '../../connect_token.vue';
+import {settemp_u} from '../../connect_token.vue';
+import {setmode_u} from '../../connect_token.vue';
+import {showcast_u} from '../../connect_token.vue';
 
 export default {
   name: 'client',
