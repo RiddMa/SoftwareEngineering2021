@@ -207,12 +207,12 @@ def reception_logout():
 @app.route('/user/checkin', methods=['POST'])
 def enter_room():
     form = request.get_json()
-    token = request.headers['authorization']
+    # token = request.headers['authorization']
     rid = form['rid']
     password = form['password']
 
-    if not verify_token(False, token):
-        return jsonify({'error_code': 1})
+    # if not verify_token(False, token):
+    #     return jsonify({'error_code': 1})
 
     error_code, user = User.user_login(rid,password)
 

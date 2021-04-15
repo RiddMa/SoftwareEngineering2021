@@ -198,20 +198,20 @@ class Reception:
 
 
 class User:
-
+    def __init__(self,uid,username,token = 'x'):
+        self.id = uid
+        self.name = username
+        self.token = token
 
     @staticmethod
     def user_login(rid, password):
         error_code = 0
         res = db.getCard(rid, password).get_json()
-        print(res,db.getCard(rid, password).get_json())
         if 'msg' in res:
             error_code = 1
             return error_code, None
         else:
-            print(('name' in res))
-            print(type(res))
-            return error_code, res['name']
+            return error_code, User(rid,res['name'])
 
     # 顾客设置空调开关
     @staticmethod
