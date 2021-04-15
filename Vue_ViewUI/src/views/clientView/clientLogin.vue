@@ -20,7 +20,7 @@
 </template>
 
 <script>
-import {client_login} from '../connect.vue';
+import {checkin_u} from '../../connect.vue';
 
 export default {
   name: "clientLogin",
@@ -34,7 +34,7 @@ export default {
     userLogin(e) {
       //
       // this.checkIntegrity();
-      console.log(client_login(this.userName, this.userPassword));
+      console.log(checkin_u(this.userName, this.userPassword));
       this.$router.push({path: '/client'});
     }
   }
