@@ -1,6 +1,6 @@
 <script type="text/javascript">
 import axios from "axios";
-const url = "http://101.32.75.165:8080/"
+const url = "http://127.0.0.1:8080/"
 var token_a, token_u;
 //管理员登录接口
 export function login_a(username, password)
@@ -315,12 +315,12 @@ export function turnonoff_u(rid, state)
 }
 
 //用户控制房间空调温度
-export function settemp_u(rid, state)
+export function settemp_u(rid, settemp)
 {
     axios
     .post(url+"user/settemp", {
         rid: rid,
-        state: state,
+        settemp: settemp,
         authorization: token_u
     },
     {

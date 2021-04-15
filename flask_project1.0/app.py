@@ -258,6 +258,7 @@ def user_turn_on_off():
 @app.route('/user/settemp', methods=['POST'])
 def user_set_temp():
     form = request.get_json()
+    print(form)
     rid = form['rid']
     temp = form['settemp']
     token = request.headers['authorization']

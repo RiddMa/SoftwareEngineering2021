@@ -76,7 +76,7 @@ class Acunit:
         return
 
 
-roomlist = []
+roomlist = ['testOnly']
 for j in range(1, 6):
     for i in range(1, 11):
         roomlist.append(str(j) + ('0' + str(i))[-2:])
@@ -217,6 +217,7 @@ class User:
     @staticmethod
     def turn_on_off(rid, state):
         error_code = 0
+        print(rid)
         if state != Store[rid].state:
             if state:
                 Store[rid].Turnon()
