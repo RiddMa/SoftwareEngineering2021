@@ -100,7 +100,7 @@ class Admin:
     # (token可先随意设置一个值，以后再改进)
     def get_admin(username, password):
         error_code = 0
-        res = json.dumps(db.getUser(username, password))
+        res = json.dumps(db.getUser(username, password).get_json())
         if 'userid' in res:
             return error_code, Admin(res['userid'], username, password, 'token')
         else:
@@ -196,7 +196,7 @@ class User:
     @staticmethod
     def user_login(rid, password):
         error_code = 0
-        res = json.dumps(db.getClient(rid, password))
+        res = json.dumps(db.getClient(rid, password).get_json())
         if 'msg' in res:
             error_code = 1
             return error_code, None
