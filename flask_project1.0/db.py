@@ -1,7 +1,5 @@
-from flask import Flask
-from sqlalchemy.ext.declarative import declarative_base
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, jsonify, make_response
 
 app = Flask(__name__)  # 创建1个Flask实例
 # 43463
