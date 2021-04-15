@@ -54,9 +54,9 @@ class Client(mydb.Model):
 class Bill(mydb.Model):
     __tablename__ = 'bill'
     room = mydb.Column(mydb.String(255), primary_key=True)
-    start_time = mydb.Column(mydb.String(255), primary_key=True)
-    end_time = mydb.Column(mydb.String(255), primary_key=True)
-    cost = mydb.Column(mydb.Integer, nullable=False)
+    start_time = mydb.Column(mydb.Integer, primary_key=True)
+    end_time = mydb.Column(mydb.Integer, primary_key=True)
+    cost = mydb.Column(mydb.Double, nullable=False)
 
     def __repr__(self):
         return '<room %r>' % self.room
