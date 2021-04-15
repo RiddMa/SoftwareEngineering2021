@@ -61,13 +61,37 @@ class Bill(mydb.Model):
 
     def __repr__(self):
         return '<room %r>' % self.room
+class Turnover(mydb.Model):
+    __tablename__ = 'bill'
+    room = mydb.Column(mydb.String(255), primary_key=True)
+    time = mydb.Column(mydb.Integer, primary_key=True)
+    price = mydb.Column(mydb.Float, nullable=False)
 
+    def __repr__(self):
+        return '<room %r>' % self.room
 
 mydb.init_app(app)
 with app.app_context():
     mydb.init_app(app)
     mydb.create_all()
-
+def getInfomation(phonenumber):
+    client = Client.query.filter_by(client_phonenumber=phonenumber).first()
+    if (client is None):
+        result = {'msg': '未找到手机号相关信息'}
+    else:
+        result = {'roomid': client.room_id,'name': client.client_name,'idcard': client.client_idcard,'password': client.client_password}
+    return jsonify(result)
+def getTurnover(starttime,endtime):
+    turnover = mydb.session.query(Turnover).filter(Turnover.time >= starttime,
+                                           Turnover.time <= endtime).all()
+    if (bill is None):
+        result = {'msg': '未查询到数据'}
+    else:
+        datas = []
+        for q in bill:
+            datas.append({'rid': q.room,'date': q.time,'price': q.price})
+        return jsonify(data=datas)
+    return result
 
 def getCard(roomid, password):
     card = Card.query.filter_by(roomid=roomid, password=password).first()
@@ -107,7 +131,7 @@ def getUser(userId, password):
 
 
 def getBill(roomid, starttime, endtime):
-    bill = mydb.session.query(Bill).filter(Bill.room == roomid, Bill.start_time <= starttime,
+    bill = mydb.session.query(Bill).filter(Bill.room == roomid, Bill.start_time >= starttime,
                                            Bill.end_time <= endtime).all()
     if (bill is None):
         result = {'msg': '未查询到数据'}
@@ -116,7 +140,7 @@ def getBill(roomid, starttime, endtime):
         for q in bill:
             datas.append({'rid': q.room, 'start_time': q.start_time, 'end_time': q.end_time, 'price': q.cost})
         return jsonify(data=datas)
-    return
+    return result
 
 def addCard(name,roomid,password):
     card = Card(name=name,roomid=roomid,password=password)
@@ -144,8 +168,8 @@ def addBill(room, start_time, endtime, cost):
     return jsonify(result)
 
 
-def addClient():
-    client = Client()
+def addClient(rid,name,password,idcard,phonenumber):
+    client = Client(roomid=rid,client_name=name,client_password=password,client_idcard=idcard,client_phonenumber=phonenumber)
     try:
         mydb.session.add(client)
         mydb.session.commit()
@@ -158,8 +182,8 @@ def addClient():
     return jsonify(result)
 
 
-def addUser():
-    user = User()
+def addUser(uid,password,name,kind):
+    user = User(user_id=uid,user_password=password,user_name=name,user_kind=kind)
     try:
         mydb.session.add(user)
         mydb.session.commit()
@@ -171,6 +195,18 @@ def addUser():
         result = {'msg': 'fail'}
     return jsonify(result)
 
+def addTurnover(date,roomid,price):
+    turnover = Turnover(room=roomid,time=date,price=price)
+    try:
+        mydb.session.add(turnover)
+        mydb.session.commit()
+        result = {'msg': 'accept'}
+    except:
+        # 插入失败的话进行回滚
+        mydb.session.rollback()
+        mydb.session.flush()
+        result = {'msg': 'fail'}
+    return jsonify(result)
 
 def updateUser(userId, name, password, kind):  # 改变用户名,密码，kind
     try:
