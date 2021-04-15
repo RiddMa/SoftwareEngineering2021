@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask import Flask, jsonify, abort, make_response
 import pymysql
 app=Flask(__name__) #创建1个Flask实例
-
+#test
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:xzc19991208@localhost/rg"
 #指定当视图执行完毕后,自动提交数据库操作
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
