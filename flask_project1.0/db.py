@@ -61,8 +61,8 @@ def getCard(roomid,password):
     result = {'name': card.name}
   return jsonify(result)
 def getClient(roomid,password):
-  client = Client.query.filter_by(room_id=roomid,client_passward=passward).first()
-  if (user is None):
+  client = Client.query.filter_by(room_id=roomid,client_password=password).first()
+  if (client is None):
     result = {'msg': '用户名或密码错误'}
   else:
     result = {'msg': 'accept!' }
@@ -76,7 +76,7 @@ def getClients():
 #@app.route('/') 感觉用不到路由
 def getUser(userId,password):
   #也可以先加密passward再查询，数据库保存加密后的内容
-  user = User.query.filter_by(user_id=userId,user_passward=passward).first()
+  user = User.query.filter_by(user_id=userId,user_password=password).first()
   if (user is None):
     result = {'msg': '用户名或密码错误'}
   else:
@@ -84,7 +84,7 @@ def getUser(userId,password):
   return jsonify(result)
 
 def getBill(roomid,starttime,endtime):
-  bill= mydb.session.query(Bill).filter(Bill.room==roomId,Bill.start_time<=starttime,Bill.end_time<=endtime).all()
+  bill= mydb.session.query(Bill).filter(Bill.room==roomid,Bill.start_time<=starttime,Bill.end_time<=endtime).all()
   if (bill is None):
     result = {'msg': '未查询到数据'}
   else:
@@ -95,7 +95,7 @@ def getBill(roomid,starttime,endtime):
   return 
 
 def addBill(room,start_time,endtime,cost):
-  bill = Bill(room=room,start_time=time,end_time=endtime,cost=cost)
+  bill = Bill(room=room,start_time=start_time,end_time=endtime,cost=cost)
   try:
     mydb.session.add(bill)
     mydb.session.commit()
@@ -109,7 +109,7 @@ def addBill(room,start_time,endtime,cost):
 def addClient():
   client = Client() 
   try:
-    mydb.session.add(user)
+    mydb.session.add(client)
     mydb.session.commit()
     result={'msg': 'accept'}
   except:
@@ -121,7 +121,7 @@ def addClient():
 def addUser():
   user = User()
   try:
-    mydb.session.add(client)
+    mydb.session.add(user)
     mydb.session.commit()
     result={'msg': 'accept'}
   except:
