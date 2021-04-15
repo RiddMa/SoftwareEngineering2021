@@ -1,10 +1,9 @@
 from flask import Flask, request, jsonify, make_response, sessions
 import json
 from flask_cors import CORS
-
 from model import Admin, User
+from myglobal import app
 
-app = Flask(__name__)
 CORS(app)
 
 
@@ -32,7 +31,7 @@ def hello_world():
     return 'Hello World!'
 
 
-#管理员模块
+# 管理员模块
 @app.route('/admin/login', methods=['POST'])
 def admin_login():
     form = request.get_json()
@@ -152,7 +151,7 @@ def center_switch():
     return jsonify({'error': error_code})
 
 
-#前台模块
+# 前台模块
 # @app.route('/reception/signin', methods=['POST'])
 # def reception_signin():
 #     form = request.get_json()
@@ -196,17 +195,16 @@ def center_switch():
 #                     })
 
 
-#顾客模块
+# 顾客模块
 @app.route('/user/checkin', methods=['POST'])
 def enter_room():
     form = request.get_json()
     rid = form['rid']
     password = form['password']
 
-
-    error_code, user= User.user_login()
+    error_code, user = User.user_login()
     if error_code == 1:
-        return jsonify({'error_code' : 1})
+        return jsonify({'error_code': 1})
 
     res = map()
     res['uid'] = user.id
@@ -223,7 +221,6 @@ def enter_room():
     #         }))
 
     # resp.set_cookie('token', 'XXXXXX', path= '/')
-
 
     # return resp
 

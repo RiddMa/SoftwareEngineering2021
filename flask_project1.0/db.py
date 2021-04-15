@@ -1,10 +1,12 @@
-from flask import Flask
-from sqlalchemy.ext.declarative import declarative_base
 from flask_sqlalchemy import SQLAlchemy
-from flask import Flask, jsonify, make_response
-
-app = Flask(__name__)  # 创建1个Flask实例
-# 43463
+from sqlalchemy import Column, String, create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from flask import Flask, jsonify, abort, make_response
+import pymysql
+from myglobal import app
+# app=Flask(__name__) #创建1个Flask实例
+#test
 app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:xzc19991208@localhost/rg"
 # 指定当视图执行完毕后,自动提交数据库操作
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
@@ -52,9 +54,9 @@ class Client(mydb.Model):
 class Bill(mydb.Model):
     __tablename__ = 'bill'
     room = mydb.Column(mydb.String(255), primary_key=True)
-    start_time = mydb.Column(mydb.String(255), primary_key=True)
-    end_time = mydb.Column(mydb.String(255), primary_key=True)
-    cost = mydb.Column(mydb.Integer, nullable=False)
+    start_time = mydb.Column(mydb.Integer, primary_key=True)
+    end_time = mydb.Column(mydb.Integer, primary_key=True)
+    cost = mydb.Column(mydb.Double, nullable=False)
 
     def __repr__(self):
         return '<room %r>' % self.room
@@ -76,8 +78,8 @@ def getCard(roomid, password):
 
 
 def getClient(roomid, password):
-    client = Client.query.filter_by(room_id=roomid, client_passward=passward).first()
-    if (user is None):
+    client = Client.query.filter_by(room_id=roomid, client_password=password).first()
+    if (client is None):
         result = {'msg': '用户名或密码错误'}
     else:
         result = {'msg': 'accept!'}
@@ -95,7 +97,7 @@ def getClients():
 # @app.route('/') 感觉用不到路由
 def getUser(userId, password):
     # 也可以先加密passward再查询，数据库保存加密后的内容
-    user = User.query.filter_by(user_id=userId, user_passward=passward).first()
+    user = User.query.filter_by(user_id=userId, user_password=password).first()
     if (user is None):
         result = {'msg': '用户名或密码错误'}
     else:
@@ -104,7 +106,7 @@ def getUser(userId, password):
 
 
 def getBill(roomid, starttime, endtime):
-    bill = mydb.session.query(Bill).filter(Bill.room == roomId, Bill.start_time <= starttime,
+    bill = mydb.session.query(Bill).filter(Bill.room == roomid, Bill.start_time <= starttime,
                                            Bill.end_time <= endtime).all()
     if (bill is None):
         result = {'msg': '未查询到数据'}
@@ -117,7 +119,7 @@ def getBill(roomid, starttime, endtime):
 
 
 def addBill(room, start_time, endtime, cost):
-    bill = Bill(room=room, start_time=time, end_time=endtime, cost=cost)
+    bill = Bill(room=room, start_time=start_time, end_time=endtime, cost=cost)
     try:
         mydb.session.add(bill)
         mydb.session.commit()
@@ -133,7 +135,7 @@ def addBill(room, start_time, endtime, cost):
 def addClient():
     client = Client()
     try:
-        mydb.session.add(user)
+        mydb.session.add(client)
         mydb.session.commit()
         result = {'msg': 'accept'}
     except:
@@ -147,7 +149,7 @@ def addClient():
 def addUser():
     user = User()
     try:
-        mydb.session.add(client)
+        mydb.session.add(user)
         mydb.session.commit()
         result = {'msg': 'accept'}
     except:
@@ -185,25 +187,19 @@ def deleteUser(userId):
 
 
 def deleteClient(roomid):
-    Client.query.filter_by(room_id=roomid).delete()
-    mydb.session.commit()
-    result = {'msg': '已删除'}
-    return jsonify(result)
-
-
-def deleteBill(roomid, starttime, endtime):
-    Bill.query.filter_by(room_id=roomid, start_time=starttime, end_time=endtime).delete()
-    mydb.session.commit()
-    result = {'msg': '已删除'}
-    return jsonify(result)
-
-
-def deletecard(name, roomid, password):
-    Card.query.filter_by(name=name, roomid=roomid, password=password).delete()
-    mydb.session.commit()
-    result = {'msg': '已删除'}
-    return jsonify(result)
-
-
-if __name__ == '__main__':
-    app.run()
+  Client.query.filter_by(room_id=roomid).delete()
+  mydb.session.commit()
+  result = {'msg': '已删除'}
+  return jsonify(result)
+def deleteBill(roomid,starttime,endtime):
+  Bill.query.filter_by(room_id=roomid,start_time=starttime,end_time=endtime).delete()
+  mydb.session.commit()
+  result = {'msg': '已删除'}
+  return jsonify(result)
+def deletecard(name,roomid,password):
+  Card.query.filter_by(name=name,roomid=roomid,password=password).delete()
+  mydb.session.commit()
+  result = {'msg': '已删除'}
+  return jsonify(result)
+# if __name__ == '__main__':
+#   app.run()
