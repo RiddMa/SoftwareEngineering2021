@@ -114,6 +114,7 @@ import {turnonoff_u} from '../../connect_token.vue';
 import {settemp_u} from '../../connect_token.vue';
 import {setmode_u} from '../../connect_token.vue';
 import {showcast_u} from '../../connect_token.vue';
+import Vue from "vue";
 
 export default {
   name: 'client',
@@ -141,6 +142,9 @@ export default {
     },
     //空调温度控制，turnUp为升高的温度值，取值+1、-1
     changeTemp: function (event, turnUp) {
+      Vue.set(this.$store.state.sessionData,turnUp,'TestValue');
+      console.log(this.$store.state.sessionData);
+
       this.curnTemp += turnUp;
       //TODO:传入用户名
       console.log(settemp_u('testOnly',this.curnTemp));

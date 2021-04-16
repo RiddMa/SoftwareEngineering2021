@@ -43,15 +43,8 @@ router.afterEach((to, from, next) => {
 // Vuex仓库配置
 const store = new Vuex.Store({
     state: {
-        // count: 0,
-        // roomId: '104',
-        // userId: '',
-        // /**
-        //  * 测试用，实际两个token不会同时出现
-        //  */
-        // tokenAdmin: '',
-        // tokenUser: '',
         sessionData: Object.create(null),
+        roomInfo:Object.create(null)
     },
     mutations: {
         /**

@@ -34,26 +34,11 @@ export default {
   },
   methods: {
     userLogin(event) {
-      // this.checkIntegrity();
-      this.$store.commit('setRoomId', 233);
-      console.log(this.$store.state.roomId)
-
-      /**
-       * 测试：向全局存储存入一个键值对 uid123:'456username'
-       */
-      const testData = {
-        key: 'uid123',
-        value: '456username'
-      };
-      this.$store.commit('addSessionData',testData);
-      console.log(this.$store.state.sessionData.uid123);//输出456username
-
-      Vue.set(this.$store.state.sessionData,'TestKey','TestValue');
-      console.log(this.$store.state.sessionData);
-
-
-
       checkin_u(this.roomId, this.userPassword);
+      Vue.set(this.$store.state.sessionData,'acSwitch',false);
+      Vue.set(this.$store.state.sessionData,'curnTemp',26);
+      Vue.set(this.$store.state.sessionData,'curnWind',3);
+      Vue.set(this.$store.state.sessionData,'curnMode','致冷');
       this.$router.push({path: '/client'});
     },
   }
