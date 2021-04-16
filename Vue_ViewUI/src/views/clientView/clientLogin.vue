@@ -22,6 +22,7 @@
 <script>
 import {checkin_u} from '../../connect_token.vue';
 import {send_checkin_u} from '../../connect.vue';
+import Vue from "vue";
 
 export default {
   name: "clientLogin",
@@ -46,6 +47,9 @@ export default {
       };
       this.$store.commit('addSessionData',testData);
       console.log(this.$store.state.sessionData.uid123);//输出456username
+
+      Vue.set(this.$store.state.sessionData,'TestKey','TestValue');
+      console.log(this.$store.state.sessionData);
 
 
 

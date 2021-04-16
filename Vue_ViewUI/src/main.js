@@ -13,6 +13,8 @@ import clientLogin from "./views/clientView/clientLogin";
 import client from "./views/clientView/client";
 import 'view-design/dist/styles/iview.css';
 
+var test = '123';
+
 Vue.use(Vuex);
 Vue.use(VueRouter);
 Vue.use(ViewUI);

@@ -91,6 +91,7 @@
           </Breadcrumb>
           <Card>
             <div style="height: 600px">
+              <Row></Row>
               <Card class="acCard">
                 <p slot="title">房间{{roomId}}</p>
                 <Icon type="ios-settings" slot="extra"></Icon>
