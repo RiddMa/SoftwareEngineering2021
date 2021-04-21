@@ -1,4 +1,4 @@
-<script type="text/javascript">
+<script>
 import axios from "axios";
 import Vue from "vue";
 

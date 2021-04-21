@@ -24,7 +24,7 @@
 .menu-item span {
   display: inline-block;
   overflow: hidden;
-  width: 100px;
+  width: 90px;
   text-overflow: ellipsis;
   white-space: nowrap;
   vertical-align: middle;
@@ -54,71 +54,51 @@
 .SiderText {
   font-size: large;
   font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
-}
-
-.acCard{
-  margin-top: 1vh;
-  margin-bottom: 1vh;
+  margin-left: .2vw;
 }
 </style>
 <template>
   <div class="layout">
-    <Layout :style="{minHeight: '100vh'}">
-      <Sider collapsible :collapsed-width="80" v-model="isCollapsed">
-        <Menu active-name="1-1" theme="dark" width="auto" :class="menuitemClasses">
-          <MenuItem name="1-1">
-            <Icon type="ios-apps"></Icon>
-            <span class="SiderText">空调概览</span>
+<!--    <Layout :style="{minHeight: '100vh'}">-->
+      <Sider collapsible :style="{position: 'fixed', height: '100vh', left: 0, overflow: 'auto'}" :collapsed-width="75" v-model="isCollapsed" >
+        <Menu active-name="1-1" theme="light" width="auto" :class="menuitemClasses">
+          <MenuItem name="1-1" to="/admin/main">
+              <Icon type="ios-apps"></Icon>
+              <span class="SiderText">空调概览</span>
           </MenuItem>
-          <MenuItem name="1-2">
+          <MenuItem name="1-2" to="/admin/search">
             <Icon type="ios-search"></Icon>
             <span class="SiderText">房间查询</span>
           </MenuItem>
-          <MenuItem name="1-3">
+          <MenuItem name="1-3" to="/admin/main">
             <Icon type="ios-settings"></Icon>
             <span class="SiderText">偏好设置</span>
           </MenuItem>
         </Menu>
       </Sider>
-      <Layout>
+      <Layout style="margin-left: 15vw">
         <Header :style="{background: '#fff', boxShadow: '0 2px 3px 2px rgba(0,0,0,.1)'}">
-          <h2>酒店空调管理系统</h2>
+          <h2>酒店空调管理系统
+            <Button type="primary" shape="circle" @click="addAC($event)">[测试用]添加空调</Button>
+          </h2>
         </Header>
         <Content :style="{padding: '0 16px 16px'}">
-          <Breadcrumb :style="{margin: '16px  1%'}">
-            <BreadcrumbItem>空调概览</BreadcrumbItem>
-            <BreadcrumbItem>BreadcrumbTest</BreadcrumbItem>
-          </Breadcrumb>
-          <Card>
-            <div style="height: 600px">
-              <Row></Row>
-              <Card class="acCard">
-                <p slot="title">房间{{roomId}}</p>
-                <Icon type="ios-settings" slot="extra"></Icon>
+          <router-view></router-view>
 
-                <p>当前温度：</p>
-                <p>当前风速：</p>
-              </Card><br>
-              <Card class="acCard">
-                <p slot="title">房间{{roomId}}</p>
-              </Card><br>
-              <Card class="acCard">
-                <p slot="title">房间{{roomId}}</p>
-              </Card><br>
-            </div>
-          </Card>
         </Content>
       </Layout>
-    </Layout>
+<!--    </Layout>-->
   </div>
 </template>
 <script>
+import Vue from "vue";
+import random_str from "view-design/src/utils/random_str";
+
 export default {
   name: 'admin',
   data() {
     return {
       isCollapsed: false,
-      roomId:104
     };
   },
   computed: {
@@ -128,6 +108,16 @@ export default {
         this.isCollapsed ? 'collapsed-menu' : ''
       ]
     }
+  },
+  methods: {
+    addAC(e) {
+      let acTmp = {'rid': random_str(), 'curnTemp': 24, 'curnWind': 3};
+      Vue.set(this.$store.state.roomInfo, acTmp.rid, acTmp);
+      console.log(this.$store.state.roomInfo);
+    },
+    changeRoute(e, toRoute) {
+      this.$router.push({path: "/admin" + toRoute});
+    },
   }
 }
 </script>

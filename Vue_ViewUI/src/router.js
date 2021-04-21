@@ -16,14 +16,37 @@ const routers = [
         },
         component: (resolve) => require(['./views/clientView/client.vue'], resolve),
     },
-
-
     {
         path: '/admin',
+        // keepalive:true,
         meta: {
-            title: 'admin'
+            title: '管理员'
         },
-        component: (resolve) => require(['./views/adminView/admin.vue'], resolve)
+        component: (resolve) => require(['./views/adminView/admin.vue'], resolve),
+        children: [
+            {
+                path: 'main',
+                meta:{
+                    title:'管理员概览'
+                },
+                component: (resolve) => require(['./views/adminView/adminMain.vue'], resolve),
+            },
+            {
+                path: 'search',
+                meta:{
+                    title:'管理员搜索'
+                },
+                component: (resolve) => require(['./views/adminView/adminSearch.vue'], resolve),
+            },
+            {
+                path: 'settings',
+                meta:{
+                    title:'管理员设置'
+                },
+                component: (resolve) => require(['./views/adminView/adminSettings.vue'], resolve),
+            },
+
+        ]
     },
     {
         path: '/',
@@ -39,7 +62,5 @@ const routers = [
         },
         component: (resolve) => require(['./views/netInterfaceTest'], resolve)
     },
-
-
 ];
 export default routers;

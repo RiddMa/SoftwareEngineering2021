@@ -335,4 +335,7 @@ export function showcast_u(rid) {
         console.log(error);
       });
 }
+
+export {checkin_u};
+
 </script>

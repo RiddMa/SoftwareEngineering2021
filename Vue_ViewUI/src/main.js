@@ -43,6 +43,7 @@ router.afterEach((to, from, next) => {
 // Vuex仓库配置
 const store = new Vuex.Store({
     state: {
+        CACState: false,//CAC for Central Air-Conditioning
         sessionData: Object.create(null),
         roomInfo:Object.create(null)
     },

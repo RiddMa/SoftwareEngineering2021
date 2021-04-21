@@ -14,8 +14,12 @@
 </template>
 <script>
 import admin from './views/adminView/admin.vue';
-import clientLogin from "./views/clientView/clientLogin";
-import client from "./views/clientView/client";
+import clientLogin from "./views/clientView/clientLogin.vue";
+import client from "./views/clientView/client.vue";
+import netInterfaceTest from "./views/netInterfaceTest";
+import welcome from "./views/welcome";
+import connect_token from "./connect_token"
+import Vue from "vue";
 
 export default {
   data() {
