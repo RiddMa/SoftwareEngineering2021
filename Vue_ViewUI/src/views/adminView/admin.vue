@@ -115,9 +115,6 @@ export default {
       Vue.set(this.$store.state.roomInfo, acTmp.rid, acTmp);
       console.log(this.$store.state.roomInfo);
     },
-    changeRoute(e, toRoute) {
-      this.$router.push({path: "/admin" + toRoute});
-    },
   }
 }
 </script>
