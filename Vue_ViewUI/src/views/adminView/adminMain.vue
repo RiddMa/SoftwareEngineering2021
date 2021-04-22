@@ -5,24 +5,62 @@
       <BreadcrumbItem>空调概览</BreadcrumbItem>
     </Breadcrumb>
     <Card>
-      <div v-for="i in 12">
+      <div class="acList">
         <Row>
-          <div v-for="j in 4">
-            <Col :span="6">
-              <p> {{i}},{{j}} </p>
-            </Col>
-          </div>
-        </Row>
-      </div>
-
-      <div class="acList" v-for="i in 3">
-        <Row>
-          <Col v-for="j in 3" :span="8">
+          <Col :xs="24" :sm="12" :md="12" :lg="8" :xl="6" :xxl="4" v-for="item in this.$store.state.roomInfo">
             <Card class="acCard">
-              <p slot="title">房间{{ i.rid }}</p>
-              <Icon type="ios-settings" slot="extra"></Icon>
-              <p>当前温度：{{ i.curnTemp }}</p>
-              <p>当前风速：{{ i.curnWind }}</p>
+              <h3 class="acCardTitle" slot="title">房间{{ item.rid }}</h3>
+              <Poptip slot="extra" placement="right" width="400">
+                <Button icon="ios-settings" shape="circle" style="{padding-bottom:5px}"></Button>
+                <div class="api" slot="content">
+                  <table>
+                    <thead>
+                    <tr>
+                      <th>Version</th>
+                      <th>Update Time</th>
+                      <th>Description</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                      <td>0.9.5</td>
+                      <td>2016-10-26</td>
+                      <td>Add new components <code>Tooltip</code> and <code>Poptip</code></td>
+                    </tr>
+                    <tr>
+                      <td>0.9.4</td>
+                      <td>2016-10-25</td>
+                      <td>Add new components <code>Modal</code></td>
+                    </tr>
+                    <tr>
+                      <td>0.9.2</td>
+                      <td>2016-09-28</td>
+                      <td>Add new components <code>Select</code></td>
+                    </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </Poptip>
+              <span>当前温度：</span>
+              <Button icon="ios-arrow-down" shape="circle" @click="changeTemp($event,item.curnTemp,-1)"></Button>
+              <span>{{ item.curnTemp }}</span>
+              <Button icon="ios-arrow-up" shape="circle"></Button>
+              <br>
+              <span>当前风速：</span>
+              <Button icon="md-remove" shape="circle"></Button>
+              <span>{{ item.curnWind }}</span>
+              <Button icon="md-add" shape="circle"></Button>
+              <br>
+              <span>当前模式：</span>
+              <Button v-if="item.curnMode==='致冷'" type="primary" icon="ios-snow" shape="circle"
+                      @click="changeMode($event,'致冷')"></Button>
+              <Button v-else icon="ios-snow" shape="circle" @click="changeMode($event,'致冷')"></Button>
+              <span>{{ item.curnMode }}</span>
+              <Button v-if="item.curnMode==='制热'" type="primary" icon="ios-sunny" shape="circle"
+                      @click="changeMode($event,'制热')"></Button>
+              <Button v-else icon="ios-sunny" shape="circle" @click="changeMode($event,'制热')"></Button>
+              <br>
+
             </Card>
           </Col>
         </Row>
@@ -33,14 +71,36 @@
 
 <script>
 export default {
-  name: "adminMain"
+  name: "adminMain",
+  data: function () {
+    return {}
+  },
+  methods: {
+    popSettings(e, rid) {
+
+    },
+    changeTemp: function (e, turnUp) {
+
+    },
+    changeMode: function (e, toMode) {
+
+    },
+  }
 }
 </script>
 
 <style scoped>
 .acCard {
-  width: 300px;
-  margin-top: 1vh;
-  margin-bottom: 1vh;
+  margin: 0.8vh 0.8vw;
 }
+.acCardTitle{
+  display: inline-block;
+  overflow: hidden;
+  width: 80%;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+  transition: width .2s ease .2s;
+}
+
 </style>

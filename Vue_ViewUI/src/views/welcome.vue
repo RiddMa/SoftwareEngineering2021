@@ -9,7 +9,7 @@
               Client
             </h1>
           </router-link>
-          <router-link to="/admin">
+          <router-link to="/admin/main">
             <h1>
               <Icon type="ios-contact"/>
               Admin

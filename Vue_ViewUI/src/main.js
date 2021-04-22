@@ -13,8 +13,6 @@ import clientLogin from "./views/clientView/clientLogin";
 import client from "./views/clientView/client";
 import 'view-design/dist/styles/iview.css';
 
-var test = '123';
-
 Vue.use(Vuex);
 Vue.use(VueRouter);
 Vue.use(ViewUI);
@@ -34,7 +32,6 @@ router.beforeEach((to, from, next) => {
     Util.title(to.meta.title);
     next();
 });
-
 router.afterEach((to, from, next) => {
     ViewUI.LoadingBar.finish();
     window.scrollTo(0, 0);
@@ -45,7 +42,7 @@ const store = new Vuex.Store({
     state: {
         CACState: false,//CAC for Central Air-Conditioning
         sessionData: Object.create(null),
-        roomInfo:Object.create(null)
+        roomInfo: Object.create(null)
     },
     mutations: {
         /**
@@ -55,10 +52,10 @@ const store = new Vuex.Store({
          * 传入之后在sessionData里存储结构是 uid123:'456username'
          */
         addSessionData(state, newData) {
-            Vue.set(state.sessionData,newData.key,newData.value)
+            Vue.set(state.sessionData, newData.key, newData.value)
         },
         delSessionData(state, delData) {
-            Vue.delete(state.sessionData,delData.key)
+            Vue.delete(state.sessionData, delData.key)
         },
         /**
          * 以上方法可以存入任意键值对

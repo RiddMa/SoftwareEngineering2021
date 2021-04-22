@@ -66,7 +66,7 @@
         <Card class="CtrlPanel">
           <h2 class="CardTitle" slot="title">控制面板</h2>
           <Switch class="CardTitle" slot="title" size="large" v-model="acSwitch" @on-change="handleSwitch">
-            <span slot="open">ON</span>
+            <span slot="open">{{ this.$store.state.curnTemp }}</span>
             <span slot="close">OFF</span>
           </Switch>
           <h3>
