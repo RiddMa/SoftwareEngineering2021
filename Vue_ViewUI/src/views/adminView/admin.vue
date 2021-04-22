@@ -138,6 +138,7 @@ export default {
   name: 'admin',
   data() {
     return {
+      activeTab:'1',
       // headerHeight:document.getElementById("adminHeader").clientHeight +"px",
     };
   },
@@ -147,7 +148,7 @@ export default {
   // },
   methods: {
     addAC(e) {
-      let acTmp = {'rid': random_str(), 'curnTemp': 24, 'curnWind': 3, 'curnMode': '致冷'};
+      let acTmp = {'rid': random_str(), 'power':true,'curnTemp': 24, 'curnWind': 3, 'curnMode': '致冷'};
       Vue.set(this.$store.state.roomInfo, acTmp.rid, acTmp);
       console.log(this.$store.state.roomInfo);
     },

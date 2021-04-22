@@ -5,6 +5,7 @@
       <BreadcrumbItem>房间查询</BreadcrumbItem>
     </Breadcrumb>
     <Card>
+      <Input class="adminSearch" size="large" search enter-button placeholder="请输入房间号..." />
 
     </Card>
   </div>
@@ -17,5 +18,9 @@ export default {
 </script>
 
 <style scoped>
-
+.adminSearch{
+  alignment: center;
+  max-width: 720px;
+  margin: 0 auto;
+}
 </style>

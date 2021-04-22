@@ -6,7 +6,7 @@
     </Breadcrumb>
     <Card>
       <span>中央空调控制</span>
-      <Switch :before-change="handleBeforeChangeCAC" size="large" type="primary" shape="circle" @click="addAC($event)">
+      <Switch :before-change="handleBeforeChangeCAC" v-model="this.$store.state.CACState" size="large" type="primary" shape="circle">
         <span slot="open">ON</span>
         <span slot="close">OFF</span>
       </Switch>
@@ -22,17 +22,19 @@ export default {
       return new Promise((resolve) => {
         if (this.$store.state.CACState === true) {
           this.$Modal.confirm({
-            title: '关机确认',
+            title: '关机',
             content: '您确认要关闭中央空调吗？',
             onOk: () => {
+              this.$store.state.CACState=false;
               resolve();
             }
           });
         } else {
           this.$Modal.confirm({
-            title: '开机确认',
+            title: '开机',
             content: '您确认要开启中央空调吗？',
             onOk: () => {
+              this.$store.state.CACState=true;
               resolve();
             }
           });

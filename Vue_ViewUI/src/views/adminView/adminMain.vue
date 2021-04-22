@@ -10,35 +10,18 @@
           <Col :xs="24" :sm="12" :md="12" :lg="8" :xl="6" :xxl="4" v-for="item in this.$store.state.roomInfo">
             <Card class="acCard">
               <h3 class="acCardTitle" slot="title">房间{{ item.rid }}</h3>
-              <Poptip slot="extra" placement="right" width="400">
+              <Poptip slot="extra" placement="right" width="200">
                 <Button icon="ios-settings" shape="circle" style="{padding-bottom:5px}"></Button>
-                <div class="api" slot="content">
-                  <table>
-                    <thead>
-                    <tr>
-                      <th>Version</th>
-                      <th>Update Time</th>
-                      <th>Description</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                      <td>0.9.5</td>
-                      <td>2016-10-26</td>
-                      <td>Add new components <code>Tooltip</code> and <code>Poptip</code></td>
-                    </tr>
-                    <tr>
-                      <td>0.9.4</td>
-                      <td>2016-10-25</td>
-                      <td>Add new components <code>Modal</code></td>
-                    </tr>
-                    <tr>
-                      <td>0.9.2</td>
-                      <td>2016-09-28</td>
-                      <td>Add new components <code>Select</code></td>
-                    </tr>
-                    </tbody>
-                  </table>
+                <div slot="content">
+                  <h3>开关机：
+                    <Switch v-model="item.power" size="large" type="primary" shape="circle">
+                      <span slot="open">ON</span>
+                      <span slot="close">OFF</span>
+                    </Switch>
+                  </h3>
+                  <h3>打印详单：
+                    <Button icon="md-download" shape="circle"></Button>
+                  </h3>
                 </div>
               </Poptip>
               <span>当前温度：</span>
@@ -93,7 +76,8 @@ export default {
 .acCard {
   margin: 0.8vh 0.8vw;
 }
-.acCardTitle{
+
+.acCardTitle {
   display: inline-block;
   overflow: hidden;
   width: 80%;
