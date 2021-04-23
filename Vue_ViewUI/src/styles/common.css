@@ -1,5 +1,7 @@
 .Footer{
     text-align: center;
+    vertical-align: center;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    max-height: 5vh;
 }

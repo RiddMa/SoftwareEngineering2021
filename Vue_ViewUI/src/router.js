@@ -7,14 +7,20 @@ const routers = [
         component: (resolve) => require(['./views/clientView/clientLogin.vue'], resolve),
         children: []
     },
-
-
     {
         path: '/client',
         meta: {
             title: '客户端'
         },
         component: (resolve) => require(['./views/clientView/client.vue'], resolve),
+    },
+
+    {
+        path:'/admin/login',
+        meta:{
+            title:'管理员登录',
+        },
+        component:(resolve) => require(['./views/adminView/adminLogin'], resolve),
     },
     {
         path: '/admin',
@@ -48,6 +54,7 @@ const routers = [
 
         ]
     },
+
     {
         path: '/',
         meta: {
@@ -55,6 +62,7 @@ const routers = [
         },
         component: (resolve) => require(['./views/welcome.vue'], resolve)
     },
+
     {
         path: '/netInterfaceTest',
         meta: {

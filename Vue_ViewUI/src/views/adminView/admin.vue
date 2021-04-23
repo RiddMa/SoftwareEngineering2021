@@ -75,15 +75,15 @@
       <Menu class="adminMenu" mode="horizontal" active-name="1">
         <MenuItem name="1" to="/admin/main">
           <Icon type="ios-apps"></Icon>
-          <span class="SiderText">空调概览</span>
+          <span class="MenuText">空调概览</span>
         </MenuItem>
         <MenuItem name="2" to="/admin/search">
           <Icon type="ios-search"></Icon>
-          <span class="SiderText">房间查询</span>
+          <span class="MenuText">房间查询</span>
         </MenuItem>
         <MenuItem name="3" to="/admin/settings">
           <Icon type="ios-settings"></Icon>
-          <span class="SiderText">偏好设置</span>
+          <span class="MenuText">偏好设置</span>
         </MenuItem>
       </Menu>
     </Header>

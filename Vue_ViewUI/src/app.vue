@@ -6,9 +6,7 @@
 <template>
   <div>
     <router-view></router-view>
-    <p class="Footer">
-      by Ridd.
-    </p>
+    <p class="Footer">Designed by Ridd.</p>
   </div>
 
 </template>
