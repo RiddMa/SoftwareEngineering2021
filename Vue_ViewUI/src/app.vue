@@ -18,6 +18,10 @@ import netInterfaceTest from "./views/netInterfaceTest";
 import welcome from "./views/welcome";
 import connect_token from "./connect_token"
 import Vue from "vue";
+import adminLogin from "./views/adminView/adminLogin";
+import adminMain from "./views/adminView/adminMain";
+import adminSearch from "./views/adminView/adminSearch";
+import adminSettings from "./views/adminView/adminSettings";
 
 export default {
   data() {
@@ -25,8 +29,13 @@ export default {
   },
   components: {
     'admin': admin,
+    'adminLogin': adminLogin,
+    'adminMain': adminMain,
+    'adminSearch': adminSearch,
+    'adminSettings': adminSettings,
     'clientLogin': clientLogin,
-    'client': client
+    'client': client,
+
   },
   mounted() {
 

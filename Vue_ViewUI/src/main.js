@@ -11,6 +11,10 @@ import App from './app.vue';
 import admin from './views/adminView/admin.vue';
 import clientLogin from "./views/clientView/clientLogin";
 import client from "./views/clientView/client";
+import adminMain from "./views/adminView/adminMain";
+import adminSearch from "./views/adminView/adminSearch";
+import adminLogin from "./views/adminView/adminLogin";
+import adminSettings from "./views/adminView/adminSettings";
 import 'view-design/dist/styles/iview.css';
 
 Vue.use(Vuex);
@@ -42,7 +46,8 @@ const store = new Vuex.Store({
     state: {
         CACState: false,//CAC for Central Air-Conditioning
         sessionData: Object.create(null),
-        roomInfo: Object.create(null)
+        // roomInfo: Object.create(null),
+        roomInfo: Map.create(null)
     },
     mutations: {
         /**

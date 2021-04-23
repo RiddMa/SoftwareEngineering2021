@@ -9,40 +9,103 @@
         <Row>
           <Col :xs="24" :sm="12" :md="12" :lg="8" :xl="6" :xxl="4" v-for="item in this.$store.state.roomInfo">
             <Card class="acCard">
-              <h3 class="acCardTitle" slot="title">房间{{ item.rid }}</h3>
-              <Poptip slot="extra" placement="right" width="200">
-                <Button icon="ios-settings" shape="circle" style="{padding-bottom:5px}"></Button>
-                <div slot="content">
-                  <h3>开关机：
-                    <Switch v-model="item.power" size="large" type="primary" shape="circle">
-                      <span slot="open">ON</span>
-                      <span slot="close">OFF</span>
-                    </Switch>
-                  </h3>
-                  <h3>打印详单：
-                    <Button icon="md-download" shape="circle"></Button>
-                  </h3>
-                </div>
-              </Poptip>
-              <span>当前温度：</span>
-              <Button icon="ios-arrow-down" shape="circle" @click="changeTemp($event,item.curnTemp,-1)"></Button>
-              <span>{{ item.curnTemp }}</span>
-              <Button icon="ios-arrow-up" shape="circle"></Button>
-              <br>
-              <span>当前风速：</span>
-              <Button icon="md-remove" shape="circle"></Button>
-              <span>{{ item.curnWind }}</span>
-              <Button icon="md-add" shape="circle"></Button>
-              <br>
-              <span>当前模式：</span>
-              <Button v-if="item.curnMode==='致冷'" type="primary" icon="ios-snow" shape="circle"
-                      @click="changeMode($event,'致冷')"></Button>
-              <Button v-else icon="ios-snow" shape="circle" @click="changeMode($event,'致冷')"></Button>
-              <span>{{ item.curnMode }}</span>
-              <Button v-if="item.curnMode==='制热'" type="primary" icon="ios-sunny" shape="circle"
-                      @click="changeMode($event,'制热')"></Button>
-              <Button v-else icon="ios-sunny" shape="circle" @click="changeMode($event,'制热')"></Button>
-              <br>
+              <Row slot="title">
+                <Col class="acCardTitle" :span="20">
+                  <h3 class="acCardTitleText">房间{{ item.rid }}</h3>
+                </Col>
+                <Col align="end" :span="4">
+                  <Button icon="ios-information-circle-outline" shape="circle"></Button>
+                </Col>
+              </Row>
+              <!--              <Poptip slot="extra" placement="right" width="200">-->
+              <!--                <Button icon="ios-settings" shape="circle" style="{padding-bottom:5px}"></Button>-->
+              <!--                <div slot="content">-->
+              <!--                  <h3>开关机：-->
+              <!--                    <Switch v-model="item.power" size="large" type="primary" shape="circle">-->
+              <!--                      <span slot="open">ON</span>-->
+              <!--                      <span slot="close">OFF</span>-->
+              <!--                    </Switch>-->
+              <!--                  </h3>-->
+              <!--                  <h3>打印详单：-->
+              <!--                    <Button icon="md-download" shape="circle"></Button>-->
+              <!--                  </h3>-->
+              <!--                </div>-->
+              <!--              </Poptip>-->
+              <Row class="acCardContent">
+                <Col :span="12">
+                  <span>当前状态：</span>
+                </Col>
+                <Col align="middle" :span="12">
+                  <Switch v-model="item.power" size="large" type="primary" shape="circle">
+                    <span slot="open">ON</span>
+                    <span slot="close">OFF</span>
+                  </Switch>
+                </Col>
+              </Row>
+
+              <Row class="acCardContent">
+                <Col :span="12">
+                  <span>当前温度：</span>
+                </Col>
+                <Col :span="12">
+                  <Row>
+                    <Col align="middle" :span="8">
+                      <Button icon="ios-arrow-down" size="small" shape="circle"
+                              @click="changeTemp($event,item.curnTemp,-1)"></Button>
+                    </Col>
+                    <Col align="middle" :span="8">
+                      <span>{{ item.curnTemp }}</span>
+                    </Col>
+                    <Col align="middle" :span="8">
+                      <Button icon="ios-arrow-up" size="small" shape="circle"></Button>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+
+              <Row class="acCardContent">
+                <Col :span="12">
+                  <span>当前风速：</span>
+                </Col>
+                <Col :span="12">
+                  <Row>
+                    <Col align="middle" :span="8">
+                      <Button icon="md-remove" size="small" shape="circle"></Button>
+                    </Col>
+                    <Col align="middle" :span="8">
+                      <span>{{ item.curnWind }}</span>
+                    </Col>
+                    <Col align="middle" :span="8">
+                      <Button icon="md-add" size="small" shape="circle"></Button>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
+
+              <Row class="acCardContent">
+                <Col :span="12">
+                  <span>当前模式：</span>
+                </Col>
+                <Col :span="12">
+                  <Row>
+                    <Col align="middle" :span="8">
+                      <Button v-if="item.curnMode==='致冷'" size="small" type="primary" icon="ios-snow" shape="circle"
+                              @click="changeMode($event,'致冷')"></Button>
+                      <Button v-else icon="ios-snow" size="small" shape="circle"
+                              @click="changeMode($event,'致冷')"></Button>
+                    </Col>
+                    <Col align="middle" :span="8">
+                      <span>{{ item.curnMode }}</span>
+                    </Col>
+                    <Col align="middle" :span="8">
+                      <Button v-if="item.curnMode==='制热'" size="small" type="primary" icon="ios-sunny" shape="circle"
+                              @click="changeMode($event,'制热')"></Button>
+                      <Button v-else icon="ios-sunny" size="small" shape="circle"
+                              @click="changeMode($event,'制热')"></Button>
+                    </Col>
+                  </Row>
+                </Col>
+              </Row>
 
             </Card>
           </Col>
@@ -73,18 +136,36 @@ export default {
 </script>
 
 <style scoped>
+.acCardExtra {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+}
+
 .acCard {
   margin: 0.8vh 0.8vw;
 }
 
-.acCardTitle {
-  display: inline-block;
+
+.acCardTitle{
+
+}
+
+.acCardTitleText {
+  padding-left: 0.8vh;
+  padding-top: 2%;
+  /*display: inline-block;*/
   overflow: hidden;
-  width: 80%;
+  width: 100%;
+  height: auto;
+  line-height: 20px;
   text-overflow: ellipsis;
   white-space: nowrap;
   vertical-align: middle;
-  transition: width .2s ease .2s;
+}
+
+.acCardContent {
+  margin: .75vh;
 }
 
 </style>
