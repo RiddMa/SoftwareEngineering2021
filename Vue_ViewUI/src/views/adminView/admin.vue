@@ -56,7 +56,7 @@ export default {
   height: 60px;
   line-height: 60px;
   background: #fff;
-  padding-top: 5px;
+  padding: 5px 0 0 0;
   z-index: 9999;
 }
 
