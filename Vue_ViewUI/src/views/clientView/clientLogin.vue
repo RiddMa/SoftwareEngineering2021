@@ -4,7 +4,7 @@
 
       <Col :xs="22" :sm="18" :md="15" :lg="13" :xl="10" :xxl="8">
         <Card class="CtrlPanel">
-          <h1 class="titleHeader" slot="title">用户登录</h1>
+          <h1 class="titleHeader" slot="title">用户刷卡</h1>
           <Input class="CtrlGroup" v-model="roomId" size="large" clearable placeholder="请输入房间号"></Input>
           <br>
           <Input class="CtrlGroup" v-model="userPassword" size="large" type="password" password placeholder="请输入密码"/>
