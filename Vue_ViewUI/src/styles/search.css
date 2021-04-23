@@ -1,0 +1,46 @@
+.searchBar {
+    alignment: center;
+    max-width: 720px;
+    margin: 2vh auto;
+}
+
+.acCard {
+    margin: 0.8vh 0.8vw;
+}
+
+.acCardTitle {
+    display: inline-block;
+    overflow: hidden;
+    width: 80%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+    transition: width .2s ease .2s;
+}
+
+
+.acCardTitleText {
+    padding-left: 0.8vh;
+    padding-top: 2%;
+    /*display: inline-block;*/
+    overflow: hidden;
+    width: 100%;
+    height: auto;
+    line-height: 20px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.acCardContent {
+    margin: .5vh;
+}
+
+.searchResult {
+    alignment: center;
+    margin: 4vh auto 2vh;
+}
+
+.acStateInfo {
+    height: 80px;
+}

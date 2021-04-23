@@ -1,0 +1,22 @@
+
+.aHeader {
+    position: fixed;
+    width: 100vw;
+    height: 60px;
+    line-height: 60px;
+    background: #fff;
+    padding: 5px 0 0 0;
+    z-index: 10;
+}
+
+.aHeaderContent {
+    padding-left: 6vw;
+    vertical-align: bottom;
+    margin-bottom: -7px;
+}
+
+.aMenu {
+    padding-left: 5vw;
+    height: 50px;
+    line-height: 50px;
+}

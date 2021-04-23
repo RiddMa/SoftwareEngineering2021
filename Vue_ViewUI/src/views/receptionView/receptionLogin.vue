@@ -3,7 +3,7 @@
     <Row type="flex" justify="center" align="middle">
       <Col :xs="22" :sm="18" :md="15" :lg="13" :xl="10" :xxl="8">
         <Card class="CtrlPanel">
-          <h1 class="titleHeader" slot="title">管理员登录</h1>
+          <h1 class="titleHeader" slot="title">前台登录</h1>
           <Input class="CtrlGroup" v-model="username" size="large" clearable @on-enter="userLogin($event)"
                  placeholder="请输入账户名"></Input>
           <br>
@@ -24,7 +24,7 @@ import {login_a} from '../../connect_token.vue';
 import Vue from "vue";
 
 export default {
-  name: "adminLogin",
+  name: "receptionLogin",
   data: function () {
     return {
       username: '',
@@ -34,7 +34,7 @@ export default {
   methods: {
     userLogin(event) {
       login_a(this.username, this.password);
-      this.$router.push({path: '/admin/main'});
+      this.$router.push({path: '/reception/main'});
     },
   }
 }

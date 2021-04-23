@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <div class="tabBase">
     <Breadcrumb :style="{margin: '16px  1%'}">
       <BreadcrumbItem>管理员</BreadcrumbItem>
       <BreadcrumbItem>房间查询</BreadcrumbItem>
     </Breadcrumb>
     <Card>
-      <Row class="adminSearch">
+      <Row class="searchBar">
         <Input v-model="searchText" size="large" search enter-button placeholder="请输入房间号..."
                autocomplete="on" @on-search="searchRoom($event,searchText)"/>
       </Row>
@@ -19,7 +19,8 @@
                   <h3 class="acCardTitleText">房间{{ item.rid }}</h3>
                 </Col>
                 <Col align="end" :span="4">
-                  <Button icon="ios-information-circle-outline" shape="circle" @click="printDetailedList($event,item.rid)"></Button>
+                  <Button icon="ios-information-circle-outline" shape="circle"
+                          @click="printDetailedList($event,item.rid)"></Button>
                 </Col>
               </Row>
 
@@ -34,6 +35,15 @@
                   </Switch>
                 </Col>
               </Row>
+              <Row class="acCardContent">
+                <Col :span="12">
+                  <span>累计金额：</span>
+                </Col>
+                <Col align="middle" :span="12">
+                  <span><b>￥{{item.cost}}</b></span>
+                </Col>
+              </Row>
+
               <div v-if="item.power" class="acStateInfo">
                 <Row class="acCardContent">
                   <Col :span="12">
@@ -144,7 +154,7 @@ export default {
       this.addAC(e);
       this.addAC(e);
     },
-    printDetailedList(e,rid){
+    printDetailedList(e, rid) {
       //TODO
     },
 
@@ -152,51 +162,7 @@ export default {
 }
 </script>
 
+<style scoped src="../../styles/search.css"></style>
 <style scoped>
-.adminSearch {
-  alignment: center;
-  max-width: 720px;
-  margin: 2vh auto;
-}
 
-.acCard {
-  margin: 0.8vh 0.8vw;
-}
-
-.acCardTitle {
-  display: inline-block;
-  overflow: hidden;
-  width: 80%;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: middle;
-  transition: width .2s ease .2s;
-}
-
-
-.acCardTitleText {
-  padding-left: 0.8vh;
-  padding-top: 2%;
-  /*display: inline-block;*/
-  overflow: hidden;
-  width: 100%;
-  height: auto;
-  line-height: 20px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.acCardContent {
-  margin: .5vh;
-}
-
-.searchResult {
-  alignment: center;
-  margin: 4vh auto 2vh;
-}
-
-.acStateInfo {
-  height: 80px;
-}
 </style>

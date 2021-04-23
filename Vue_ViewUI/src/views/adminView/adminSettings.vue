@@ -19,9 +19,7 @@
               <Button slot="extra" type="error" shape="circle" @click="adminLogout($event,adminId)">登出</Button>
             </Cell>
           </CellGroup>
-
         </Col>
-
       </Row>
     </Card>
   </div>
@@ -59,9 +57,8 @@ export default {
 }
 </script>
 
+<style scoped src="../../styles/settings.css"></style>
 <style scoped>
-.settings {
-  margin: 2vh 0;
-}
+
 
 </style>

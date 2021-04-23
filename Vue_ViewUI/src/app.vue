@@ -22,6 +22,11 @@ import adminLogin from "./views/adminView/adminLogin";
 import adminMain from "./views/adminView/adminMain";
 import adminSearch from "./views/adminView/adminSearch";
 import adminSettings from "./views/adminView/adminSettings";
+import reception from "./views/receptionView/reception";
+import receptionMain from "./views/receptionView/receptionMain";
+import receptionLogin from "./views/receptionView/receptionLogin";
+import receptionSearch from "./views/receptionView/receptionSearch";
+import receptionSettings from "./views/receptionView/receptionSettings";
 
 export default {
   data() {
@@ -35,6 +40,11 @@ export default {
     'adminSettings': adminSettings,
     'clientLogin': clientLogin,
     'client': client,
+    'reception': reception,
+    'receptionMain': receptionMain,
+    'receptionLogin': receptionLogin,
+    'receptionSearch': receptionSearch,
+    'receptionSettings': receptionSettings,
 
   },
   mounted() {

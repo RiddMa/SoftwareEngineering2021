@@ -17,20 +17,6 @@
                   <Button icon="ios-information-circle-outline" shape="circle"></Button>
                 </Col>
               </Row>
-              <!--              <Poptip slot="extra" placement="right" width="200">-->
-              <!--                <Button icon="ios-settings" shape="circle" style="{padding-bottom:5px}"></Button>-->
-              <!--                <div slot="content">-->
-              <!--                  <h3>开关机：-->
-              <!--                    <Switch v-model="item.power" size="large" type="primary" shape="circle">-->
-              <!--                      <span slot="open">ON</span>-->
-              <!--                      <span slot="close">OFF</span>-->
-              <!--                    </Switch>-->
-              <!--                  </h3>-->
-              <!--                  <h3>打印详单：-->
-              <!--                    <Button icon="md-download" shape="circle"></Button>-->
-              <!--                  </h3>-->
-              <!--                </div>-->
-              <!--              </Poptip>-->
 
               <Row class="acCardContent">
                 <Col :span="12">

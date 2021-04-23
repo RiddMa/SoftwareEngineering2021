@@ -5,3 +5,8 @@
     -moz-osx-font-smoothing: grayscale;
     max-height: 5vh;
 }
+
+.tabBase{
+    z-index: 1;
+    min-height: 70vh;
+}

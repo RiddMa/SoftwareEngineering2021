@@ -16,11 +16,11 @@ const routers = [
     },
 
     {
-        path:'/admin/login',
-        meta:{
-            title:'管理员登录',
+        path: '/admin/login',
+        meta: {
+            title: '管理员登录',
         },
-        component:(resolve) => require(['./views/adminView/adminLogin'], resolve),
+        component: (resolve) => require(['./views/adminView/adminLogin'], resolve),
     },
     {
         path: '/admin',
@@ -32,27 +32,67 @@ const routers = [
         children: [
             {
                 path: 'main',
-                meta:{
-                    title:'管理员概览'
+                meta: {
+                    title: '管理员概览'
                 },
                 component: (resolve) => require(['./views/adminView/adminMain.vue'], resolve),
             },
             {
                 path: 'search',
-                meta:{
-                    title:'管理员搜索'
+                meta: {
+                    title: '管理员搜索'
                 },
                 component: (resolve) => require(['./views/adminView/adminSearch.vue'], resolve),
             },
             {
                 path: 'settings',
-                meta:{
-                    title:'管理员设置'
+                meta: {
+                    title: '管理员设置'
                 },
                 component: (resolve) => require(['./views/adminView/adminSettings.vue'], resolve),
             },
 
         ]
+    },
+
+    {
+        path: '/reception',
+        meta: {
+            title: '前台',
+        },
+        component: (resolve) => require(['./views/receptionView/reception'], resolve),
+        children: [
+            {
+                path: 'main',
+                meta: {
+                    title: '前台登记'
+                },
+                component: (resolve) => require(['./views/receptionView/receptionMain.vue'], resolve),
+            },
+            {
+                path: 'search',
+                meta: {
+                    title: '前台搜索'
+                },
+                component: (resolve) => require(['./views/receptionView/receptionSearch.vue'], resolve),
+            },
+            {
+                path: 'settings',
+                meta: {
+                    title: '前台设置'
+                },
+                component: (resolve) => require(['./views/receptionView/receptionSettings.vue'], resolve),
+            },
+        ]
+    },
+
+    {
+        path: '/reception/login',
+        meta: {
+            title: '前台登录',
+        },
+        component: (resolve) => require(['./views/receptionView/receptionLogin'], resolve),
+
     },
 
     {
