@@ -1,11 +1,12 @@
 <style scoped lang="less">
+
 .index {
   width: 100%;
   margin-top: 5vh;
   margin-bottom: 5vh;
   text-align: center;
   font-size: x-large;
-  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
+  //font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
 
   h1 {
     height: 100px;
@@ -27,22 +28,26 @@
   .ivu-row-flex {
     height: 100%;
   }
+}
 
-  .CtrlPanel {
-    margin-top: 5vh;
-    margin-bottom: 5vh;
-    //font-size: xx-large;
-  }
+.CtrlPanel {
+  margin-top: 5vh;
+  margin-bottom: 5vh;
+  //font-size: xx-large;
+}
 
-  .CardTitle {
-    font-size: xx-large;
-  }
+.CardTitle {
+  font-size: xx-large;
+}
 
-  .CtrlGroup {
-    margin-top: 1vh;
-    margin-bottom: 1vh;
-  }
+.CtrlGroup {
+  margin-top: 1vh;
+  margin-bottom: 1vh;
+}
 
+.digitFont {
+  font-family: Digital7-mono;
+  font-size: xxx-large;
 }
 </style>
 <template>
@@ -56,13 +61,13 @@
           <h2 class="CardTitle" slot="title">空调状态</h2>
           <h2 slot="extra"></h2>
           <h2>
-            <p>当前温度:{{ curnTemp }}<br></p>
-            <p>当前风速:{{ curnWind }}<br></p>
+            <!--            <iframe height="700" src="https://www.yunyoujun.cn/air-conditioner/"></iframe>-->
+            <p><span>当前温度:</span><span class="digitFont">{{ curnTemp }}</span></p>
+            <p><span>当前风速:</span><span class="digitFont">{{ curnWind }}</span></p>
             <p>当前模式:{{ curnMode }}<br></p>
           </h2>
         </Card>
 
-        <!--          <Button @click="handleStart">Start View UI</Button>-->
         <Card class="CtrlPanel">
           <h2 class="CardTitle" slot="title">控制面板</h2>
           <Switch class="CardTitle" slot="title" size="large" v-model="acSwitch" @on-change="handleSwitch">
@@ -120,7 +125,7 @@ export default {
   name: 'client',
   data: function () {
     return {
-      curnTemp: 26,
+      curnTemp: 24,
       curnWind: 3,
       curnMode: '致冷',
       buttonType: 'primary',
@@ -134,20 +139,20 @@ export default {
     handleSwitch(status) {
       this.acDisabled = !status;
       //TODO:传入用户名
-      if(status===true){
-        console.log(turnonoff_u('testOnly',1));
-      }else{
-        console.log(turnonoff_u('testOnly',0));
+      if (status === true) {
+        console.log(turnonoff_u('testOnly', 1));
+      } else {
+        console.log(turnonoff_u('testOnly', 0));
       }
     },
     //空调温度控制，turnUp为升高的温度值，取值+1、-1
     changeTemp: function (event, turnUp) {
-      Vue.set(this.$store.state.sessionData,turnUp,'TestValue');
+      Vue.set(this.$store.state.sessionData, turnUp, 'TestValue');
       console.log(this.$store.state.sessionData);
 
       this.curnTemp += turnUp;
       //TODO:传入用户名
-      console.log(settemp_u('testOnly',this.curnTemp));
+      console.log(settemp_u('testOnly', this.curnTemp));
       //TODO:这段代码后期要尽量封装一下
       //下面是用于修复按钮点击后不失焦bug的代码：
       // let target = event.target;
@@ -161,7 +166,7 @@ export default {
     changeWind: function (event, turnUp) {
       this.curnWind += turnUp;
       //TODO:用户名和传入风速
-      console.log(setmode_u('testOnly','H'));
+      console.log(setmode_u('testOnly', 'H'));
       //下面是用于修复按钮点击后不失焦bug的代码：
       // let target = event.target;
       // if (target.nodeName === "SPAN") {

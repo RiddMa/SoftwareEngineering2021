@@ -8,14 +8,9 @@ import VueAxios from 'vue-axios'
 import Routers from './router';
 import Util from './libs/util';
 import App from './app.vue';
-import admin from './views/adminView/admin.vue';
-import clientLogin from "./views/clientView/clientLogin";
-import client from "./views/clientView/client";
-import adminMain from "./views/adminView/adminMain";
-import adminSearch from "./views/adminView/adminSearch";
-import adminLogin from "./views/adminView/adminLogin";
-import adminSettings from "./views/adminView/adminSettings";
 import 'view-design/dist/styles/iview.css';
+import './assets/digital_7/fonts.css'
+import './assets/Signatria/fonts.css'
 
 Vue.use(Vuex);
 Vue.use(VueRouter);

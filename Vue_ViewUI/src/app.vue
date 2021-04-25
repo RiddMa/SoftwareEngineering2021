@@ -1,3 +1,4 @@
+<style src="./assets/digital_7/fonts.css"></style>
 <style scoped>
 @import 'styles/common.css';
 

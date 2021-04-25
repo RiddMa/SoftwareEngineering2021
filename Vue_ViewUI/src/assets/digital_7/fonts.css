@@ -1,0 +1,13 @@
+@font-face {
+    font-family: 'Digital7';
+    src: url('./digital-7.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Digital7-mono';
+    src: url('./digital-7-mono.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
