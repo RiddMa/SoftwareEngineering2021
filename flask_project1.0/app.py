@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, make_response, sessions
 from flask_cors import CORS
-from model import Ac_admin, User, Reception
+from model import Ac_admin, User, Receptionist
 from myglobal import app
 import hashlib
 import time
@@ -95,14 +95,14 @@ def create_report():
     #                     "data": [
     #                         {
     #                             "rid": "101",
-    #                             "state": "1",
+    #                             "__state": "1",
     #                             "temp":"26",
     #                             "mode":"1",
     #                             "discount":"0.8"
     #                         },
     #                         {
     #                             "rid": "102",
-    #                             "state": "1",
+    #                             "__state": "1",
     #                             "temp": "20",
     #                             "mode": "1",
     #                             "discount": "0.75"
@@ -148,7 +148,7 @@ def admin_discount():
 @app.route('/admin/centerturnonoff', methods=['POST'])
 def center_switch():
     form = request.get_json()
-    state = form['state']
+    state = form['__state']
     token = request.headers['authorization']
     print(form,token)
     if not verify_token(True, token):
@@ -164,7 +164,7 @@ def center_switch():
 def reception_signin():
     form = request.get_json()
     ph_num = form['phonenumber']
-    error_code, card = Reception.get_card(ph_num)
+    error_code, card = Receptionist.get_card(ph_num)
     res = dict()
     if error_code == 1:
         res['error_code'] = 1
@@ -191,7 +191,7 @@ def reception_logout():
     form = request.get_json()
     rid = form['rid']
 
-    error_code, duration, price = Reception.get_total_cost(rid)
+    error_code, duration, price = Receptionist.get_total_cost(rid)
 
     return jsonify({
                         "error_code": error_code,
@@ -243,7 +243,7 @@ def enter_room():
 def user_turn_on_off():
     form = request.get_json()
     rid = form['rid']
-    state = form['state']
+    state = form['__state']
     token = request.headers['authorization']
 
     if not verify_token(False, token):
