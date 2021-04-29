@@ -17,14 +17,17 @@
 	* 网络：HTTP、存储：Vuex、路由：Vue-axios
 	* <span style="color:red;">（新）报表可视化展示：待定</span>
 	* <span style="color:red;">为了实现读取用户卡片信息（接收读卡器信息）功能，可能需要使用 Electron 封装为应用程序，输密码太挫且不符合老师要求</span>
-* 后端：语言：Python、数据库：MySQL（剩下的说明后端同学自己补充）
-	* 补充
+* 后端：语言：Python、数据库：MySQL
+	* 框架：flask
+	* 网络：HTTP
 
 ### 工具链
 
 * 前端：Node.js、Webpack
 	* IDE（不一定一致）：Webstorm 2021.1
-* 后端：补充
+* 后端：python
+    * IDE : pycharm
+    * 后面不知道怎么写了，先留着
 
 ### 前端待完善内容
 
@@ -42,7 +45,7 @@
 * 调度员角色
 
 * 代码结构及数据库重构
-* 补充
+* 研究flask的多线程
 
 ## 文档
 

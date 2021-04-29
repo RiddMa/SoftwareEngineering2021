@@ -1,7 +1,6 @@
 from flask import Flask, request, jsonify, make_response, sessions
-import json
 from flask_cors import CORS
-from model import Admin, User, Reception
+from model import Ac_admin, User, Reception
 from myglobal import app
 import hashlib
 import time
@@ -47,7 +46,7 @@ def admin_login():
     password = form['password']
 
     res = dict()
-    error_code, admin = Admin.get_admin(username, password)
+    error_code, admin = Ac_admin.get_admin(username, password)
     if error_code == 1:
         res['error_code'] = 1
     else:
@@ -82,7 +81,7 @@ def create_report():
     if not verify_token(True, token):
         return jsonify({'error_code' : 1})
 
-    error_code, room_states = Admin.get_report(time)
+    error_code, room_states = Ac_admin.get_report(time)
     res = dict()
     if error_code == 1:
         res['error_code'] = 1
@@ -116,7 +115,7 @@ def create_report():
 def create_water_bills():
     form = request.get_json()
     date = form['date']
-    error_code,data = Admin.water_bills(date)
+    error_code,data = Ac_admin.water_bills(date)
     return jsonify({"error_code": error_code,"data":data})
     #
     # return {
@@ -141,7 +140,7 @@ def admin_discount():
     if not verify_token(True, token):
         return jsonify({'error_code' : 1})
 
-    error_code = Admin.set_discount(rid, discount)
+    error_code = Ac_admin.set_discount(rid, discount)
 
     return jsonify({"error_code": error_code})
 
@@ -155,7 +154,7 @@ def center_switch():
     if not verify_token(True, token):
         return jsonify({'error_code': 1})
 
-    error_code = Admin.center_turn_on_off(state)
+    error_code = Ac_admin.center_turn_on_off(state)
 
     return jsonify({'error': error_code})
 

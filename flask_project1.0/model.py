@@ -84,14 +84,22 @@ roomstate = {i: 0 for i in roomlist}
 Store = {i: Acunit(i, 0, 26, 'L', int(time.time()), 0, 1.0) for i in roomlist}
 
 
-class Admin:
-    def __init__(self, id, username, password):
-        # 数据库中的id
-        self.id = id
+class Ac_admin:
+    '''
+    这是空调管理员的类
+    属性：用户名和密码
+    方法：监控空调状态
+    '''
+    __slots__ = ('__username','__password')
+    def __init__(self, username, password):
+        '''
+        :param username:
+        :param password:
+        '''
         # 管理员名字
-        self.username = username
+        self.__username = username
         # 管理员登录密码
-        self.password = password
+        self.__password = password
 
     @staticmethod
     # 跟据管理员名字查询对应信息，并对比密码设置error_code，
@@ -100,10 +108,10 @@ class Admin:
         error_code = 0
         res = json.dumps(db.getUser(username, password).get_json())
         if 'userid' in res:
-            return error_code, Admin(res['userid'], username, password)
+            return error_code, Ac_admin(res['userid'], username, password)
         else:
             error_code = 1
-        return error_code, Admin(0, None, None)
+        return error_code, Ac_admin(0, None, None)
 
     # 生成报表，根据当前时间查询当前所有房间空调状态(开关、温度、风速等)与折扣
     @staticmethod
