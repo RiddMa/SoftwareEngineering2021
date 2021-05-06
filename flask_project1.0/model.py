@@ -4,35 +4,35 @@ import hashlib
 import db
 import math
 
+
 class Ac:
-    '''
+    """
     用以描述空调的类
     __state：开启/关闭/待机(等待启动)状态
-    __temp_now：当前温度
-    __temp_goal：目标温度
+    __tempnow：当前温度
+    __tempgoal：目标温度
     __mode：风速
-    __last_settle_time：上次结算时间（单位：int
-    __total_duration：本次开机的总时长
-    __start_time：本次开机时间
-    '''
+    __lastsettletime：上次结算时间（单位：int
+    __starttime：本次开机时间
+    """
     TEMP_OUTSIDE = 12.9
     c = 0.01
     Q = 0.04
-    __slots__ = ('__state', '__temp_now','__temp_goal','__mode','__pattern','__last_settle_time','__total_duration', '__start_time',)
+    __slots__ = ('__state', '__tempnow', '__tempgoal', '__mode', '__pattern', '__lastsettletime',
+                 '__starttime',)
 
-    def __init__(self,state,temp_now,temp_goal,mode,last_settle_time,pattern,total_duration,start_time):
-        __state = state
-        __temp_now = temp_now
-        __temp_goal = temp_goal
-        __mode = mode
-        __pattern = pattern
-        __last_settle_time = last_settle_time
-        __total_duration = total_duration
-        __start_time = start_time
+    def __init__(self, state, temp_now, temp_goal, mode, last_settle_time, pattern, start_time):
+        self.__state = state
+        self.__tempnow = temp_now
+        self.__tempgoal = temp_goal
+        self.__mode = mode
+        self.__pattern = pattern
+        self.__lastsettletime = last_settle_time
+        self.__starttime = start_time
 
     @staticmethod
-    def ac_temp_change(temp : float, passtime : int, pattern : int):
-        '''
+    def ac_temp_change(temp: float, passtime: int, pattern: int):
+        """
         计算空调工作一段时间内温度变化的函数，仅和模式相关，不考虑设定温度
         令 c=ks = 0.01〖min〗^(-1) 其中k为介质温度传递系数，s为接触面积，
         T = T_平衡 + (〖T_平衡-T〗_初始) e ^ (-ct)
@@ -42,8 +42,8 @@ class Ac:
         :param temp:原本的温度
         :param passtime:经过的时间
         :param pattern:制冷/制热模式对应0/1
-        :return:
-        '''
+        :return:空调运行状态下passtime之后的的温度
+        """
         temp_balance = Ac.TEMP_OUTSIDE
         if pattern:
             temp_balance += Ac.Q / Ac.c
@@ -52,35 +52,68 @@ class Ac:
         temp_new = temp_balance + (temp - temp_balance) * math.e ** (-passtime * Ac.c)
         return temp_new
 
-    def natural_temp_change(self, temp : float, passtime : int):
-        '''
+    def natural_temp_change(self, temp: float, passtime: int):
+        """
         计算一段时间内温度自然变化的函数
         :param temp:原本的温度
         :param passtime:经过的时间
-        :return:
-        '''
+        :return:自然状态下passtime时间之后的温度
+        """
         temp_balance = Ac.TEMP_OUTSIDE
         temp_new = temp_balance + (temp - temp_balance) * math.e ** (-passtime * Ac.c)
         return temp_new
 
     def settle(self):
+        """
+        用来计算当前温度的函数
+        :return: 当前温度
+        """
         time_now = int(time.time())
-        temp_after = self.__temp_now
-        temp_previous = self.__temp_now
+        temp_after = self.__tempnow
+        temp_previous = self.__tempnow
         if self.__state == 1:
-            temp_after = self.ac_temp_change(temp_previous, time_now - self.__last_settle_time,self.__pattern)
+            temp_after = self.ac_temp_change(temp_previous, time_now - self.__lastsettletime, self.__pattern)
             if self.__pattern == 0:
-                temp_after = max(temp_after,self.__temp_goal)
+                temp_after = max(temp_after, self.__tempgoal)
             else:
-                temp_after = min(temp_after,self.__temp_goal)
+                temp_after = min(temp_after, self.__tempgoal)
         else:
-            temp_after = self.natural_temp_change(temp_previous, time_now - self.__last_settle_time)
+            temp_after = self.natural_temp_change(temp_previous, time_now - self.__lastsettletime)
         return temp_after
 
+    def calccost(self):
+        """
+        更新花费金额到当前时间
+        包括修改上次结算时间，更新当前温度
+        :return:本次更新周期中的花费
+        """
+        prevtemp = self.__tempnow
+        self.__tempnow = self.settle()
+        timenow = int(time.time())
+        self.__lastsettletime = timenow
+        deltatemp = self.__tempnow - prevtemp
+        if self.__state == 0:
+            return 0
+        if self.__mode == 'L':
+            return 0.5 * deltatemp
+        if self.__mode == 'M':
+            return 1 * deltatemp
+        if self.__mod == 'H':
+            return 2 * deltatemp
 
-
-
-
+    def changework(self, newtemp: float, newmode: str, newpattern: int):
+        """
+        修改空调工作模式
+        :param newtemp:
+        :return:
+        """
+        self.settle()
+        if newtemp is not None:
+            self.__tempgoal = newtemp
+        if newmode is not None:
+            self.__mode = newmode
+        if newpattern is not None:
+            self.__pattern = newpattern
 
 
 class Room:
@@ -88,18 +121,18 @@ class Room:
     房间类：
     __rid：房间号
     __state：开启/关闭/待机(等待启动)状态
-    __temp_now：当前温度
-    __temp_goal：目标温度
+    __tempnow：当前温度
+    __tempgoal：目标温度
     __mode：风速
-    __last_settle_time：上次结算时间（单位：int
+    __lastsettletime：上次结算时间（单位：int
     __cost：本次开机到现在的花销
-    __total_duration：本次开机的总时长
+    __totalduration：本次开机的总时长
     __last_start_time：本次开机时间
     __discount：本房间折扣
     '''
-    __slots__ = ('__rid','__ac','__cost','__discount')
+    __slots__ = ('__rid', '__ac', '__cost', '__discount')
 
-    def __init__(self, rid, state, temp_now, temp_goal,mode, last, cost, discount, totaltime = 0, starttime = 0):
+    def __init__(self, rid, state, temp_now, temp_goal, mode, last, cost, discount, totaltime=0, starttime=0):
         self.__rid = rid
         self.__state = state
         self.__temp_now = temp_now
@@ -113,7 +146,6 @@ class Room:
 
     def settle(self):
         time_now = int(time.time())
-
 
     def set_temp(self, new_temp):
         self.__temp = new_temp
@@ -165,6 +197,7 @@ class Room:
         db.addBill(self.rid, self.starttime, newtime, self.cost)
         return
 
+
 class Roomlist:
     dict = dict()
 
@@ -184,10 +217,10 @@ class Stuff:
     类属性：token_pool,一个用来存储token和帐号对应用户名和类型
     方法：
     '''
-    __slots__ = ('__username','__password')
+    __slots__ = ('__username', '__password')
     token_pool = dict()
 
-    def __init__(self, username : str, password : str):
+    def __init__(self, username: str, password: str):
         '''
         :param username:传入的工作人员用户名
         :param password:工作人员密码
@@ -196,7 +229,7 @@ class Stuff:
         self.__password = password
 
     @staticmethod
-    def login(self,username : str,password : str):
+    def login(self, username: str, password: str):
         '''
         用于登陆的方法，过程中需要校验用户名和密码
         :param username: 传入的工作人员用户名
@@ -207,7 +240,7 @@ class Stuff:
         return error_code
 
     @staticmethod
-    def get_stuff_token(username: str,privilege):
+    def get_stuff_token(username: str, privilege):
         '''
         用于生成空调管理人员token的方法
         :param username:传入的工作人员用户名
@@ -217,8 +250,9 @@ class Stuff:
         token = hashlib.md5(bytes(username, encoding="utf-8"))
         token.update(bytes(ctime, encoding="utf-8"))
         token = token.hexdigest()
-        Stuff.token_pool[token] = (username,privilege)
+        Stuff.token_pool[token] = (username, privilege)
         return token
+
 
 class Ac_admin(Stuff):
     '''
@@ -228,7 +262,7 @@ class Ac_admin(Stuff):
     '''
 
     @staticmethod
-    def spy_on_ac(field : str):
+    def spy_on_ac(field: str):
         '''
         根据传入的字符串查找空调信息并返回，由于目前通信接口没定，先放着
         :param field: 传入字段(支持局部关键词查询
@@ -236,10 +270,7 @@ class Ac_admin(Stuff):
         '''
         error_code = 0
         res = []
-        return error_code,res
-
-
-
+        return error_code, res
 
     # 跟据管理员名字查询对应信息，并对比密码设置error_code，
     # (token可先随意设置一个值，以后再改进)
@@ -275,11 +306,11 @@ class Ac_admin(Stuff):
         error_code = 0
         starttime = float(time) // 60 // 24 * 60 * 24
         endtime = float(time) // 60 // 24 * 60 * 24 + 60 * 24
-        res = db.getTurnover(int(starttime),int(endtime)).get_json()
+        res = db.getTurnover(int(starttime), int(endtime)).get_json()
         if 'msg' in res:
             error_code = 1
-            return error_code,None
-        return error_code,res
+            return error_code, None
+        return error_code, res
 
     # 设置某个房间的折扣
     @staticmethod
@@ -316,9 +347,6 @@ class Card:
         self.password = password
 
 
-
-
-
 class Receptionist(Stuff):
     '''
         前台接待人员的类
@@ -331,8 +359,8 @@ class Receptionist(Stuff):
         res = db.getInfomation(phonenumber).get_json()
         if 'msg' in res:
             error_code = 1
-            return error_code,None
-        return error_code,Card(res['name'],Card['roomid'],Card['password'])
+            return error_code, None
+        return error_code, Card(res['name'], Card['roomid'], Card['password'])
 
     # 退房结算
     @staticmethod
@@ -348,7 +376,7 @@ class Receptionist(Stuff):
 
 
 class User:
-    def __init__(self,uid,username,token = 'x'):
+    def __init__(self, uid, username, token='x'):
         self.id = uid
         self.name = username
         self.token = token
@@ -361,7 +389,7 @@ class User:
             error_code = 1
             return error_code, None
         else:
-            return error_code, User(rid,res['name'])
+            return error_code, User(rid, res['name'])
 
     # 顾客设置空调开关
     @staticmethod
