@@ -9,29 +9,29 @@ class Ac:
     """
     用以描述空调的类
     __state：开启/关闭/待机(等待启动)状态
-    __tempnow：当前温度
-    __tempgoal：目标温度
+    __temp_now：当前温度
+    __temp_goal：目标温度
     __mode：风速
-    __lastsettletime：上次结算时间（单位：int
-    __starttime：本次开机时间
+    __last_set_tletime：上次结算时间（单位：int
+    __start_time：本次开机时间
     """
     TEMP_OUTSIDE = 12.9
     c = 0.01
     Q = 0.04
-    __slots__ = ('__state', '__tempnow', '__tempgoal', '__mode', '__pattern', '__lastsettletime',
-                 '__starttime',)
+    __slots__ = ('__state', '__temp_now', '__temp_goal', '__mode', '__pattern', '__last_settle_time',
+                 '__start_time',)
 
     def __init__(self, state, temp_now, temp_goal, mode, last_settle_time, pattern, start_time):
         self.__state = state
-        self.__tempnow = temp_now
-        self.__tempgoal = temp_goal
+        self.__temp_now = temp_now
+        self.__temp_goal = temp_goal
         self.__mode = mode
         self.__pattern = pattern
-        self.__lastsettletime = last_settle_time
-        self.__starttime = start_time
+        self.__last_settle_time = last_settle_time
+        self.__start_time = start_time
 
     @staticmethod
-    def ac_temp_change(temp: float, passtime: int, pattern: int):
+    def ac_temp_change(temp: float, pass_time: int, pattern: int):
         """
         计算空调工作一段时间内温度变化的函数，仅和模式相关，不考虑设定温度
         令 c=ks = 0.01〖min〗^(-1) 其中k为介质温度传递系数，s为接触面积，
@@ -40,27 +40,28 @@ class Ac:
         取　Q = +- 0.4
         T_外界 = 12.9 （北京年平均气温
         :param temp:原本的温度
-        :param passtime:经过的时间
+        :param pass_time:经过的时间
         :param pattern:制冷/制热模式对应0/1
-        :return:空调运行状态下passtime之后的的温度
+        :return:空调运行状态下pass_time之后的的温度
         """
         temp_balance = Ac.TEMP_OUTSIDE
         if pattern:
             temp_balance += Ac.Q / Ac.c
         else:
             temp_balance -= Ac.Q / Ac.c
-        temp_new = temp_balance + (temp - temp_balance) * math.e ** (-passtime * Ac.c)
+        temp_new = temp_balance + (temp - temp_balance) * math.e ** (-pass_time * Ac.c)
         return temp_new
 
-    def natural_temp_change(self, temp: float, passtime: int):
+    @staticmethod
+    def natural_temp_change(temp: float, pass_time: int):
         """
         计算一段时间内温度自然变化的函数
         :param temp:原本的温度
-        :param passtime:经过的时间
+        :param pass_time:经过的时间
         :return:自然状态下passtime时间之后的温度
         """
         temp_balance = Ac.TEMP_OUTSIDE
-        temp_new = temp_balance + (temp - temp_balance) * math.e ** (-passtime * Ac.c)
+        temp_new = temp_balance + (temp - temp_balance) * math.e ** (-pass_time * Ac.c)
         return temp_new
 
     def settle(self):
@@ -69,51 +70,53 @@ class Ac:
         :return: 当前温度
         """
         time_now = int(time.time())
-        temp_after = self.__tempnow
-        temp_previous = self.__tempnow
+        temp_after = self.__temp_now
+        temp_previous = self.__temp_now
         if self.__state == 1:
-            temp_after = self.ac_temp_change(temp_previous, time_now - self.__lastsettletime, self.__pattern)
+            temp_after = self.ac_temp_change(temp_previous, time_now - self.__last_settle_time, self.__pattern)
             if self.__pattern == 0:
-                temp_after = max(temp_after, self.__tempgoal)
+                temp_after = max(temp_after, self.__temp_goal)
             else:
-                temp_after = min(temp_after, self.__tempgoal)
+                temp_after = min(temp_after, self.__temp_goal)
         else:
-            temp_after = self.natural_temp_change(temp_previous, time_now - self.__lastsettletime)
+            temp_after = self.natural_temp_change(temp_previous, time_now - self.__last_settle_time)
         return temp_after
 
-    def calccost(self):
+    def calc_cost(self):
         """
         更新花费金额到当前时间
         包括修改上次结算时间，更新当前温度
         :return:本次更新周期中的花费
         """
-        prevtemp = self.__tempnow
-        self.__tempnow = self.settle()
-        timenow = int(time.time())
-        self.__lastsettletime = timenow
-        deltatemp = self.__tempnow - prevtemp
+        prev_temp = self.__temp_now
+        self.__temp_now = self.settle()
+        time_now = int(time.time())
+        self.__last_settle_time = time_now
+        delta_temp = self.__temp_now - prev_temp
         if self.__state == 0:
             return 0
         if self.__mode == 'L':
-            return 0.5 * deltatemp
+            return 0.5 * delta_temp
         if self.__mode == 'M':
-            return 1 * deltatemp
-        if self.__mod == 'H':
-            return 2 * deltatemp
+            return 1 * delta_temp
+        if self.__mode == 'H':
+            return 2 * delta_temp
 
-    def changework(self, newtemp: float, newmode: str, newpattern: int):
+    def change_work(self, new_temp: float, new_mode: str, new_pattern: int):
         """
         修改空调工作模式
-        :param newtemp:
+        :param new_temp: 新的温度
+        :param new_mode: 新的风速
+        :param new_pattern: 新模式
         :return:
         """
         self.settle()
-        if newtemp is not None:
-            self.__tempgoal = newtemp
-        if newmode is not None:
-            self.__mode = newmode
-        if newpattern is not None:
-            self.__pattern = newpattern
+        if new_temp is not None:
+            self.__temp_goal = new_temp
+        if new_mode is not None:
+            self.__mode = new_mode
+        if new_pattern is not None:
+            self.__pattern = new_pattern
 
 
 class Room:
@@ -121,7 +124,7 @@ class Room:
     房间类：
     __rid：房间号
     __state：开启/关闭/待机(等待启动)状态
-    __tempnow：当前温度
+    __temp_now：当前温度
     __tempgoal：目标温度
     __mode：风速
     __lastsettletime：上次结算时间（单位：int
