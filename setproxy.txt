@@ -1,2 +1,5 @@
 set http_proxy=http://127.0.0.1:8889
 set https_proxy=http://127.0.0.1:8889
+
+$env:http_proxy=http://127.0.0.1:8889
+$env:https_proxy=http://127.0.0.1:8889
