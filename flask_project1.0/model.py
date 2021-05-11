@@ -118,6 +118,10 @@ class Ac:
         if new_pattern is not None:
             self.__pattern = new_pattern
 
+class Customer:
+    __slots__ = ('','','','')
+
+
 
 class Room:
     '''
