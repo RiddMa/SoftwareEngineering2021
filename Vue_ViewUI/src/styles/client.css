@@ -1,0 +1,34 @@
+.acCard {
+    margin: 0.8vh 0.8vw;
+}
+
+.acCardTitle {
+    display: inline-block;
+    overflow: hidden;
+    width: 80%;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    vertical-align: middle;
+    transition: width .2s ease .2s;
+}
+
+
+.acCardTitleText {
+    text-align-all: center;
+    vertical-align: middle;
+}
+
+.acCardContent {
+    vertical-align: middle;
+    margin: 2vh;
+    min-height: 7vh;
+}
+
+.acCardContentText {
+    vertical-align: middle;
+    font-size: large;
+}
+
+.acStateInfo {
+
+}
