@@ -21,6 +21,7 @@
 <script>
 import {checkin_u} from '../../connect_token.vue';
 import Vue from "vue";
+import random_str from "view-design/src/utils/random_str";
 
 export default {
   name: "clientLogin",
@@ -31,12 +32,22 @@ export default {
     }
   },
   methods: {
-    userLogin(event) {
-      checkin_u(this.roomId, this.userPassword);
+    addAC(e) {
+      let acTmp = {'rid': random_str(), 'power': true, 'curnTemp': 24, 'curnWind': 3, 'curnMode': '致冷'};
+      Vue.set(this.$store.state.roomInfo, acTmp.rid, acTmp);
+      console.log(this.$store.state);
+    },
+    addUser(e){
       Vue.set(this.$store.state.sessionData,'acSwitch',false);
       Vue.set(this.$store.state.sessionData,'curnTemp',26);
       Vue.set(this.$store.state.sessionData,'curnWind',3);
       Vue.set(this.$store.state.sessionData,'curnMode','致冷');
+    },
+    userLogin(event) {
+      checkin_u(this.roomId, this.userPassword);
+      this.addUser();
+      this.addAC();
+      console.log(this.$store.state);
       this.$router.push({path: '/client'});
     },
   }
