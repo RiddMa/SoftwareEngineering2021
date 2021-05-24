@@ -1,0 +1,4 @@
+printreportfile（）  打印报表
+getfromlist （）    获取报表对象数据
+getlist（）  获取报表对象
+finddata（）   获取报表里的相关数据
