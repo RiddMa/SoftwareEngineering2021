@@ -12,41 +12,53 @@
 
 </template>
 <script>
-import admin from './views/adminView/admin.vue';
-import clientLogin from "./views/clientView/clientLogin.vue";
-import client from "./views/clientView/client.vue";
-import netInterfaceTest from "./views/netInterfaceTest";
-import welcome from "./views/welcome";
+import Admin from './views/AdminView/Admin.vue';
+import ClientLogin from "./views/ClientView/ClientLogin.vue";
+import Client from "./views/ClientView/Client.vue";
+import NetInterfaceTest from "./views/NetInterfaceTest";
+import Welcome from "./views/Welcome";
 import connect_token from "./connect_token"
 import Vue from "vue";
-import adminLogin from "./views/adminView/adminLogin";
-import adminMain from "./views/adminView/adminMain";
-import adminSearch from "./views/adminView/adminSearch";
-import adminSettings from "./views/adminView/adminSettings";
-import reception from "./views/receptionView/reception";
-import receptionMain from "./views/receptionView/receptionMain";
-import receptionLogin from "./views/receptionView/receptionLogin";
-import receptionSearch from "./views/receptionView/receptionSearch";
-import receptionSettings from "./views/receptionView/receptionSettings";
+import AdminLogin from "./views/AdminView/AdminLogin";
+import AdminMain from "./views/AdminView/AdminMain";
+import AdminSearch from "./views/AdminView/AdminSearch";
+import AdminSettings from "./views/AdminView/AdminSettings";
+import Reception from "./views/ReceptionView/Reception";
+import ReceptionMain from "./views/ReceptionView/ReceptionMain";
+import ReceptionLogin from "./views/ReceptionView/ReceptionLogin";
+import ReceptionSearch from "./views/ReceptionView/ReceptionSearch";
+import ReceptionSettings from "./views/ReceptionView/ReceptionSettings";
+import Manager from "./views/ManagerView/Manager";
+import ManagerSettings from "./views/ManagerView/ManagerSettings";
+import ManagerLogin from "./views/ManagerView/ManagerLogin";
+import ManagerDaily from "./views/ManagerView/ManagerDaily";
+import ManagerWeekly from "./views/ManagerView/ManagerWeekly";
 
 export default {
   data() {
     return {}
   },
   components: {
-    'admin': admin,
-    'adminLogin': adminLogin,
-    'adminMain': adminMain,
-    'adminSearch': adminSearch,
-    'adminSettings': adminSettings,
-    'clientLogin': clientLogin,
-    'client': client,
-    'reception': reception,
-    'receptionMain': receptionMain,
-    'receptionLogin': receptionLogin,
-    'receptionSearch': receptionSearch,
-    'receptionSettings': receptionSettings,
-
+    'Welcome': Welcome,
+    'NetInterfaceTest': NetInterfaceTest,
+    'connect_token': connect_token,
+    'Admin': Admin,
+    'AdminLogin': AdminLogin,
+    'AdminMain': AdminMain,
+    'AdminSearch': AdminSearch,
+    'AdminSettings': AdminSettings,
+    'ClientLogin': ClientLogin,
+    'Client': Client,
+    'Reception': Reception,
+    'ReceptionMain': ReceptionMain,
+    'ReceptionLogin': ReceptionLogin,
+    'ReceptionSearch': ReceptionSearch,
+    'ReceptionSettings': ReceptionSettings,
+    'Manager': Manager,
+    'ManagerLogin': ManagerLogin,
+    'ManagerDaily': ManagerDaily,
+    'ManagerWeekly': ManagerWeekly,
+    'ManagerSettings': ManagerSettings
   },
   mounted() {
 

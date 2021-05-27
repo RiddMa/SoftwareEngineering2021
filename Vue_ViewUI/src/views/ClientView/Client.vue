@@ -7,13 +7,6 @@
             <img src="../../images/logo.png">
           </h1>
           <h2 class="CardTitle" slot="title">空调状态</h2>
-          <!--          <h2 slot="extra"></h2>-->
-          <!--          <h2>-->
-          <!--            &lt;!&ndash;            <iframe height="700" src="https://www.yunyoujun.cn/air-conditioner/"></iframe>&ndash;&gt;-->
-          <!--            <p><span>当前温度:</span><span class="digitFont">{{ curnTemp }}</span></p>-->
-          <!--            <p><span>当前风速:</span><span class="digitFont">{{ curnWind }}</span></p>-->
-          <!--            <p>当前模式:{{ curnMode }}<br></p>-->
-          <!--          </h2>-->
 
           <Row class="acCardContent">
             <Col :span="12">
@@ -34,14 +27,14 @@
               <Col :span="12">
                 <Row>
                   <Col align="middle" :span="8" class="acCardContentText">
-                    <Button icon="ios-arrow-down" size="small" shape="circle"
+                    <Button icon="ios-arrow-down" size="large" shape="circle"
                             @click="changeTemp($event,-1)"></Button>
                   </Col>
                   <Col align="middle" :span="8">
                     <span class="digitFont">{{ thisRoom.curnTemp }}</span>
                   </Col>
                   <Col align="middle" :span="8">
-                    <Button icon="ios-arrow-up" size="small" shape="circle" class="acCardContentText"
+                    <Button icon="ios-arrow-up" size="large" shape="circle" class="acCardContentText"
                             @click="changeTemp($event,1)"></Button>
                   </Col>
                 </Row>
@@ -55,14 +48,14 @@
               <Col :span="12" class="acCardContentText">
                 <Row>
                   <Col align="middle" :span="8">
-                    <Button icon="md-remove" size="small" shape="circle"
+                    <Button icon="md-remove" size="large" shape="circle"
                             @click="changeWind($event,-1)"></Button>
                   </Col>
                   <Col align="middle" :span="8">
                     <span class="digitFont">{{ thisRoom.curnWind }}</span>
                   </Col>
                   <Col align="middle" :span="8">
-                    <Button icon="md-add" size="small" shape="circle"
+                    <Button icon="md-add" size="large" shape="circle"
                             @click="changeWind($event,1)"></Button>
                   </Col>
                 </Row>
@@ -76,18 +69,18 @@
               <Col :span="12" class="acCardContentText">
                 <Row>
                   <Col align="middle" :span="8">
-                    <Button v-if="thisRoom.curnMode==='致冷'" size="small" type="primary" icon="ios-snow" shape="circle"
+                    <Button v-if="thisRoom.curnMode==='致冷'" size="large" type="primary" icon="ios-snow" shape="circle"
                             @click="changeMode($event,'致冷')"></Button>
-                    <Button v-else icon="ios-snow" size="small" shape="circle"
+                    <Button v-else icon="ios-snow" size="large" shape="circle"
                             @click="changeMode($event,'致冷')"></Button>
                   </Col>
                   <Col align="middle" :span="8">
-                    <span>{{ thisRoom.curnMode }}</span>
+                    <span style="vertical-align: middle">{{ thisRoom.curnMode }}</span>
                   </Col>
                   <Col align="middle" :span="8">
-                    <Button v-if="thisRoom.curnMode==='制热'" size="small" type="primary" icon="ios-sunny" shape="circle"
+                    <Button v-if="thisRoom.curnMode==='制热'" size="large" type="primary" icon="ios-sunny" shape="circle"
                             @click="changeMode($event,'制热')"></Button>
-                    <Button v-else icon="ios-sunny" size="small" shape="circle"
+                    <Button v-else icon="ios-sunny" size="large" shape="circle"
                             @click="changeMode($event,'制热')"></Button>
                   </Col>
                 </Row>
@@ -273,7 +266,7 @@ export default {
 
 .digitFont {
   font-family: Digital7-mono;
-  font-size: x-large;
+  font-size: xx-large;
   vertical-align: middle;
 }
 </style>

@@ -21,7 +21,7 @@
               Reception
             </h1>
           </router-link>
-          <router-link to="/reception/login">
+          <router-link to="/manager/login">
             <h1>
               <Icon type="ios-glasses" />
               Manager
@@ -38,6 +38,7 @@
 export default {
   name: "welcome"
 }
+//TODO:将 Login 界面合并
 </script>
 
 <style scoped>

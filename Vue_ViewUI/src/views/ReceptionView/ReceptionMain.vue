@@ -7,12 +7,12 @@
     <Card>
       <Form class="checkInForm" ref="formInline" :model="formInline" :rules="ruleInline" inline>
         <FormItem prop="phone">
-          <Input type="text" v-model="formInline.phone" placeholder="请输入手机号……">
+          <Input type="text" v-model="formInline.phone" placeholder="请输入手机号……" size="large">
             <Icon type="ios-person-outline" slot="prepend"></Icon>
           </Input>
         </FormItem>
         <FormItem>
-          <Button type="primary" shape="circle" @click="handleSubmit('formInline')">登记</Button>
+          <Button type="primary" shape="circle" @click="handleSubmit('formInline')" size="large">登记</Button>
         </FormItem>
       </Form>
     </Card>
