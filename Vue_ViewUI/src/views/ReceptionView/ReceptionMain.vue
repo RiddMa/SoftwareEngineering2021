@@ -21,7 +21,7 @@
 
 <script>
 export default {
-  name: "receptionMain",
+  name: "ReceptionMain",
 
   data () {
     return {

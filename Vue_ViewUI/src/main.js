@@ -3,8 +3,8 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import ViewUI from 'view-design';
 import VueRouter from 'vue-router';
-import axios from 'axios'
-import VueAxios from 'vue-axios'
+import axios from 'axios';
+import VueAxios from 'vue-axios';
 import Routers from './router';
 import Util from './libs/util';
 import App from './app.vue';

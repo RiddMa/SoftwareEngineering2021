@@ -57,7 +57,7 @@ import random_str from "view-design/src/utils/random_str";
 import Vue from "vue";
 
 export default {
-  name: "receptionSearch",
+  name: "ReceptionSearch",
   data: function () {
     return {
       hasSearched: false,

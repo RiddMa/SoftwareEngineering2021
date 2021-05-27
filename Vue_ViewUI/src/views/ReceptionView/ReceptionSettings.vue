@@ -23,7 +23,7 @@
 
 <script>
 export default {
-  name: "receptionSettings"
+  name: "ReceptionSettings"
 }
 </script>
 

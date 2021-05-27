@@ -24,7 +24,7 @@ import {login_a} from '../../connect_token.vue';
 import Vue from "vue";
 
 export default {
-  name: "receptionLogin",
+  name: "ReceptionLogin",
   data: function () {
     return {
       username: '',

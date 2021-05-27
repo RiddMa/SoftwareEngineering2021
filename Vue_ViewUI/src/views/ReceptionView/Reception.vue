@@ -31,7 +31,7 @@
 
 <script>
 export default {
-  name: "reception"
+  name: "Reception"
 }
 </script>
 
