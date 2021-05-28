@@ -12,22 +12,23 @@
 
 <script>
 import Vue from "vue";
+
 const g2plot = require('@antv/g2plot') // 1. 引入g2plot
-Vue.$g2plot=g2plot
+Vue.$g2plot = g2plot // 2. 将g2plot挂载到vue中
 export default {
   name: "ManagerDaily",
-  data () {
+  data() {
     return {
       mockData: [
-        { year: '1991', value: 3 },
-        { year: '1992', value: 4 },
-        { year: '1993', value: 3.5 },
-        { year: '1994', value: 5 },
-        { year: '1995', value: 4.9 },
-        { year: '1996', value: 6 },
-        { year: '1997', value: 7 },
-        { year: '1998', value: 9 },
-        { year: '1999', value: 13 }
+        {year: '1991', value: 3},
+        {year: '1992', value: 4},
+        {year: '1993', value: 3.5},
+        {year: '1994', value: 5},
+        {year: '1995', value: 4.9},
+        {year: '1996', value: 6},
+        {year: '1997', value: 7},
+        {year: '1998', value: 9},
+        {year: '1999', value: 13}
       ]
     }
   },

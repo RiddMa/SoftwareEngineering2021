@@ -40,7 +40,7 @@
                   <span>累计金额：</span>
                 </Col>
                 <Col align="middle" :span="12">
-                  <span><b>￥{{item.cost}}</b></span>
+                  <span><b>￥{{ item.cost }}</b></span>
                 </Col>
               </Row>
 
@@ -53,13 +53,14 @@
                     <Row>
                       <Col align="middle" :span="8">
                         <Button icon="ios-arrow-down" size="small" shape="circle"
-                                @click="changeTemp($event,item.curnTemp,-1)"></Button>
+                                @click="changeTemp(item.rid,-1)"></Button>
                       </Col>
                       <Col align="middle" :span="8">
                         <span>{{ item.curnTemp }}</span>
                       </Col>
                       <Col align="middle" :span="8">
-                        <Button icon="ios-arrow-up" size="small" shape="circle"></Button>
+                        <Button icon="ios-arrow-up" size="small" shape="circle"
+                                @click="changeTemp(item.rid,1)"></Button>
                       </Col>
                     </Row>
                   </Col>
@@ -157,6 +158,10 @@ export default {
     printDetailedList(e, rid) {
       //TODO
     },
+    changeTemp(rid, turnUp) {
+      this.resultRoom[rid].curnTemp += turnUp;
+      console.log(this.resultRoom);
+    }
 
   },
 }

@@ -56,6 +56,14 @@ const routers = [
     },
 
     {
+        path: '/reception/login',
+        meta: {
+            title: '前台登录',
+        },
+        component: (resolve) => require(['./views/ReceptionView/ReceptionLogin'], resolve),
+
+    },
+    {
         path: '/reception',
         meta: {
             title: '前台',
@@ -85,15 +93,15 @@ const routers = [
             },
         ]
     },
+
     {
-        path: '/reception/login',
+        path: '/manager/login',
         meta: {
-            title: '前台登录',
+            title: '经理登录',
         },
-        component: (resolve) => require(['./views/ReceptionView/ReceptionLogin'], resolve),
+        component: (resolve) => require(['./views/ManagerView/ManagerLogin.vue'], resolve),
 
     },
-
     {
         path: '/manager',
         meta: {
@@ -124,15 +132,7 @@ const routers = [
             },
         ]
     },
-    {
-        path: '/manager/login',
-        meta: {
-            title: '经理登录',
-        },
-        component: (resolve) => require(['./views/ManagerView/ManagerLogin.vue'], resolve),
-
-    },
-
+    
     {
         path: '/',
         meta: {
