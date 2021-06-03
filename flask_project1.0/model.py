@@ -18,17 +18,15 @@ class Ac:
     TEMP_OUTSIDE = 12.9
     c = 0.01
     Q = 0.04
-    __slots__ = ('__state', '__temp_now', '__temp_goal', '__mode', '__pattern', '__last_settle_time',
-                 '__start_time',)
 
     def __init__(self, state, temp_now, temp_goal, mode, last_settle_time, pattern, start_time):
-        self.__state = state
-        self.__temp_now = temp_now
-        self.__temp_goal = temp_goal
-        self.__mode = mode
-        self.__pattern = pattern
-        self.__last_settle_time = last_settle_time
-        self.__start_time = start_time
+        self.state = state
+        self.temp_now = temp_now
+        self.temp_goal = temp_goal
+        self.mode = mode
+        self.pattern = pattern
+        self.last_settle_time = last_settle_time
+        self.start_time = start_time
 
     @staticmethod
     def ac_temp_change(temp: float, pass_time: int, pattern: int):
@@ -70,16 +68,16 @@ class Ac:
         :return: 当前温度
         """
         time_now = int(time.time())
-        temp_after = self.__temp_now
-        temp_previous = self.__temp_now
-        if self.__state == 1:
-            temp_after = self.ac_temp_change(temp_previous, time_now - self.__last_settle_time, self.__pattern)
-            if self.__pattern == 0:
-                temp_after = max(temp_after, self.__temp_goal)
+        temp_after = self.temp_now
+        temp_previous = self.temp_now
+        if self.state == 1:
+            temp_after = self.ac_temp_change(temp_previous, time_now - self.last_settle_time, self.pattern)
+            if not self.pattern:
+                temp_after = max(temp_after, self.temp_goal)
             else:
-                temp_after = min(temp_after, self.__temp_goal)
+                temp_after = min(temp_after, self.temp_goal)
         else:
-            temp_after = self.natural_temp_change(temp_previous, time_now - self.__last_settle_time)
+            temp_after = self.natural_temp_change(temp_previous, time_now - self.last_settle_time)
         return temp_after
 
     def calc_cost(self):
@@ -88,18 +86,18 @@ class Ac:
         包括修改上次结算时间，更新当前温度
         :return:本次更新周期中的花费
         """
-        prev_temp = self.__temp_now
-        self.__temp_now = self.settle()
+        prev_temp = self.temp_now
+        self.temp_now = self.settle()
         time_now = int(time.time())
-        self.__last_settle_time = time_now
-        delta_temp = self.__temp_now - prev_temp
-        if self.__state == 0:
+        self.last_settle_time = time_now
+        delta_temp = self.temp_now - prev_temp
+        if self.state == 0:
             return 0
-        if self.__mode == 'L':
+        if self.mode == 'L':
             return 0.5 * delta_temp
-        if self.__mode == 'M':
+        if self.mode == 'M':
             return 1 * delta_temp
-        if self.__mode == 'H':
+        if self.mode == 'H':
             return 2 * delta_temp
 
     def change_work(self, new_temp: float, new_mode: str, new_pattern: int):
@@ -112,169 +110,95 @@ class Ac:
         """
         self.settle()
         if new_temp is not None:
-            self.__temp_goal = new_temp
+            self.temp_goal = new_temp
         if new_mode is not None:
-            self.__mode = new_mode
+            self.mode = new_mode
         if new_pattern is not None:
-            self.__pattern = new_pattern
-
-class Customer:
-    __slots__ = ('','','','')
-
+            self.pattern = new_pattern
 
 
 class Room:
-    '''
+    """
     房间类：
     __rid：房间号
-    __state：开启/关闭/待机(等待启动)状态
-    __temp_now：当前温度
-    __tempgoal：目标温度
-    __mode：风速
-    __lastsettletime：上次结算时间（单位：int
-    __cost：本次开机到现在的花销
-    __totalduration：本次开机的总时长
-    __last_start_time：本次开机时间
+    __cost：花销
     __discount：本房间折扣
-    '''
-    __slots__ = ('__rid', '__ac', '__cost', '__discount')
+    """
+    list = []
 
-    def __init__(self, rid, state, temp_now, temp_goal, mode, last, cost, discount, totaltime=0, starttime=0):
-        self.__rid = rid
-        self.__state = state
-        self.__temp_now = temp_now
-        self.__temp_goal = temp_goal
-        self.__mode = mode
-        self.__cost = cost
-        self.__last_settle_time = last
-        self.__total_duration = totaltime
-        self.__last_start_time = starttime
-        self.__discount = discount
-
-    def settle(self):
-        time_now = int(time.time())
-
-    def set_temp(self, new_temp):
-        self.__temp = new_temp
-        return
-
-    def changecost(self, deltcost):
-        self.cost += deltcost
-        return
-
-    def changelasttime(self, newtime):
-        self.totaltime += newtime - self.last
-        self.last = newtime
-        return
-
-    def changediscount(self, discount):
+    def __init__(self, rid, cost, discount):
+        self.rid = rid
+        self.cost = cost
         self.discount = discount
-        return
-
-    def setmode(self, newmode):
-        newtime = int(time.time())
-        self.changecost(self.Costcalc(newtime - self.last))
-        self.changelasttime(newtime)
-        self.mode = newmode
-        return
-
-    def Costcalc(self, time):
-        switch = {'H': 0.03, 'M': 0.02, 'L': 0.01}
-        res = switch[self.mode] * time / 60 * self.discount
-        return res
-
-    def updatecost(self):
-        timenow = int(time.time())
-        self.changecost(self.Costcalc(timenow - self.last))
-        self.changelasttime(timenow)
-
-    def Turnon(self):
-        self.__state = 1
-        self.cost = 0.5
-        newtime = int(time.time())
-        self.last = newtime
-        self.starttime = newtime
-        return
-
-    def Turnoff(self):
-        self.__state = 0
-        newtime = int(time.time())
-        self.changecost(self.Costcalc(newtime - self.last))
-        self.changelasttime(newtime)
-        db.addBill(self.rid, self.starttime, newtime, self.cost)
-        return
-
-
-class Roomlist:
-    dict = dict()
-
-
-roomlist = ['testOnly']
-for j in range(1, 6):
-    for i in range(1, 11):
-        roomlist.append(str(j) + ('0' + str(i))[-2:])
-roomstate = {i: 0 for i in roomlist}
-Store = {i: Room(i, 0, 26, 'L', int(time.time()), 0, 1.0) for i in roomlist}
 
 
 class Stuff:
-    '''
+    """
     这是工作人员的类
     实例属性：用户名和密码
     类属性：token_pool,一个用来存储token和帐号对应用户名和类型
     方法：
-    '''
-    __slots__ = ('__username', '__password')
+    """
     token_pool = dict()
 
-    def __init__(self, username: str, password: str):
-        '''
-        :param username:传入的工作人员用户名
-        :param password:工作人员密码
-        '''
-        self.__username = username
-        self.__password = password
-
     @staticmethod
-    def login(self, username: str, password: str):
-        '''
+    def stuff_login(username: str, password: str, privilege):
+        """
         用于登陆的方法，过程中需要校验用户名和密码
         :param username: 传入的工作人员用户名
         :param password: 工作人员密码
         :return: error_code、token和该工作人员的类型/权限
-        '''
+        需要校验数据库中是否有账号信息，是否已登陆，和权限是否对的上
+        """
+        error_code = 0
+        return error_code
+
+    @staticmethod
+    def stuff_logout(username: str, password: str):
+        """
+        用于登陆的方法，过程中需要校验用户名和密码
+        :param username: 传入的工作人员用户名
+        :param password: 工作人员密码
+        :return: error_code、token和该工作人员的类型/权限
+        需要校验数据库中是否有账号信息，是否已登陆，和权限是否对的上
+        """
         error_code = 0
         return error_code
 
     @staticmethod
     def get_stuff_token(username: str, privilege):
-        '''
+        """
         用于生成空调管理人员token的方法
         :param username:传入的工作人员用户名
+        :param privilege:权限，也即账户类型
         :return:token
-        '''
-        ctime = str(time.time())
+        """
+        timenow = str(time.time())
         token = hashlib.md5(bytes(username, encoding="utf-8"))
-        token.update(bytes(ctime, encoding="utf-8"))
+        token.update(bytes(timenow, encoding="utf-8"))
         token = token.hexdigest()
         Stuff.token_pool[token] = (username, privilege)
         return token
 
 
 class Ac_admin(Stuff):
-    '''
+    """
     空调管理员的类
     包括一个查找所有给定房间状态的方法
         我很想写一颗trie树2333 —— 07
-    '''
+    """
+
+    @staticmethod
+    def login(username: str, password: str):
+        return Stuff.stuff_login(username,password,"admin")
 
     @staticmethod
     def spy_on_ac(field: str):
-        '''
+        """
         根据传入的字符串查找空调信息并返回，由于目前通信接口没定，先放着
         :param field: 传入字段(支持局部关键词查询
         :return: 返回一个list和error_code
-        '''
+        """
         error_code = 0
         res = []
         return error_code, res

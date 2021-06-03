@@ -1,0 +1,58 @@
+'kinparam linetype ortho
+left to right direction
+skinparam classAttributeIconSize 0
+abstract class customer {}
+class ClientController {
+    PowerOn(Roomid,currentTemp)
+    RequestState(roomId)
+    ChangeTargetTemp(roomId,targetTemp)
+    ChangeFanSpeed(roomId,fanSpeed)
+    RequestRelease(roomId)
+    RequestTempUp(roomId)
+    PowerOff(roomId)
+}
+class ServerController {
+    PowerOn(Roomid,currentTemp)
+    RequestState(roomId)
+    ChangeTargetTemp(roomId,targetTemp)
+    ChangeFanSpeed(roomId,fanSpeed)
+    RequestRelease(roomId)
+    RequestTempUp(roomId)
+    PowerOff(roomId)
+}
+class SchedulingController {
+    AddRoom(roomId,price)
+    GetState(roomId)
+}
+class Room {
+    roomId
+    cost
+    feeRate
+    power
+    temp
+    wind
+    mode
+    Create(roomId,price,feeRate,power,temp,wind,mode)
+    SetState(roomId,price,feeRate,power,temp,wind,mode)
+    SetTemp(temp)
+    SetSpeed(speed)
+    RequestRelease(roomId)
+    GetTemp(roomId)
+    SetPower(power)
+}
+class Timer {
+    time
+    Create(time)
+}
+class DetailedList {
+    list
+    Create(roomId,feeRate,power,temp,wind,mode)
+    Add(roomId,feeRate,power,temp,wind,mode)
+}
+
+customer -- ClientController
+ClientController -- ServerController
+ServerController -- SchedulingController
+ServerController -- Room
+Room -- DetailedList
+ServerController -- Timer

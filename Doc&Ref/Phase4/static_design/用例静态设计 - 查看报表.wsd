@@ -1,0 +1,30 @@
+skinparam linetype ortho
+left to right direction
+skinparam classAttributeIconSize 0
+abstract class Manager {}
+class ManagerController {
+    queryreport(list_Roomid,type_Report,date1,date2)
+    PrintReport()
+}
+class ServerController {
+    queryreport(list_Roomid,type_Report,date1,date2)
+}
+class ReportList {
+    infolist
+    create()
+    getfromlist()
+}
+class ReportId {
+    infolist
+    create()
+    printReportfile()
+}
+class DetailedList {
+    Askrecord(list_Roomid,type_Report,date1,date2)
+}
+Manager -- ManagerController
+ManagerController -- ServerController
+ManagerController -- ReportList
+ManagerController -- ReportId
+ReportId -- ReportList
+ReportList -- DetailedList

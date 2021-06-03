@@ -1,0 +1,37 @@
+skinparam linetype ortho
+left to right direction
+skinparam classAttributeIconSize 0
+abstract class admin {
+    
+}
+class CentralAirConditioner {
+    state
+    setState(setPara)
+    setPara(Mode,Temp_highLimit,Temp_lowLimit,default_TargetTemp,FeeRate_H,FeeRate_M,FeeRate_L)
+    SetState(ready)
+}
+class ServerController {
+    PowerON()
+    StartUp()
+    SetState()
+    CheckRoomState(list_Room)
+    setPara(Mode,Temp_highLimit,Temp_lowLimit,default_TargetTemp,FeeRate_H,FeeRate_M,FeeRate_L)
+}
+class SchedulingController {
+    Initialize()
+}
+class ServerQueue {
+    create()
+}
+class WatingQueue {
+    create()
+}
+class Room {
+    CheckRoomState(list_Room)
+}
+admin -- ServerController
+ServerController -- CentralAirConditioner
+ServerController -- SchedulingController
+ServerController -- ServerQueue
+ServerController -- WatingQueue
+ServerController -- Room

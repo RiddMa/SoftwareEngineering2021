@@ -1,0 +1,29 @@
+skinparam linetype ortho
+left to right direction
+skinparam classAttributeIconSize 0
+abstract class Reception {}
+
+class ReceptionController {
+    ​CreateInvoice(RoomId,date_in,date_out)
+    PrintInvoice(RoomId,date_out,Toal_fee)
+}
+
+class ServerController {
+    ​CreateInvoice(RoomId,date_in,date_out)​
+    PrintInvoice(RoomId,date_out,Toal_fee)
+}
+class Invoice {
+    infolist
+    create()
+}
+
+
+class ListManager {
+    ​​CreateInvoice(RoomId,date_in,date_out)
+    PrintInvoice(RoomId,date_out,Toal_fee)
+}
+
+Reception -- ReceptionController
+ReceptionController -- ServerController
+ServerController -- ListManager
+ListManager o-- Invoice

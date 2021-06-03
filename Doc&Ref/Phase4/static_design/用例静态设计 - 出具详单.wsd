@@ -1,0 +1,31 @@
+skinparam linetype ortho
+left to right direction
+skinparam classAttributeIconSize 0
+abstract class Reception {
+    
+}
+
+class ReceptionController {
+    CreateRDR(RoomId,date_in,date_out)
+    ​PrintRDR(RoomId, list_RDR)
+}
+
+class ServerController {
+    CreateRDR(RoomId,date_in,date_out)
+    ​PrintRDR(RoomId, list_RDR)
+}
+
+class RDR {
+    RDRinfolist
+    create()
+}
+
+class ListManager {
+    CreateRDR(RoomId,date_in,date_out)
+    ​PrintRDR(RoomId, list_RDR)
+}
+
+Reception -- ReceptionController
+ReceptionController -- ServerController
+ServerController -- ListManager
+ListManager o-- RDR

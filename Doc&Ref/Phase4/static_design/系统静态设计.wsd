@@ -1,0 +1,195 @@
+skinparam linetype ortho
+left to right direction
+skinparam classAttributeIconSize 0
+
+abstract class admin {}
+abstract class Client {}
+abstract class Reception {}
+abstract class Manager {}
+
+class ClientController {
+    PowerOn(Roomid,currentTemp)
+    RequestState(roomId)
+    ChangeTargetTemp(roomId,targetTemp)
+    ChangeFanSpeed(roomId,fanSpeed)
+    RequestRelease(roomId)
+    RequestTempUp(roomId)
+    PowerOff(roomId)
+}
+
+class ServerController {
+    PowerON()
+    StartUp()
+    SetState()
+    setPara(Mode,Temp_highLimit,Temp_lowLimit,default_TargetTemp,FeeRate_H,FeeRate_M,FeeRate_L)
+    get_timeout_room()
+    CheckRoomState(list_Room)
+    queryreport(list_Roomid,type_Report,date1,date2)
+    ​CreateInvoice(RoomId,date_in,date_out)​
+    PrintInvoice(RoomId,date_out,Toal_fee)
+    CreateRDR(RoomId,date_in,date_out)
+    ​PrintRDR(RoomId, list_RDR)
+    PowerOn(Roomid,currentTemp)
+    RequestState(roomId)
+    ChangeTargetTemp(roomId,targetTemp)
+    ChangeFanSpeed(roomId,fanSpeed)
+    RequestRelease(roomId)
+    RequestTempUp(roomId)
+    PowerOff(roomId)
+}
+
+class SchedulingController {
+    Initialize()
+    AddRoom(roomId,price)
+    GetState(roomId)
+    StartUp()
+    SetState()
+    create_server_object()
+}
+
+class Room {
+    roomId
+    cost
+    feeRate
+    power
+    temp
+    wind
+    mode
+    Create(roomId,price,feeRate,power,temp,wind,mode)
+    SetState(roomId,price,feeRate,power,temp,wind,mode)
+    SetTemp(temp)
+    SetSpeed(speed)
+    RequestRelease(roomId)
+    GetTemp(roomId)
+    SetPower(power)
+    CheckRoomState(list_Room)
+}
+
+class Timer {
+    time
+    Create(time)
+}
+
+
+class DetailedList {
+    list
+    Create(roomId,feeRate,power,temp,wind,mode)
+    Add(roomId,feeRate,power,temp,wind,mode)
+    Askrecord(list_Roomid,type_Report,date1,date2)
+}
+
+
+class ReceptionController {
+    ​CreateInvoice(RoomId,date_in,date_out)
+    PrintInvoice(RoomId,date_out,Toal_fee)
+    CreateRDR(RoomId,date_in,date_out)
+    ​PrintRDR(RoomId, list_RDR)
+}
+
+
+class Invoice {
+    infolist
+    create()
+}
+
+class RDR {
+    RDRinfolist
+    create()
+}
+
+class ListManager {
+    ​​CreateInvoice(RoomId,date_in,date_out)
+    PrintInvoice(RoomId,date_out,Toal_fee)
+    CreateRDR(RoomId,date_in,date_out)
+    ​PrintRDR(RoomId, list_RDR)
+}
+
+class CentralAirConditioner {
+    state
+    setState(setPara)
+    setPara(Mode,Temp_highLimit,Temp_lowLimit,default_TargetTemp,FeeRate_H,FeeRate_M,FeeRate_L)
+    SetState(ready)
+}
+
+class ManagerController {
+    queryreport(list_Roomid,type_Report,date1,date2)
+    PrintReport()
+}
+
+class ReportList {
+    infolist
+    create()
+    getfromlist()
+}
+
+
+
+class ReportId {
+    infolist
+    create()
+    printReportfile()
+}
+
+
+
+class ServerQueue {
+    serverq
+    create()
+    getnum()
+    getwind()
+    add_server_object(roominfo)
+    pop_server_object(roominfo)
+    relase_server_object(roominfo)
+    change_timeout_room(roomid)
+}
+
+class WaitingQueue {
+    waitingq
+    create()
+    add_waiting_status(roominfo)
+    relase_waiting_status(roominfo) 
+    get_next_room() 
+}
+
+
+
+
+
+
+admin -- ServerController
+customer -- ClientController
+ClientController -- ServerController
+
+ServerController -- Room
+
+
+ServerController -- ListManager
+ListManager o-- Invoice
+
+
+Reception -- ReceptionController
+ReceptionController -- ServerController
+ServerController -- ListManager
+ListManager o-- RDR
+
+
+ServerController -- SchedulingController
+ServerController -- Room
+Room -- DetailedList
+ServerController -- Timer
+
+ServerController -- CentralAirConditioner
+ServerController -- SchedulingController
+ServerController -- ServerQueue
+ServerController -- WatingQueue
+SchedulingController -- ServerController
+SchedulingController -- ServerQueue
+SchedulingController -- WaitingQueue
+ServerQueue -- WaitingQueue
+
+Manager -- ManagerController
+ManagerController -- ServerController
+ManagerController -- ReportList
+ManagerController -- ReportId
+ReportId -- ReportList
+ReportList -- DetailedList
