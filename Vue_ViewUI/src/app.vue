@@ -33,6 +33,7 @@ import ManagerSettings from "./views/ManagerView/ManagerSettings";
 import ManagerLogin from "./views/ManagerView/ManagerLogin";
 import ManagerDaily from "./views/ManagerView/ManagerDaily";
 import ManagerWeekly from "./views/ManagerView/ManagerWeekly";
+// import NetworkController from "./libs/NetworkController";
 
 export default {
   data() {
@@ -61,7 +62,7 @@ export default {
     'ManagerSettings': ManagerSettings
   },
   mounted() {
-
+    // this.networkController = Network
   },
   beforeDestroy() {
 

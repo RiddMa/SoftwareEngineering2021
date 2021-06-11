@@ -12,7 +12,8 @@
 
       <div class="searchResult" v-if="hasSearched">
         <Row>
-          <Col :xs="24" :sm="12" :md="12" :lg="8" :xl="6" :xxl="4" v-for="item in this.resultRoom">
+          <Col :xs="24" :sm="12" :md="12" :lg="8" :xl="6" :xxl="4" v-for="item in this.resultRoom"
+               v-bind:key="item.rid">
             <Card class="acCard">
               <Row slot="title">
                 <Col class="acCardTitle" :span="20">
@@ -40,10 +41,10 @@
                   <span>累计金额：</span>
                 </Col>
                 <Col align="end" :span="12">
-                  <span><b>￥{{item.cost}}</b></span>
+                  <span><b>￥{{ item.cost }}</b></span>
                 </Col>
               </Row>
-              
+
             </Card>
           </Col>
         </Row>

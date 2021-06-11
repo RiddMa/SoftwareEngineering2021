@@ -52,7 +52,7 @@
                             @click="changeWind($event,-1)"></Button>
                   </Col>
                   <Col align="middle" :span="8">
-                    <span class="digitFont">{{ thisRoom.curnWind }}</span>
+                    <span class="digitFont">{{ this.thisRoom.curnWind }}</span>
                   </Col>
                   <Col align="middle" :span="8">
                     <Button icon="md-add" size="large" shape="circle"
@@ -192,14 +192,14 @@ export default {
      */
     changeWind: function (event, turnUp) {
       let targetWind = this.thisRoom.curnWind + turnUp;
-      if (util.validateTemp(targetWind) === true) {
+      if (util.validateWind(targetWind) === true) {
         this.thisRoom.curnWind = targetWind;
         //TODO:用户名和传入风速
         console.log(setmode_u('testOnly', 'H'));
       } else {
         //no-op
       }
-      console.log(this.thisRoom.curnTemp);
+      console.log(this.thisRoom.curnWind);
 
     },
     /**
