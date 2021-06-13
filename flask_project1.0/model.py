@@ -1,145 +1,571 @@
+import random
+import threading
+from datetime import datetime
 import json
 import time
 import hashlib
+from threading import Timer
+
 import db
 import math
 
+SHUT_DOWN = 0
+SET_MODE = 1
+READY = 2
+UNIT_FEE = 1
+SPEED = dict([(0, 1 / 60), (1, 2 / 60), (2, 3 / 60)])
+INIT_TEMP = dict()
 
-class Ac:
-    """
-    用以描述空调的类
-    __state：开启/关闭/待机(等待启动)状态
-    __temp_now：当前温度
-    __temp_goal：目标温度
-    __mode：风速
-    __last_set_tletime：上次结算时间（单位：int
-    __start_time：本次开机时间
-    """
-    TEMP_OUTSIDE = 12.9
-    c = 0.01
-    Q = 0.04
+waiting_queue = []
+serving_queue = []
+room_list = dict()
+last_in_serving = dict()
+last_in_wating = dict()
+time_in_serving = dict()
 
-    def __init__(self, state, temp_now, temp_goal, mode, last_settle_time, pattern, start_time):
-        self.state = state
-        self.temp_now = temp_now
-        self.temp_goal = temp_goal
-        self.mode = mode
-        self.pattern = pattern
-        self.last_settle_time = last_settle_time
-        self.start_time = start_time
 
-    @staticmethod
-    def ac_temp_change(temp: float, pass_time: int, pattern: int):
-        """
-        计算空调工作一段时间内温度变化的函数，仅和模式相关，不考虑设定温度
-        令 c=ks = 0.01〖min〗^(-1) 其中k为介质温度传递系数，s为接触面积，
-        T = T_平衡 + (〖T_平衡-T〗_初始) e ^ (-ct)
-        T_平衡= T_外界+Q/c
-        取　Q = +- 0.4
-        T_外界 = 12.9 （北京年平均气温
-        :param temp:原本的温度
-        :param pass_time:经过的时间
-        :param pattern:制冷/制热模式对应0/1
-        :return:空调运行状态下pass_time之后的的温度
-        """
-        temp_balance = Ac.TEMP_OUTSIDE
-        if pattern:
-            temp_balance += Ac.Q / Ac.c
-        else:
-            temp_balance -= Ac.Q / Ac.c
-        temp_new = temp_balance + (temp - temp_balance) * math.e ** (-pass_time * Ac.c)
-        return temp_new
+class Detailedlist:
+    def __init__(self):
+        self.list = dict()
 
-    @staticmethod
-    def natural_temp_change(temp: float, pass_time: int):
-        """
-        计算一段时间内温度自然变化的函数
-        :param temp:原本的温度
-        :param pass_time:经过的时间
-        :return:自然状态下passtime时间之后的温度
-        """
-        temp_balance = Ac.TEMP_OUTSIDE
-        temp_new = temp_balance + (temp - temp_balance) * math.e ** (-pass_time * Ac.c)
-        return temp_new
+    def save(self, id):
+        if id not in self.list:
+            return
+        if len(self.list[id]) == 0:
+            return
+        for i in self.list:
+            # 存入详单数据库
+            i = i
+        return
 
-    def settle(self):
+    def insert(self,roomId,requesttime,requestduration,fanspeed,wind,fee):
         """
-        用来计算当前温度的函数
-        :return: 当前温度
-        """
-        time_now = int(time.time())
-        temp_after = self.temp_now
-        temp_previous = self.temp_now
-        if self.state == 1:
-            temp_after = self.ac_temp_change(temp_previous, time_now - self.last_settle_time, self.pattern)
-            if not self.pattern:
-                temp_after = max(temp_after, self.temp_goal)
-            else:
-                temp_after = min(temp_after, self.temp_goal)
-        else:
-            temp_after = self.natural_temp_change(temp_previous, time_now - self.last_settle_time)
-        return temp_after
-
-    def calc_cost(self):
-        """
-        更新花费金额到当前时间
-        包括修改上次结算时间，更新当前温度
-        :return:本次更新周期中的花费
-        """
-        prev_temp = self.temp_now
-        self.temp_now = self.settle()
-        time_now = int(time.time())
-        self.last_settle_time = time_now
-        delta_temp = self.temp_now - prev_temp
-        if self.state == 0:
-            return 0
-        if self.mode == 'L':
-            return 0.5 * delta_temp
-        if self.mode == 'M':
-            return 1 * delta_temp
-        if self.mode == 'H':
-            return 2 * delta_temp
-
-    def change_work(self, new_temp: float, new_mode: str, new_pattern: int):
-        """
-        修改空调工作模式
-        :param new_temp: 新的温度
-        :param new_mode: 新的风速
-        :param new_pattern: 新模式
+        返回格式：
+        "RoomId": row.rid,                          #string
+        "RequestTime": row.starttime, 			    #datetime    上次进服务队列的时间（没有就返回None）
+        "RequestDuration" : row.duration,           #int（这次产生详单与上次产生详单，在服务队列的时间长度，以秒为单位）
+        "FanSpeed": row.fanspeed, 					#char  "0","1","2"分别为低中高风速
+        "FeeRate": feerate,							#float（每秒费用）
+        "Fee": fee									#float（与上次产生详单之间，新产生的费用）
+        :param fee:费用
+        :param fanspeed:风速
+        :param requestduration:请求间隔
+        :param requesttime:上次进入服务队列的时间
+        :param roomId:房间号
         :return:
         """
-        self.settle()
-        if new_temp is not None:
-            self.temp_goal = new_temp
-        if new_mode is not None:
-            self.mode = new_mode
-        if new_pattern is not None:
-            self.pattern = new_pattern
+        unit = dict([
+            ('RoomId',roomId),('RequestTime',requesttime),('requestduration',requestduration),('FanSpeed',fanspeed),
+            ('FeeRate',SPEED[wind]),('Fee',fee)
+        ])
+        self.list[roomId].append(unit)
+        return
+
+
+detailed_list: Detailedlist
 
 
 class Room:
     """
-    房间类：
-    __rid：房间号
-    __cost：花销
-    __discount：本房间折扣
+    描述房间的类，在本设计中与该房间内的空调绑定
+    房间ID：roomId
+    累计价格：cost
+    计费率：feeRate
+    目标温度：target_temp
+    当前温度：current_temp
+    风速：wind
+    模式：mode
+    开关机:state
+    开机时间:start_time
     """
-    list = []
 
-    def __init__(self, rid, cost, discount):
-        self.rid = rid
-        self.cost = cost
-        self.discount = discount
+    def __init__(self, roomId, target_temp, current_temp, wind, mode, state, price):
+        self.roomId = roomId
+        self.feeRate = SPEED[wind] * UNIT_FEE
+        self.wind = wind
+        self.mode = mode
+        self.target_temp = target_temp
+        self.current_temp = current_temp
+        self.last_settle_time = datetime.now()
+        self.start_time = datetime.now()
+        self.price = price
+        self.state = state
+
+    def settle(self):
+        """
+        按当前时间进行状态结算
+        :return:
+        """
+        new_time = datetime.now()
+        delt_time = (new_time - self.last_settle_time).seconds
+        self.last_settle_time = new_time
+        if not (self.roomId in waiting_queue) and not (self.roomId in serving_queue):
+            # 关机状态
+            new_temp = delt_time * 0.5 / 60
+            if self.current_temp > INIT_TEMP[self.roomId]:
+                new_temp = max(self.current_temp - new_temp, INIT_TEMP[self.roomId])
+            else:
+                new_temp = min(self.current_temp + new_temp, INIT_TEMP[self.roomId])
+            self.current_temp = new_temp
+            return
+        if self.roomId in serving_queue:
+            new_temp = delt_time * SPEED[self.wind]
+            if self.mode == 0:
+                new_temp = max(self.current_temp - new_temp,self.target_temp)
+            else:
+                new_temp = min(self.current_temp + new_temp,self.target_temp)
+            self.price += (new_temp - self.current_temp)
+            self.current_temp = new_temp
+        return
+
+    def SetTemp(self, temp):
+        """
+        修改房间设定温度
+        :param temp:
+        :return:
+        """
+        self.target_temp = temp
+
+    def SetSpeed(self, speed):
+        """
+        修改房间设定风速
+        :param speed:
+        :return:
+        """
+        self.wind = speed
+
+    def GetTemp(self):
+        """
+        获得房间温度
+        :param roomId:
+        :return:
+        """
+        return self.current_temp
+
+    def SetPower(self):
+        """
+        设定开关机状态
+        :param power:
+        :return:
+        """
+        return self.state
+
+    def CheckRoomState(self, list_Room):
+        """
+        监控房间
+        :return:
+        """
 
 
-class Stuff:
+class CentralAirConditioner:
     """
-    这是工作人员的类
+    描述中央空调的类
+    状态：state
+    Mode：初始模式
+    Temp_highLimit：温度上限
+    Temp_lowLimit：温度下限
+    default_TargetTemp：初始温度
+    FeeRate_H：高风速费用
+    FeeRate_M：中风速费用
+    FeeRate_L：低风速费用
+    """
+
+    def __init__(self):
+        self.state = SHUT_DOWN
+        self.mode = 0
+        self.temp_highlimit = 27
+        self.temp_lowlimit = 16
+        self.default_targettemp = 25
+        self.high_fee = 3 / 60
+        self.mid_fee = 2 / 60
+        self.low_fee = 1 / 60
+
+    def setState(self, mode):
+        """
+        更改中央空调状态
+        :return:
+        """
+        self.state = mode
+
+    def setPara(self, Mode, Temp_highLimit, Temp_lowLimit, default_TargetTemp, FeeRate_H, FeeRate_M, FeeRate_L):
+        """
+        :param Mode: 初始模式
+        :param Temp_highLimit:温度上限
+        :param Temp_lowLimit:温度下限
+        :param default_TargetTemp:初始温度
+        :param FeeRate_H:高风速费用
+        :param FeeRate_M:中风速费用
+        :param FeeRate_L:低风速费用
+        :return:
+        """
+        self.mode = Mode
+        self.temp_highlimit = Temp_highLimit
+        self.temp_lowlimit = Temp_lowLimit
+        self.default_targettemp = default_TargetTemp
+        self.high_fee = FeeRate_H
+        self.mid_fee = FeeRate_M
+        self.low_fee = FeeRate_L
+
+
+central_ac: CentralAirConditioner
+
+
+class ClientController:
+    """
+    客户服务的控制器，用以响应客户的操作
+    """
+
+    @staticmethod
+    def PowerOn(roomid):
+        """
+        响应空调开机操作，并转发请求到服务控制器
+        :param roomid:房间号
+        :param currentTemp:当前温度
+        :return:roomstate
+        """
+        return ServerController.PowerOn(roomid)
+
+    @staticmethod
+    def RequestState(roomid):
+        """
+        响应状态查询操作并更新金额，并转发请求到服务控制器
+        :param roomid:
+        :return:
+        """
+        return ServerController.RequestState(roomid)
+
+    @staticmethod
+    def ChangeTargetTemp(roomId, targetTemp):
+        """
+        响应温度改变操作，并转发请求到服务控制器
+        :param roomId:
+        :param targetTemp:
+        :return:
+        """
+        error_code = 0
+        ServerController.ChangeTargetTemp(roomId, targetTemp)
+        return error_code
+
+    @staticmethod
+    def ChangeFanSpeed(roomId, fanSpeed):
+        """
+        响应风速改变操作，并转发请求到服务控制器
+        :param roomId:
+        :param fanSpeed:
+        :return:
+        """
+        error_code = 0
+        ServerController.ChangeTargetTemp(roomId, fanSpeed)
+        return error_code
+
+    @staticmethod
+    def PowerOff(roomId):
+        """
+        响应空调关机操作，并转发请求到服务控制器
+        :param roomId: 
+        :return: 
+        """
+        error_code = 0
+        ServerController.PowerOff(roomId)
+        return error_code
+
+
+class ServerController:
+    """
+    服务器的控制器，用以各类服务器响应的操作
+    """
+
+    @staticmethod
+    def PowerOn(roomId):
+        """
+        响应空调开机操作
+        :param roomId:
+        :return:roomstate
+        """
+        if detailed_list.list[roomId] is not None:
+            detailed_list.save(roomId)
+            detailed_list.list[roomId] = None
+        room_list[roomId].poweron()
+        SchedulingController.AddRoom(roomId)
+        detailed_list.list[roomId] = dict()
+        return room_list[roomId]
+
+    @staticmethod
+    def RequestState(roomId):
+        """
+        响应状态查询操作并更新金额
+        :param roomId:
+        :return:
+        """
+        room_list[roomId].settle()
+        return room_list[roomId]
+
+    @staticmethod
+    def ChangeTargetTemp(roomId, targetTemp):
+        """
+        响应温度改变操作
+        :param roomId:
+        :param targetTemp:
+        :return:
+        """
+        if targetTemp > central_ac.temp_highlimit or targetTemp < central_ac.temp_lowlimit:
+            return 1
+        SchedulingController.move_out(roomId)
+        room_list[roomId].SetTemp(targetTemp)
+        SchedulingController.insert(roomId)
+        return 0
+
+    @staticmethod
+    def ChangeFanSpeed(roomId, fanSpeed):
+        """
+        响应风速改变操作
+        :param fanSpeed:
+        :return:
+        """
+        SchedulingController.move_out(roomId)
+        room_list[roomId].SetSpeed(fanSpeed)
+        SchedulingController.insert(roomId)
+        return 0
+
+    @staticmethod
+    def PowerOff(roomId):
+        """
+        响应空调关机操作
+        :return:
+        """
+        SchedulingController.move_out(roomId)
+        room_list[roomId] = 0
+        return 0
+
+    @staticmethod
+    def CreateInvoice(RoomId):
+        """
+        响应创建帐单请求
+        :param date_in:
+        :param date_out:
+        :return:
+        """
+        # 数据库中查询入住时间
+        return dict([
+            ('RoomId', RoomId), ('Total_Fee', room_list[RoomId].price), ('date_in',), ('date_out', str(datetime.now()))
+        ])
+
+    @staticmethod
+    def CreateRDR(RoomId):
+        """"
+        响应创建详单请求
+        """
+        return detailed_list.list[RoomId]
+
+    @staticmethod
+    def CheckRoomState(list_Room):
+        """
+        获取房间状态
+        :return:
+        """
+        res_list = []
+        for roomId in list_Room:
+            unit = dict()
+            unit['roomId'] = roomId
+            if roomId in serving_queue:
+                unit['state'] = 'server'
+            elif roomId in waiting_queue:
+                unit['state'] = 'wait'
+            else:
+                unit['state'] = 'tempUp'
+            if room_list[roomId].mode == 0:
+                unit['mode'] = 1
+            else :
+                unit['mode'] = -1
+            unit['targetTemp'] = room_list[roomId].target_temp
+            unit['currentTemp'] = room_list[roomId].current_temp
+            unit['fanSpeed'] = room_list[roomId].wind
+            res_list.append(unit)
+        return res_list
+
+    @staticmethod
+    def PowerON():
+        """
+        响应中央空调开机
+        :return:错误码
+        """
+        global central_ac, waiting_queue, serving_queue
+        central_ac = CentralAirConditioner()
+        central_ac.setState(SET_MODE)
+        SchedulingController.Initialize()
+        waiting_queue = []
+        serving_queue = []
+        return 1
+
+    @staticmethod
+    def update():
+        while central_ac.mode != SHUT_DOWN:
+            time.sleep(100)
+            for roomid, b in room_list:
+                room_list[roomid].settle()
+                if roomid in serving_queue:
+                    time_in_serving[roomid] += 1
+                    if room_list[roomid].current_temp == room_list[roomid].target_temp:
+                        SchedulingController.move_out(roomid)
+                else:
+                    time_in_serving[roomid] += 0
+                    if (not roomid in waiting_queue) and (not roomid in serving_queue):
+                        if abs(room_list[roomid].current_temp - INIT_TEMP[roomid]) > 1:
+                            SchedulingController.AddRoom(roomid)
+        return
+
+    @staticmethod
+    def StartUp():
+        """
+        响应中央空调的起步
+        :return:错误码
+        """
+        global central_ac, room_list
+        if central_ac.state != SET_MODE:
+            return 1
+        central_ac.setState(READY)
+        central_ac.state = READY
+        room_list = dict()
+        for i in range(1, 6):
+            for j in range(1, 11):
+                room_list[str(i * 100 + j)] = Room(str(i * 100 + j), central_ac.default_targettemp, 26, 1, 0, 0, 0)
+                last_in_serving[str(i * 100 + j)] = last_in_wating[str(i * 100 + j)] = None
+                detailed_list[str(i * 100 + j)] = None
+                time_in_serving[str(i * 100 + j)] = 0
+        room_list['101'].current_temp = INIT_TEMP['101']
+        room_list['102'].current_temp = INIT_TEMP['102']
+        room_list['103'].current_temp = INIT_TEMP['103']
+        room_list['104'].current_temp = INIT_TEMP['104']
+        threading.Thread(target=ServerController.update())
+        return 0
+
+    @staticmethod
+    def setPara(Mode, Temp_highLimit, Temp_lowLimit, default_TargetTemp, FeeRate_H, FeeRate_M, FeeRate_L):
+        """
+        响应赋值空调的缺省工作模式，包括初始温度，温度上限下限，不同风速的费率等
+        :param Mode: 初始模式
+        :param Temp_highLimit:温度上限
+        :param Temp_lowLimit:温度下限
+        :param default_TargetTemp:初始温度
+        :param FeeRate_H:高风速费用
+        :param FeeRate_M:中风速费用
+        :param FeeRate_L:低风速费用
+        :return:错误码
+        """
+        global central_ac
+        if central_ac.state != SET_MODE:
+            return 0
+        central_ac.setPara(Mode, Temp_highLimit, Temp_lowLimit, default_TargetTemp, FeeRate_H, FeeRate_M, FeeRate_L)
+        return 1
+
+
+class SchedulingController:
+    """
+    调度控制器，用以进行空调调度操作
+    """
+    @staticmethod
+    def Initialize():
+        """
+        调度控制器初始化
+        :return:
+        """
+        error_code = 0
+        return error_code
+
+    @staticmethod
+    def StartUp():
+        """
+        调度控制器启动
+        :return:
+        """
+        error_code = 0
+        return error_code
+
+    @staticmethod
+    def check(roomid):
+        """
+        定时状态修改
+        :return:
+        """
+        if not roomid in serving_queue:
+            return
+        if (datetime.now() - last_in_serving[roomid]).seconds < 120:
+            return
+        if len(waiting_queue) == 0:
+            return
+        waiting_queue.sort(key=lambda x: (room_list[x].wind, last_in_wating[room_list[x].roomid]))
+        if room_list[waiting_queue[0]].wind == room_list[roomid]:
+            res = waiting_queue[0]
+            serving_queue.remove(roomid)
+            detailed_list.insert(roomid,last_in_serving[roomid],
+                                 time_in_serving[roomid],room_list[roomid].wind,room_list[roomid].price)
+            waiting_queue.remove(res)
+            serving_queue.append(res)
+            waiting_queue.append(roomid)
+            last_in_wating[roomid] = datetime.now()
+            last_in_serving[res] = datetime.now()
+        SchedulingController.AddRoom(roomid)
+        return
+
+    @staticmethod
+    def AddRoom(roomId):
+        """
+        新增服务对象
+        :param roomId:
+        :param price:
+        :return:
+        """
+        if len(serving_queue) < 3:
+            serving_queue.append(roomId)
+            last_in_serving[roomId] = datetime.now()
+            return
+        serving_queue.sort(key=lambda x: (room_list[x].wind, last_in_serving[room_list[x].roomid]))
+        if room_list[serving_queue[0]].wind < room_list[roomId].wind:
+            room_list[serving_queue[0]].settle()
+            room_list[roomId].settle()
+            res = serving_queue[0]
+            detailed_list.insert(res, last_in_serving[res],
+                                 time_in_serving[res], room_list[res].wind, room_list[res].price)
+            serving_queue[0], roomId = roomId, serving_queue[0]
+            tr = Timer(120, SchedulingController.check)
+            tr.start()
+            last_in_serving[serving_queue[0]] = datetime.now()
+        waiting_queue.append(roomId)
+        last_in_wating[roomId] = datetime.now()
+        return
+
+    @staticmethod
+    def move_out(roomId):
+        """
+        新增服务对象
+        :param roomId:
+        :param price:
+        :return:
+        """
+        if roomId in waiting_queue:
+            waiting_queue.remove(roomId)
+            return
+        if roomId in serving_queue:
+            serving_queue.remove(roomId)
+            detailed_list.insert(roomId, last_in_serving[roomId],
+                                 time_in_serving[roomId], room_list[roomId].wind, room_list[roomId].price)
+            if len(waiting_queue) == 0:
+                return
+            waiting_queue.sort(key=lambda x: (room_list[x].wind, last_in_wating[room_list[x].roomid]))
+            serving_queue.append(waiting_queue[0])
+            last_in_serving[waiting_queue[0]] = datetime.now()
+            waiting_queue.pop(0)
+        return
+
+
+class log:
+    """
+    登陆管理的类
     实例属性：用户名和密码
     类属性：token_pool,一个用来存储token和帐号对应用户名和类型
     方法：
     """
-    token_pool = dict()
+    token_pool = [hashlib.md5(random.randint(-1e7, 1e7)).hexdigest() for i in range(1, 10)]
 
     @staticmethod
     def stuff_login(username: str, password: str, privilege):
@@ -154,206 +580,16 @@ class Stuff:
         return error_code
 
     @staticmethod
-    def stuff_logout(username: str, password: str):
-        """
-        用于登陆的方法，过程中需要校验用户名和密码
-        :param username: 传入的工作人员用户名
-        :param password: 工作人员密码
-        :return: error_code、token和该工作人员的类型/权限
-        需要校验数据库中是否有账号信息，是否已登陆，和权限是否对的上
-        """
-        error_code = 0
-        return error_code
-
-    @staticmethod
-    def get_stuff_token(username: str, privilege):
+    def custom_login(username: str, password: str):
         """
         用于生成空调管理人员token的方法
-        :param username:传入的工作人员用户名
-        :param privilege:权限，也即账户类型
+        :param username:用户名
+        :param password:密码
         :return:token
         """
-        timenow = str(time.time())
-        token = hashlib.md5(bytes(username, encoding="utf-8"))
-        token.update(bytes(timenow, encoding="utf-8"))
-        token = token.hexdigest()
-        Stuff.token_pool[token] = (username, privilege)
-        return token
-
-
-class Ac_admin(Stuff):
-    """
-    空调管理员的类
-    包括一个查找所有给定房间状态的方法
-        我很想写一颗trie树2333 —— 07
-    """
+        error_code = 0
+        return error_code, log.token_pool[random.randint(0, len(log.token_pool) - 1)]
 
     @staticmethod
-    def login(username: str, password: str):
-        return Stuff.stuff_login(username,password,"admin")
-
-    @staticmethod
-    def spy_on_ac(field: str):
-        """
-        根据传入的字符串查找空调信息并返回，由于目前通信接口没定，先放着
-        :param field: 传入字段(支持局部关键词查询
-        :return: 返回一个list和error_code
-        """
-        error_code = 0
-        res = []
-        return error_code, res
-
-    # 跟据管理员名字查询对应信息，并对比密码设置error_code，
-    # (token可先随意设置一个值，以后再改进)
-    def get_admin(username, password):
-        error_code = 0
-        res = json.dumps(db.getUser(username, password).get_json())
-        if 'userid' in res:
-            return error_code, Ac_admin(res['userid'], username, password)
-        else:
-            error_code = 1
-        return error_code, Ac_admin(0, None, None)
-
-    # 生成报表，根据当前时间查询当前所有房间空调状态(开关、温度、风速等)与折扣
-    @staticmethod
-    def get_report(time):
-        error_code = 0
-        # 房间信息列表(空调状态与折扣)
-        reslist = []
-        for rid, value in Store.items():
-            tpvar = dict()
-            tpvar['rid'] = rid
-            tpvar['__state'] = value.__state
-            tpvar['temp'] = value.temp
-            tpvar['mode'] = value.mode
-            tpvar['discount'] = value.discount
-            reslist.append(tpvar)
-        return error_code, reslist
-
-    # 这里我不太理解流水是啥，接口可能设置不正确
-    # 应该是每天的实际入账金额，先空着
-    @staticmethod
-    def water_bills(time):
-        error_code = 0
-        starttime = float(time) // 60 // 24 * 60 * 24
-        endtime = float(time) // 60 // 24 * 60 * 24 + 60 * 24
-        res = db.getTurnover(int(starttime), int(endtime)).get_json()
-        if 'msg' in res:
-            error_code = 1
-            return error_code, None
-        return error_code, res
-
-    # 设置某个房间的折扣
-    @staticmethod
-    def set_discount(rid, discount):
-        error_code = 0
-        if Store[rid].__state == 0:
-            Store[rid].discount = discount
-            return error_code
-        Store[rid].updatecost()
-        Store[rid].changediscount(discount)
-        return error_code
-
-    # 设置所有空调总开关
-    @staticmethod
-    def center_turn_on_off(state):
-        error_code = 0
-        for i in roomlist:
-            if Store[i].__state != state:
-                if state == 1:
-                    Store[i].Turnon()
-                else:
-                    Store[i].Turnoff()
-        return error_code
-
-
-# 房卡信息
-class Card:
-    def __init__(self, username, rid, password):
-        # 顾客姓名
-        self.useranme = username
-        # 房间号
-        self.rid = rid
-        # 密码
-        self.password = password
-
-
-class Receptionist(Stuff):
-    '''
-        前台接待人员的类
-        包括入住、退房、打报表的方法
-    '''
-
-    @staticmethod
-    def get_card(phonenumber):
-        error_code = 0
-        res = db.getInfomation(phonenumber).get_json()
-        if 'msg' in res:
-            error_code = 1
-            return error_code, None
-        return error_code, Card(res['name'], Card['roomid'], Card['password'])
-
-    # 退房结算
-    @staticmethod
-    def get_total_cost(rid):
-        error_code = 0
-        if Store[rid].__state == 1:
-            Store[rid].Turnoff()
-        # 使用时间
-        duration = Store[rid].totaltime
-        # 消费金额
-        price = Store[rid].cost
-        return error_code, int(duration), float(price)
-
-
-class User:
-    def __init__(self, uid, username, token='x'):
-        self.id = uid
-        self.name = username
-        self.token = token
-
-    @staticmethod
-    def user_login(rid, password):
-        error_code = 0
-        res = db.getCard(rid, password).get_json()
-        if 'msg' in res:
-            error_code = 1
-            return error_code, None
-        else:
-            return error_code, User(rid, res['name'])
-
-    # 顾客设置空调开关
-    @staticmethod
-    def turn_on_off(rid, state):
-        error_code = 0
-        print(rid)
-        if state != Store[rid].__state:
-            if state:
-                Store[rid].Turnon()
-            else:
-                Store[rid].Turnoff()
-        return error_code
-
-    # 顾客设置温度
-    @staticmethod
-    def set_temp(rid, temp):
-        error_code = 0
-        Store[rid].settemp(temp)
-        return error_code
-
-    # 顾客设置风速
-    @staticmethod
-    def set_mode(rid, mode):
-        error_code = 0
-        Store[rid].setmode(mode)
-        return error_code
-
-    # 顾客查看当前消费金额
-    @staticmethod
-    def show_cost(rid):
-        error_code = 0
-        # 空调开关状态
-        onoff = Store[rid].__state
-        Store[rid].updatecost()
-        cost = Store[rid].cost
-        return error_code, str(onoff), str(cost)
+    def check_token(token):
+        return token in log.token_pool
