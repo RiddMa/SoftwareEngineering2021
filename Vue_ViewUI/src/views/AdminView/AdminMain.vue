@@ -7,7 +7,7 @@
     <Card>
       <div class="acList">
         <Row>
-          <Col :xs="24" :sm="12" :md="12" :lg="8" :xl="6" :xxl="4" v-for="item in this.$store.state.roomInfo">
+          <Col :xs="24" :sm="12" :md="12" :lg="8" :xl="6" :xxl="4" v-for="item in this.$store.state.roomInfo" v-bind:key="item.rid">
             <Card class="acCard">
               <Row slot="title">
                 <Col class="acCardTitle" :span="20">
