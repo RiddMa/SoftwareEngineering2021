@@ -8,7 +8,7 @@ SHUT_DOWN = 0
 SET_MODE = 1
 READY = 2
 UNIT_FEE = 1
-SPEED = dict([(0, 1 / 60), (1, 2 / 60), (2, 3 / 60)])
+SPEED = dict([('0', 1 / 60), ('1', 2 / 60), ('2', 3 / 60)])
 INIT_TEMP = dict([('101',26),('102',26),('103',26),('104',26)])
 
 waiting_queue = []
