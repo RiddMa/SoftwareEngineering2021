@@ -540,3 +540,4 @@ src/config/env.js
 
 #backup
 /flask_project1.0/model - back.py
+/flask_project1.0/test/
