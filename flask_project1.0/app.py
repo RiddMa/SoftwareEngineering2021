@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, make_response, sessions
 import json
 from flask_cors import CORS
-from model import log,ClientController, ServerController
+from model import log,ClientController, ServerController,ReceptionController
 from myglobal import app
 import hashlib
 import time
@@ -236,7 +236,7 @@ def create_invoice():
     room_id = form['roomid']
 
     # TODO 调用前台打印账单函数
-    error_code, invoice = ServerController.CreateInvoice(room_id)
+    error_code, invoice = ReceptionController.CreateInvoice(room_id)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
@@ -270,7 +270,7 @@ def createrd():
     room_id = form['roomId']
 
     # TODO 调用前台打印详单函数
-    error_code, list = ServerController.CreateRDR(room_id)
+    error_code, list = ReceptionController.CreateRDR(room_id)
 
     if error_code == 1:
         return jsonify({'error_code': 1})

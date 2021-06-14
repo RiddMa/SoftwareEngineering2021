@@ -448,7 +448,10 @@ class ServerController:
         :return:
         """
         SchedulingController.move_out(roomId)
-        room_list[roomId] = 0
+        detailed_list.insert(roomId, SchedulingController.last_in_serving[roomId],
+                             SchedulingController.time_in_serving[roomId], room_list[roomId].wind,
+                             room_list[roomId].price)
+        room_list[roomId].state = 0
         return 0
 
     @staticmethod
@@ -518,13 +521,10 @@ class ServerController:
 
     @staticmethod
     def update():
-        print('assaa',central_ac.state,SHUT_DOWN)
         while central_ac.state != SHUT_DOWN:
-            print('asasaas')
-            time.sleep(0.1)
+            time.sleep(0.2)
             for roomid in room_list:
                 room_list[roomid].settle()
-                print(roomid,room_list[roomid].target_temp,room_list[roomid].current_temp)
                 if roomid in serving_queue:
                     SchedulingController.time_in_serving[roomid] += 1
                     if room_list[roomid].current_temp == room_list[roomid].target_temp:
@@ -561,8 +561,8 @@ class ServerController:
         room_list['102'].current_temp = INIT_TEMP['102']
         room_list['103'].current_temp = INIT_TEMP['103']
         room_list['104'].current_temp = INIT_TEMP['104']
-        tr = threading.Thread(target=ServerController.update())
-        tr.start()
+        #tr = threading.Thread(target=ServerController.update())
+        #tr.start()
         return 0
 
     @staticmethod
