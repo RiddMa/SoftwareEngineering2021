@@ -258,15 +258,15 @@ class ClientController:
         :return:
         """
         error_code = 0
-        ServerController.ChangeTargetTemp(roomId, fanSpeed)
+        ServerController.ChangeFanSpeed(roomId, fanSpeed)
         return error_code
 
     @staticmethod
     def PowerOff(roomId):
         """
         响应空调关机操作，并转发请求到服务控制器
-        :param roomId: 
-        :return: 
+        :param roomId:
+        :return:
         """
         error_code = 0
         ServerController.PowerOff(roomId)
