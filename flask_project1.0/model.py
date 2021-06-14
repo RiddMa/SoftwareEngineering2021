@@ -191,6 +191,10 @@ class CentralAirConditioner:
         :param FeeRate_L:低风速费用
         :return:
         """
+        if Mode == 1:
+            Mode = 0
+        else:
+            Mode = 1
         self.mode = Mode
         self.temp_highlimit = Temp_highLimit
         self.temp_lowlimit = Temp_lowLimit
