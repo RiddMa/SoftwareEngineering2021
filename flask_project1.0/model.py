@@ -518,13 +518,13 @@ class ServerController:
 
     @staticmethod
     def update():
-
-        while central_ac.mode != SHUT_DOWN:
-            time.sleep(100)
-            print('asasaasa')
+        print('assaa',central_ac.state,SHUT_DOWN)
+        while central_ac.state != SHUT_DOWN:
+            print('asasaas')
+            time.sleep(0.1)
             for roomid in room_list:
                 room_list[roomid].settle()
-                print(roomid,room_list[roomid].target_temp,room_list[roomid].cuurent_temp)
+                print(roomid,room_list[roomid].target_temp,room_list[roomid].current_temp)
                 if roomid in serving_queue:
                     SchedulingController.time_in_serving[roomid] += 1
                     if room_list[roomid].current_temp == room_list[roomid].target_temp:
@@ -550,10 +550,13 @@ class ServerController:
         room_list = dict()
         for i in range(1, 6):
             for j in range(1, 11):
-                room_list[str(i * 100 + j)] = Room(str(i * 100 + j), central_ac.default_targettemp, 26, central_ac.wind, 0, 0, 0)
-                SchedulingController.last_in_serving[str(i * 100 + j)] = SchedulingController.last_in_wating[str(i * 100 + j)] = None
-                detailed_list.list[str(i * 100 + j)] = []
-                SchedulingController.time_in_serving[str(i * 100 + j)] = 0
+                roomId = str(i * 100 + j)
+                room_list[roomId] = Room(roomId, central_ac.default_targettemp, 26, central_ac.wind, 0, 0, 0)
+                SchedulingController.last_in_serving[roomId] = SchedulingController.last_in_wating[roomId] = None
+                detailed_list.list[roomId] = []
+                SchedulingController.time_in_serving[roomId] = 0
+                if roomId not in INIT_TEMP:
+                    INIT_TEMP[roomId] = 26
         room_list['101'].current_temp = INIT_TEMP['101']
         room_list['102'].current_temp = INIT_TEMP['102']
         room_list['103'].current_temp = INIT_TEMP['103']
