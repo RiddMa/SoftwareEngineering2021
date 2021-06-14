@@ -389,12 +389,12 @@ class ServerController:
         :return:error_code
         """
         # todo battle
-        if detailed_list.list[roomId].state == 0:
+        if room_list[roomId].state == 0:
             detailed_list.save(roomId)
         else:
             error_code = 1
             return error_code
-        room_list[roomId].poweron()
+        room_list[roomId].state = 1
         room_list[roomId].current_temp = current_temp
         room_list[roomId].wind = wind
         SchedulingController.AddRoom(roomId)
@@ -547,7 +547,7 @@ class ServerController:
             for j in range(1, 11):
                 room_list[str(i * 100 + j)] = Room(str(i * 100 + j), central_ac.default_targettemp, 26, central_ac.wind, 0, 0, 0)
                 SchedulingController.last_in_serving[str(i * 100 + j)] = SchedulingController.last_in_wating[str(i * 100 + j)] = None
-                detailed_list.list[str(i * 100 + j)] = None
+                detailed_list.list[str(i * 100 + j)] = []
                 SchedulingController.time_in_serving[str(i * 100 + j)] = 0
         room_list['101'].current_temp = INIT_TEMP['101']
         room_list['102'].current_temp = INIT_TEMP['102']
