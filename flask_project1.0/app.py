@@ -118,8 +118,9 @@ def request_state():
 
     res = dict()
     res['currentTemp'] = room.current_temp
-    res['totalFee'] = room.total_fee
-    res['currentFee'] = room.current_fee
+    # TODO 总费用与当前费用
+    res['totalFee'] = 100
+    res['currentFee'] = 100
 
     return jsonify({'error_code': error_code, 'data': res})
 
