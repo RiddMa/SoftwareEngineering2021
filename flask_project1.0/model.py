@@ -276,16 +276,21 @@ class ServerController:
     """
 
     @staticmethod
-    def PowerOn(roomId):
+    def PowerOn(roomId,current_temp,wind):
         """
         响应空调开机操作
+        :param wind:
+        :param current_temp:
         :param roomId:
-        :return:roomstate
+        :return:roomstate 房间状态，用一个Room类表示
         """
+        #todo battle
         if detailed_list.list[roomId] is not None:
             detailed_list.save(roomId)
             detailed_list.list[roomId] = None
         room_list[roomId].poweron()
+        room_list[roomId].current_temp = current_temp
+        room_list[roomId].wind = wind
         SchedulingController.AddRoom(roomId)
         detailed_list.list[roomId] = dict()
         return room_list[roomId]
