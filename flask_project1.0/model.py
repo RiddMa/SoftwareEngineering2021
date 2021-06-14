@@ -30,7 +30,7 @@ class Detailedlist:
             i = i
         return
 
-    def insert(self, roomId, requesttime, requestduration, fanspeed, wind, fee):
+    def insert(self, roomId, requesttime, requestduration, wind, fee):
         """
         返回格式：
         "RoomId": row.rid,                          #string
@@ -40,7 +40,7 @@ class Detailedlist:
         "FeeRate": feerate,							#float（每秒费用）
         "Fee": fee									#float（与上次产生详单之间，新产生的费用）
         :param fee:费用
-        :param fanspeed:风速
+        :param wind:风速
         :param requestduration:请求间隔
         :param requesttime:上次进入服务队列的时间
         :param roomId:房间号
@@ -48,9 +48,11 @@ class Detailedlist:
         """
         unit = dict([
             ('RoomId', roomId), ('RequestTime', requesttime), ('requestduration', requestduration),
-            ('FanSpeed', fanspeed),
+            ('FanSpeed', wind),
             ('FeeRate', SPEED[wind]), ('Fee', fee)
         ])
+        if len(self.list[roomId]) > 0:
+            unit['Fee'] -= self.list[roomId][-1]['Fee']
         self.list[roomId].append(unit)
         return
 
@@ -518,14 +520,15 @@ class ServerController:
     def update():
         while central_ac.mode != SHUT_DOWN:
             time.sleep(100)
-            for roomid, b in room_list:
+            for roomid in room_list:
                 room_list[roomid].settle()
+                print(roomid,room_list[roomid].target_temp,room_list[roomid].cuurent_temp)
                 if roomid in serving_queue:
                     SchedulingController.time_in_serving[roomid] += 1
                     if room_list[roomid].current_temp == room_list[roomid].target_temp:
                         SchedulingController.move_out(roomid)
                 else:
-                    SchedulingController.time_in_serving[roomid] += 0
+                    SchedulingController.time_in_serving[roomid] = 0
                     if (not roomid in waiting_queue) and (not roomid in serving_queue):
                         if abs(room_list[roomid].current_temp - INIT_TEMP[roomid]) > 1:
                             SchedulingController.AddRoom(roomid)
