@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, make_response, sessions
 import json
 from flask_cors import CORS
-from model import Admin, User, Reception
+from model import log,ClientController, ServerController
 from myglobal import app
 import hashlib
 import time
@@ -11,7 +11,6 @@ CORS(app)
 
 admin_tokens = set()
 user_tokens = set()
-
 
 def new_token(username):
     ctime = str(time.time())
@@ -57,14 +56,14 @@ def enter_room():
     password = form['password']
 
     # TODO 调用用户登录函数
-    error_code, current_temp = User.signup(room_id,password)
+    error_code, token = log.custom_login(room_id,password)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
     res = dict()
-    res['token'] = new_token(room_id)
-    res['currentTemp'] = current_temp
+    res['token'] = token
+    # res['currentTemp'] = current_temp
 
     # set_token(False,res['token'])
     return jsonify({'error_code': error_code, 'data': res})
@@ -91,7 +90,7 @@ def user_poweron():
     #     return jsonify({'error_code': 1})
 
     # TODO 调用用户开机函数
-    error_code = User.poweron(room_id, target_temp, fan_speed, current_temp)
+    error_code = ClientController.PowerOn(room_id)
 
     return jsonify({'error_code': error_code})
 
@@ -112,15 +111,15 @@ def request_state():
     #     return jsonify({'error_code': 1})
 
     # TODO 调用用户查询使用空调情况的函数
-    error_code, current_temp, total_fee, current_fee = User.request_state(room_id)
+    error_code, room = ClientController.RequestState(room_id)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
     res = dict()
-    res['currentTemp'] = current_temp
-    res['totalFee'] = total_fee
-    res['currentFee'] = current_fee
+    res['currentTemp'] = room.current_temp
+    res['totalFee'] = room.total_fee
+    res['currentFee'] = room.current_fee
 
     return jsonify({'error_code': error_code, 'data': res})
 
@@ -143,7 +142,7 @@ def change_target_temp():
     #     return jsonify({'error_code': 1})
 
     # TODO 调用用户设置目标温度函数
-    error_code = User.change_target_temp(room_id, target_temp)
+    error_code = ClientController.ChangeTargetTemp(room_id, target_temp)
 
     return jsonify({'error_code': error_code})
 
@@ -166,7 +165,7 @@ def change_fan_speed():
     #     return jsonify({'error_code': 1})
 
     # TODO 调用用户设置风速函数
-    error_code = User.change_fan_speed(room_id, fan_speed)
+    error_code = ClientController.ChangeFanSpeed(room_id, fan_speed)
 
     return jsonify({'error_code': error_code})
 
@@ -187,14 +186,14 @@ def user_poweroff():
     #     return jsonify({'error_code': 1})
 
     # TODO 调用用户关机函数
-    error_code = User.poweroff(room_id)
+    error_code = ClientController.PowerOff(room_id)
 
     return jsonify({'error_code': error_code})
 
 
 # 前台模块
 @app.route('/recp/signup', methods=['POST'])
-def recp_signup():
+def recp_login():
     """
     前台登录
     请求参数
@@ -207,13 +206,13 @@ def recp_signup():
     password = form['passwd']
 
     # TODO 调用前台登录函数
-    error_code = Reception.signup(username,password)
+    error_code, token = log.stuff_login(username,password)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
     res = dict()
-    res['token'] = new_token(username)
+    res['token'] = token
 
     # set_token(False,res['token'])
     return jsonify({'error_code': error_code, 'data': res})
@@ -237,16 +236,16 @@ def create_invoice():
     room_id = form['roomid']
 
     # TODO 调用前台打印账单函数
-    error_code, total_fee, date_in, date_out = Reception.create_invoice(room_id)
+    error_code, invoice = ServerController.CreateInvoice(room_id)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
-    res = dict()
+    res = invoice
     res['RoomId'] = room_id
-    res['Total_Fee'] = total_fee
-    res['date_in'] = date_in
-    res['date_out'] = date_out
+    res['Total_Fee'] = invoice['Total_Fee']
+    res['date_in'] = invoice['date_in']
+    res['date_out'] = invoice['date_out']
 
     return jsonify({'error_code': error_code, 'data': res})
 
@@ -271,7 +270,7 @@ def createrd():
     room_id = form['roomId']
 
     # TODO 调用前台打印详单函数
-    error_code, list = Reception.createrd(room_id)
+    error_code, list = ServerController.CreateRDR(room_id)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
@@ -281,7 +280,7 @@ def createrd():
 
 # 管理员模块
 @app.route('/ad/signup', methods=['POST'])
-def admin_signup():
+def admin_login():
     """
     管理员登录
     请求参数
@@ -294,13 +293,13 @@ def admin_signup():
     password = form['passwd']
 
     # TODO 调用管理员登录函数
-    error_code = Admin.signup(username,password)
+    error_code, token = log.stuff_login(username,password)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
     res = dict()
-    res['token'] = new_token(username)
+    res['token'] = token
 
     # set_token(False,res['token'])
     return jsonify({'error_code': error_code, 'data': res})
@@ -317,7 +316,7 @@ def admin_poweron():
     res = dict()
 
     # TODO 调用管理员开机函数
-    error_code = Admin.poweron()
+    error_code = ServerController.PowerON()
 
     return jsonify({'error_code': error_code})
 
@@ -353,7 +352,7 @@ def set_param():
     #     return jsonify({'error_code' : 1})
 
     # TODO 调用管理员设置中央空调参数函数
-    error_code = Admin.set_param(mode, temp_h, temp_l, defalut_target_temp, default_fan_speed, fee_rate_h, fee_rate_m, fee_rate_l)
+    error_code = ServerController.setPara(mode, temp_h, temp_l, defalut_target_temp, default_fan_speed, fee_rate_h, fee_rate_m, fee_rate_l)
 
     return jsonify({'error_code': error_code})
 
@@ -373,7 +372,7 @@ def startup():
     #     return jsonify({'error_code' : 1})
 
     # TODO 调用管理员管理员运行中央空调参数函数
-    error_code = Admin.startup()
+    error_code = ServerController.StartUp()
 
     return jsonify({"error_code": error_code})
 
@@ -402,7 +401,7 @@ def check_room_state():
     #     return jsonify({'error_code' : 1})
 
     # TODO 调用管理员监视房间空调
-    error_code, state_list = Admin.check_room_state(room_list)
+    error_code, state_list = ServerController.CheckRoomState(room_list)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
@@ -412,7 +411,7 @@ def check_room_state():
 
 #经理模块
 @app.route('/mgr/signup', methods=['POST'])
-def mgr_signup():
+def mgr_login():
     """
     经理登录
     请求参数
@@ -425,13 +424,13 @@ def mgr_signup():
     password = form['passwd']
 
     # TODO 调用经理登录函数
-    error_code = Manager.signup(username,password)
+    error_code, token = log.stuff_login(username,password)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
     res = dict()
-    res['token'] = new_token(username)
+    res['token'] = token
 
     # set_token(False,res['token'])
     return jsonify({'error_code': error_code, 'data': res})
@@ -466,7 +465,18 @@ def create_report():
     #     return jsonify({'error_code': 1})
 
     # TODO 调用经理创建报表函数
-    error_code, report_list = Manager.create_report(room_id, start_date, end_date)
+    # error_code, report_list = Manager.create_report(room_id, start_date, end_date)
+
+    error_code = 0
+    report_list = [	{
+        'roomId':'101',                                 #string
+        'changetemptimes': 0, 		#int
+        'changespeedtimes': 0, 	#int
+        'totalfee': 0.0,						#float
+        'powerofftimes': 0, 			#int
+        'DRnum': 0,							#int
+        'ACworkingtime': 0		    #int
+    }	]
 
     if error_code == 1:
         return jsonify({'error_code': 1})
