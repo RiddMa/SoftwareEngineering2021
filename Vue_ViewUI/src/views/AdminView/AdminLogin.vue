@@ -1,64 +1,66 @@
 <template>
-  <div class="loginDiv">
-    <Row type="flex" justify="center" align="middle">
-      <Col :xs="22" :sm="18" :md="15" :lg="13" :xl="10" :xxl="8">
-        <Card class="CtrlPanel">
-          <h1 class="titleHeader" slot="title">管理员登录</h1>
-          <Input class="CtrlGroup" v-model="username" size="large" clearable @on-enter="userLogin($event)"
-                 placeholder="请输入账户名"></Input>
-          <br>
-          <Input class="CtrlGroup" v-model="password" size="large" type="password" password
-                 @on-enter="userLogin($event)" placeholder="请输入密码"/>
-          <br>
-          <Button class="CtrlGroup" size="large" type="primary" shape="circle" @click="userLogin($event)">登录</Button>
-        </Card>
-      </Col>
-    </Row>
+	<div class="loginDiv">
+		<Row align="middle" justify="center" type="flex">
+			<Col :lg="13" :md="15" :sm="18" :xl="10" :xs="22" :xxl="8">
+				<Card class="CtrlPanel">
+					<h1 slot="title" class="titleHeader">管理员登录</h1>
+					<Input v-model="username" class="CtrlGroup" clearable placeholder="请输入账户名" size="large"
+					       @on-enter="adminLogin($event)"></Input>
+					<br>
+					<Input v-model="password" class="CtrlGroup" password placeholder="请输入密码" size="large"
+					       type="password" @on-enter="adminLogin($event)"/>
+					<br>
+					<Button class="CtrlGroup" shape="circle" size="large" type="primary" @click="adminLogin($event)">登录</Button>
+				</Card>
+			</Col>
+		</Row>
 
-  </div>
+	</div>
 
 </template>
 
 <script>
 import {login_a} from '../../connect_token.vue';
 import Vue from "vue";
+import {NetworkController} from "../../libs/NetworkController";
 
 export default {
-  name: "adminLogin",
-  data: function () {
-    return {
-      username: '',
-      password: ''
-    }
-  },
-  methods: {
-    userLogin(event) {
-      login_a(this.username, this.password);
-      this.$router.push({path: '/admin/main'});
-    },
-  }
+	name: "adminLogin",
+	data: function () {
+		return {
+			username: '',
+			password: ''
+		}
+	},
+	methods: {
+		adminLogin(event) {
+			login_a(this.username, this.password);
+			NetworkController.getInstance().login(this.username.toString(), this.password.toString(), 1);
+			this.$router.push({path: '/admin/main'});
+		},
+	}
 }
 </script>
 
 <style scoped>
 .CtrlPanel {
-  max-width: 700px;
-  margin: 15vh auto 25vh;
-  text-align: center;
+	max-width: 700px;
+	margin: 15vh auto 25vh;
+	text-align: center;
 }
 
 .CtrlGroup {
-  margin: 2vh auto;
-  max-width: 400px;
-  font-size: large;
+	margin: 2vh auto;
+	max-width: 400px;
+	font-size: large;
 }
 
 .titleHeader {
-  margin-top: 2vh;
-  margin-bottom: 2vh;
+	margin-top: 2vh;
+	margin-bottom: 2vh;
 }
 
 .loginDiv {
-  min-height: 90vh;
+	min-height: 90vh;
 }
 </style>
