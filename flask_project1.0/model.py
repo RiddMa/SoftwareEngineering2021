@@ -14,9 +14,6 @@ INIT_TEMP = dict()
 waiting_queue = []
 serving_queue = []
 room_list = dict()
-last_in_serving = dict()
-last_in_wating = dict()
-time_in_serving = dict()
 
 
 class Detailedlist:
@@ -58,7 +55,7 @@ class Detailedlist:
         return
 
 
-detailed_list: Detailedlist
+detailed_list = Detailedlist()
 
 
 class Room:
@@ -267,6 +264,109 @@ class ClientController:
         return error_code
 
 
+class SchedulingController:
+    """
+    调度控制器，用以进行空调调度操作
+    """
+    last_in_serving = dict()
+    last_in_wating = dict()
+    time_in_serving = dict()
+
+    @staticmethod
+    def Initialize():
+        """
+        调度控制器初始化
+        :return:
+        """
+        error_code = 0
+        return error_code
+
+    @staticmethod
+    def StartUp():
+        """
+        调度控制器启动
+        :return:
+        """
+        error_code = 0
+        return error_code
+
+    @staticmethod
+    def check(roomid):
+        """
+        定时状态修改
+        :return:
+        """
+        if not roomid in serving_queue:
+            return
+        if (datetime.now() - SchedulingController.last_in_serving[roomid]).seconds < 120:
+            return
+        if len(waiting_queue) == 0:
+            return
+        waiting_queue.sort(key=lambda x: (room_list[x].wind, SchedulingController.last_in_wating[room_list[x].roomid]))
+        if room_list[waiting_queue[0]].wind == room_list[roomid]:
+            res = waiting_queue[0]
+            serving_queue.remove(roomid)
+            detailed_list.insert(roomid, SchedulingController.last_in_serving[roomid],
+                                 SchedulingController.time_in_serving[roomid], room_list[roomid].wind, room_list[roomid].price)
+            waiting_queue.remove(res)
+            serving_queue.append(res)
+            waiting_queue.append(roomid)
+            SchedulingController.last_in_wating[roomid] = datetime.now()
+            SchedulingController.last_in_serving[res] = datetime.now()
+        SchedulingController.AddRoom(roomid)
+        return
+
+    @staticmethod
+    def AddRoom(roomId):
+        """
+        新增服务对象
+        :param roomId:
+        :param price:
+        :return:
+        """
+        if len(serving_queue) < 3:
+            serving_queue.append(roomId)
+            SchedulingController.last_in_serving[roomId] = datetime.now()
+            return
+        serving_queue.sort(key=lambda x: (room_list[x].wind, SchedulingController.last_in_serving[room_list[x].roomid]))
+        if room_list[serving_queue[0]].wind < room_list[roomId].wind:
+            room_list[serving_queue[0]].settle()
+            room_list[roomId].settle()
+            res = serving_queue[0]
+            detailed_list.insert(res, SchedulingController.last_in_serving[res],
+                                 SchedulingController.time_in_serving[res], room_list[res].wind, room_list[res].price)
+            serving_queue[0], roomId = roomId, serving_queue[0]
+            tr = Timer(120, SchedulingController.check)
+            tr.start()
+            SchedulingController.last_in_serving[serving_queue[0]] = datetime.now()
+        waiting_queue.append(roomId)
+        SchedulingController.last_in_wating[roomId] = datetime.now()
+        return
+
+    @staticmethod
+    def move_out(roomId):
+        """
+        新增服务对象
+        :param roomId:
+        :param price:
+        :return:
+        """
+        if roomId in waiting_queue:
+            waiting_queue.remove(roomId)
+            return
+        if roomId in serving_queue:
+            serving_queue.remove(roomId)
+            detailed_list.insert(roomId, SchedulingController.last_in_serving[roomId],
+                                 SchedulingController.time_in_serving[roomId], room_list[roomId].wind, room_list[roomId].price)
+            if len(waiting_queue) == 0:
+                return
+            waiting_queue.sort(key=lambda x: (room_list[x].wind, SchedulingController.last_in_wating[room_list[x].roomid]))
+            serving_queue.append(waiting_queue[0])
+            SchedulingController.last_in_serving[waiting_queue[0]] = datetime.now()
+            waiting_queue.pop(0)
+        return
+
+
 class ServerController:
     """
     服务器的控制器，用以各类服务器响应的操作
@@ -411,11 +511,11 @@ class ServerController:
             for roomid, b in room_list:
                 room_list[roomid].settle()
                 if roomid in serving_queue:
-                    time_in_serving[roomid] += 1
+                    SchedulingController.time_in_serving[roomid] += 1
                     if room_list[roomid].current_temp == room_list[roomid].target_temp:
                         SchedulingController.move_out(roomid)
                 else:
-                    time_in_serving[roomid] += 0
+                    SchedulingController.time_in_serving[roomid] += 0
                     if (not roomid in waiting_queue) and (not roomid in serving_queue):
                         if abs(room_list[roomid].current_temp - INIT_TEMP[roomid]) > 1:
                             SchedulingController.AddRoom(roomid)
@@ -436,9 +536,9 @@ class ServerController:
         for i in range(1, 6):
             for j in range(1, 11):
                 room_list[str(i * 100 + j)] = Room(str(i * 100 + j), central_ac.default_targettemp, 26, 1, 0, 0, 0)
-                last_in_serving[str(i * 100 + j)] = last_in_wating[str(i * 100 + j)] = None
+                SchedulingController.last_in_serving[str(i * 100 + j)] = SchedulingController.last_in_wating[str(i * 100 + j)] = None
                 detailed_list[str(i * 100 + j)] = None
-                time_in_serving[str(i * 100 + j)] = 0
+                SchedulingController.time_in_serving[str(i * 100 + j)] = 0
         room_list['101'].current_temp = INIT_TEMP['101']
         room_list['102'].current_temp = INIT_TEMP['102']
         room_list['103'].current_temp = INIT_TEMP['103']
@@ -468,106 +568,6 @@ class ServerController:
     @staticmethod
     def queryreport(Roomid, type_Report, date1, date2):
         return dict()
-
-
-class SchedulingController:
-    """
-    调度控制器，用以进行空调调度操作
-    """
-
-    @staticmethod
-    def Initialize():
-        """
-        调度控制器初始化
-        :return:
-        """
-        error_code = 0
-        return error_code
-
-    @staticmethod
-    def StartUp():
-        """
-        调度控制器启动
-        :return:
-        """
-        error_code = 0
-        return error_code
-
-    @staticmethod
-    def check(roomid):
-        """
-        定时状态修改
-        :return:
-        """
-        if not roomid in serving_queue:
-            return
-        if (datetime.now() - last_in_serving[roomid]).seconds < 120:
-            return
-        if len(waiting_queue) == 0:
-            return
-        waiting_queue.sort(key=lambda x: (room_list[x].wind, last_in_wating[room_list[x].roomid]))
-        if room_list[waiting_queue[0]].wind == room_list[roomid]:
-            res = waiting_queue[0]
-            serving_queue.remove(roomid)
-            detailed_list.insert(roomid, last_in_serving[roomid],
-                                 time_in_serving[roomid], room_list[roomid].wind, room_list[roomid].price)
-            waiting_queue.remove(res)
-            serving_queue.append(res)
-            waiting_queue.append(roomid)
-            last_in_wating[roomid] = datetime.now()
-            last_in_serving[res] = datetime.now()
-        SchedulingController.AddRoom(roomid)
-        return
-
-    @staticmethod
-    def AddRoom(roomId):
-        """
-        新增服务对象
-        :param roomId:
-        :param price:
-        :return:
-        """
-        if len(serving_queue) < 3:
-            serving_queue.append(roomId)
-            last_in_serving[roomId] = datetime.now()
-            return
-        serving_queue.sort(key=lambda x: (room_list[x].wind, last_in_serving[room_list[x].roomid]))
-        if room_list[serving_queue[0]].wind < room_list[roomId].wind:
-            room_list[serving_queue[0]].settle()
-            room_list[roomId].settle()
-            res = serving_queue[0]
-            detailed_list.insert(res, last_in_serving[res],
-                                 time_in_serving[res], room_list[res].wind, room_list[res].price)
-            serving_queue[0], roomId = roomId, serving_queue[0]
-            tr = Timer(120, SchedulingController.check)
-            tr.start()
-            last_in_serving[serving_queue[0]] = datetime.now()
-        waiting_queue.append(roomId)
-        last_in_wating[roomId] = datetime.now()
-        return
-
-    @staticmethod
-    def move_out(roomId):
-        """
-        新增服务对象
-        :param roomId:
-        :param price:
-        :return:
-        """
-        if roomId in waiting_queue:
-            waiting_queue.remove(roomId)
-            return
-        if roomId in serving_queue:
-            serving_queue.remove(roomId)
-            detailed_list.insert(roomId, last_in_serving[roomId],
-                                 time_in_serving[roomId], room_list[roomId].wind, room_list[roomId].price)
-            if len(waiting_queue) == 0:
-                return
-            waiting_queue.sort(key=lambda x: (room_list[x].wind, last_in_wating[room_list[x].roomid]))
-            serving_queue.append(waiting_queue[0])
-            last_in_serving[waiting_queue[0]] = datetime.now()
-            waiting_queue.pop(0)
-        return
 
 
 class log:
