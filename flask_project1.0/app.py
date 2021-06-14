@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, make_response, sessions
 import json
 from flask_cors import CORS
-from model import log, ClientController, ServerController
+from model import log,ClientController, ServerController
 from myglobal import app
 import hashlib
 import time
@@ -11,7 +11,6 @@ CORS(app)
 
 admin_tokens = set()
 user_tokens = set()
-
 
 def new_token(username):
     ctime = str(time.time())
@@ -57,7 +56,7 @@ def enter_room():
     password = form['password']
 
     # TODO 调用用户登录函数
-    error_code, token = log.custom_login(room_id, password)
+    error_code, token = log.custom_login(room_id,password)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
@@ -91,7 +90,7 @@ def user_poweron():
     #     return jsonify({'error_code': 1})
 
     # TODO 调用用户开机函数
-    error_code = ClientController.PowerOn(room_id)
+    error_code = ServerController.PowerOn(room_id, current_temp, fan_speed)
 
     return jsonify({'error_code': error_code})
 
@@ -207,13 +206,13 @@ def recp_login():
     password = form['passwd']
 
     # TODO 调用前台登录函数
-    error_code, token = log.stuff_login(username, password)
+    error_code = log.stuff_login(username,password,2)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
     res = dict()
-    res['token'] = token
+    # res['token'] = token
 
     # set_token(False,res['token'])
     return jsonify({'error_code': error_code, 'data': res})
@@ -294,13 +293,13 @@ def admin_login():
     password = form['passwd']
 
     # TODO 调用管理员登录函数
-    error_code, token = log.stuff_login(username, password)
+    error_code = log.stuff_login(username,password,1)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
     res = dict()
-    res['token'] = token
+    # res['token'] = token
 
     # set_token(False,res['token'])
     return jsonify({'error_code': error_code, 'data': res})
@@ -343,6 +342,7 @@ def set_param():
     temp_l = int(form['temp_l'])
     defalut_target_temp = int(form['defalut_targetTemp'])
     default_fan_speed = form['default_fanSpeed']
+
     fee_rate_h = float(form['feeRate_h'])
     fee_rate_m = float(form['feeRate_m'])
     fee_rate_l = float(form['feeRate_l'])
@@ -353,8 +353,7 @@ def set_param():
     #     return jsonify({'error_code' : 1})
 
     # TODO 调用管理员设置中央空调参数函数
-    error_code = ServerController.setPara(mode, temp_h, temp_l, defalut_target_temp, default_fan_speed, fee_rate_h,
-                                          fee_rate_m, fee_rate_l)
+    error_code = ServerController.setPara(mode, temp_h, temp_l, defalut_target_temp, default_fan_speed,fee_rate_h, fee_rate_m, fee_rate_l)
 
     return jsonify({'error_code': error_code})
 
@@ -411,7 +410,7 @@ def check_room_state():
     return jsonify({"error_code": error_code, "data": state_list})
 
 
-# 经理模块
+#经理模块
 @app.route('/mgr/signup', methods=['POST'])
 def mgr_login():
     """
@@ -426,13 +425,13 @@ def mgr_login():
     password = form['passwd']
 
     # TODO 调用经理登录函数
-    error_code, token = log.stuff_login(username, password)
+    error_code = log.stuff_login(username,password,0)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
     res = dict()
-    res['token'] = token
+    # res['token'] = token
 
     # set_token(False,res['token'])
     return jsonify({'error_code': error_code, 'data': res})
@@ -470,21 +469,20 @@ def create_report():
     # error_code, report_list = Manager.create_report(room_id, start_date, end_date)
 
     error_code = 0
-    report_list = [{
-        'roomId': '101',  # string
-        'changetemptimes': 0,  # int
-        'changespeedtimes': 0,  # int
-        'totalfee': 0.0,  # float
-        'powerofftimes': 0,  # int
-        'DRnum': 0,  # int
-        'ACworkingtime': 0  # int
-    }]
+    report_list = [	{
+        'roomId':'101',                                 #string
+        'changetemptimes': 0, 		#int
+        'changespeedtimes': 0, 	#int
+        'totalfee': 0.0,						#float
+        'powerofftimes': 0, 			#int
+        'DRnum': 0,							#int
+        'ACworkingtime': 0		    #int
+    }	]
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
     return jsonify({'error_code': error_code, 'data': report_list})
 
-
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8080)
+    app.run(host='127.0.0.1',port=8080)
