@@ -39,7 +39,7 @@ def hello_world():
 
 
 # 顾客模块
-@app.route('/usr/signup', methods=['POST'])
+@app.route('/api/usr/signup', methods=['POST'])
 def enter_room():
     """
     用户进房
@@ -69,7 +69,7 @@ def enter_room():
     return jsonify({'error_code': error_code, 'data': res})
 
 
-@app.route('/usr/poweron', methods=['POST'])
+@app.route('/api/usr/poweron', methods=['POST'])
 def user_poweron():
     """
     请求参数:
@@ -95,7 +95,7 @@ def user_poweron():
     return jsonify({'error_code': error_code})
 
 
-@app.route('/usr/requeststate', methods=['POST'])
+@app.route('/api/usr/requeststate', methods=['POST'])
 def request_state():
     """
     心跳包
@@ -125,7 +125,7 @@ def request_state():
     return jsonify({'error_code': error_code, 'data': res})
 
 
-@app.route('/usr/changetargettemp', methods=['POST'])
+@app.route('/api/usr/changetargettemp', methods=['POST'])
 def change_target_temp():
     """
     用户调温
@@ -148,7 +148,7 @@ def change_target_temp():
     return jsonify({'error_code': error_code})
 
 
-@app.route('/usr/changefanspeed', methods=['POST'])
+@app.route('/api/usr/changefanspeed', methods=['POST'])
 def change_fan_speed():
     """
     用户调风
@@ -171,7 +171,7 @@ def change_fan_speed():
     return jsonify({'error_code': error_code})
 
 
-@app.route('/usr/poweroff', methods=['POST'])
+@app.route('/api/usr/poweroff', methods=['POST'])
 def user_poweroff():
     """
     用户关机
@@ -193,7 +193,7 @@ def user_poweroff():
 
 
 # 前台模块
-@app.route('/recp/signup', methods=['POST'])
+@app.route('/api/recp/signup', methods=['POST'])
 def recp_login():
     """
     前台登录
@@ -219,7 +219,7 @@ def recp_login():
     return jsonify({'error_code': error_code, 'data': res})
 
 
-@app.route('/recp/createinvoice', methods=['POST'])
+@app.route('/api/recp/createinvoice', methods=['POST'])
 def create_invoice():
     """
     前台创建账单
@@ -251,7 +251,7 @@ def create_invoice():
     return jsonify({'error_code': error_code, 'data': res})
 
 
-@app.route('/recp/createrd', methods=['POST'])
+@app.route('/api/recp/createrd', methods=['POST'])
 def createrd():
     """
     前台创建详单
@@ -280,7 +280,7 @@ def createrd():
 
 
 # 管理员模块
-@app.route('/ad/signup', methods=['POST'])
+@app.route('/api/admin/signup', methods=['POST'])
 def admin_login():
     """
     管理员登录
@@ -306,7 +306,7 @@ def admin_login():
     return jsonify({'error_code': error_code, 'data': res})
 
 
-@app.route('/ad/poweron', methods=['POST'])
+@app.route('/api/admin/poweron', methods=['POST'])
 def admin_poweron():
     """
     管理员开机
@@ -322,7 +322,7 @@ def admin_poweron():
     return jsonify({'error_code': error_code})
 
 
-@app.route('/ad/setpara', methods=['POST'])
+@app.route('/api/admin/setpara', methods=['POST'])
 def set_param():
     """
     管理员设置中央空调参数
@@ -341,7 +341,7 @@ def set_param():
     mode = int(form['mode'])
     temp_h = int(form['temp_h'])
     temp_l = int(form['temp_l'])
-    defalut_target_temp = int(form['defalut_targetTemp'])
+    defalut_target_temp = int(form['default_targetTemp'])
     default_fan_speed = form['default_fanSpeed']
 
     fee_rate_h = float(form['feeRate_h'])
@@ -359,7 +359,7 @@ def set_param():
     return jsonify({'error_code': error_code})
 
 
-@app.route('/ad/startup', methods=['POST'])
+@app.route('/api/admin/startup', methods=['POST'])
 def startup():
     """
     管理员运行中央空调
@@ -379,7 +379,7 @@ def startup():
     return jsonify({"error_code": error_code})
 
 
-@app.route('/ad/checkroomstate', methods=['POST'])
+@app.route('/api/admin/checkroomstate', methods=['POST'])
 def check_room_state():
     """
     管理员监视房间空调
@@ -396,6 +396,7 @@ def check_room_state():
     }]
     """
     form = request.get_json()
+    # TODO 不需要房间Id列表,直接返回所有房间
     room_list = form['list_Room']
     # token = request.headers['authorization']
     #
@@ -412,7 +413,7 @@ def check_room_state():
 
 
 #经理模块
-@app.route('/mgr/signup', methods=['POST'])
+@app.route('/api/mgr/signup', methods=['POST'])
 def mgr_login():
     """
     经理登录
@@ -438,7 +439,7 @@ def mgr_login():
     return jsonify({'error_code': error_code, 'data': res})
 
 
-@app.route('/mgr/createreport', methods=['POST'])
+@app.route('/api/mgr/createreport', methods=['POST'])
 def create_report():
     """
     经理创建报表
@@ -486,4 +487,4 @@ def create_report():
     return jsonify({'error_code': error_code, 'data': report_list})
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1',port=8080)
+    app.run(host='0.0.0.0',port=5000)
