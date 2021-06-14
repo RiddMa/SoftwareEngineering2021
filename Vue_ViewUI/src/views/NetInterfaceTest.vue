@@ -29,28 +29,32 @@ import {discount_a} from "../connect_token";
 import {centerturnonoff_a} from "../connect_token";
 import {signin_r} from "../connect_token";
 import {logout_r} from "../connect_token";
+import {NetworkController} from "../libs/NetworkController";
 
 export default {
   name: "netInterfaceTest",
   methods: {
-    /**
-     * 以下是按钮点击时调用的方法，内层包裹的是网络部分的接口
-     * @param event 忽略
-     */
-    adminLogin(event) {
-      login_a('testOnly', '123456');
-    },
-    createReport(e) {
-      /**
-       * 手动传入对应的参数即可
-       */
-      createreport_a('114514');
-    },
-    createBill(e){
-      createwaterbills_a('114514');
-    },
-    adminTurnOnOff(e){
-      turnonoff_a('103','1');
+	  /**
+	   * 以下是按钮点击时调用的方法，内层包裹的是网络部分的接口
+	   * @param event 忽略
+	   */
+	  adminLogin(event) {
+		  login_a(this.username, this.password);
+		  NetworkController.getInstance().login(this.username.toString(), this.password.toString(), 1);
+		  this.$router.push({path: '/admin/main'});
+	  },
+
+	  createReport(e) {
+		  /**
+		   * 手动传入对应的参数即可
+		   */
+		  createreport_a('114514');
+	  },
+	  createBill(e) {
+		  createwaterbills_a('114514');
+	  },
+	  adminTurnOnOff(e) {
+		  turnonoff_a('103', '1');
     },
     adminSetTemp(e){
       settemp_a('104','55');

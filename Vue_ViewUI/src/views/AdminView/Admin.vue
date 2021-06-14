@@ -2,8 +2,10 @@
   <div class="layout">
     <Header class="aHeader">
       <h2 class="aHeaderContent">
-        酒店空调管理系统
-        <Button type="primary" shape="circle" @click="addAC(defaultAC)">[测试用]添加空调</Button>
+	      酒店空调管理系统
+	      <Button shape="circle" type="primary" @click="addAC(defaultAC)">[测试用]添加空调</Button>
+	      <Button shape="circle" type="primary" @click="checkRoomsState()">[测试用]查看房间状态</Button>
+
       </h2>
       <Menu class="aMenu" mode="horizontal" active-name="1">
         <MenuItem name="1" to="/admin/main">
@@ -33,6 +35,7 @@
 import Vue from "vue";
 import random_str from "view-design/src/utils/random_str";
 import util from "../../libs/util";
+import {NetworkController} from "../../libs/NetworkController";
 
 export default {
   name: 'admin',
@@ -43,14 +46,20 @@ export default {
     };
   },
   methods: {
-    /**
-     * 向 Vuex 注册空调
-     * @param acInfo
-     */
-    addAC: function (acInfo) {
-      Vue.set(this.$store.state.roomInfo, acInfo.rid, acInfo);
-      console.log(this.$store.state);
-    },
+	  /**
+	   * 向 Vuex 注册空调
+	   * @param acInfo
+	   */
+	  addAC: function (acInfo) {
+		  Vue.set(this.$store.state.roomInfo, acInfo.rid, acInfo);
+		  console.log(this.$store.state);
+	  },
+
+	  async checkRoomsState() {
+		  let nc = NetworkController.getInstance();
+		  n
+
+	  }
   },
 }
 </script>
