@@ -1,13 +1,8 @@
 import random
 import threading
-from datetime import datetime
-import json
 import time
-import hashlib
+from datetime import datetime
 from threading import Timer
-
-import db
-import math
 
 SHUT_DOWN = 0
 SET_MODE = 1
@@ -38,7 +33,7 @@ class Detailedlist:
             i = i
         return
 
-    def insert(self,roomId,requesttime,requestduration,fanspeed,wind,fee):
+    def insert(self, roomId, requesttime, requestduration, fanspeed, wind, fee):
         """
         返回格式：
         "RoomId": row.rid,                          #string
@@ -55,8 +50,9 @@ class Detailedlist:
         :return:
         """
         unit = dict([
-            ('RoomId',roomId),('RequestTime',requesttime),('requestduration',requestduration),('FanSpeed',fanspeed),
-            ('FeeRate',SPEED[wind]),('Fee',fee)
+            ('RoomId', roomId), ('RequestTime', requesttime), ('requestduration', requestduration),
+            ('FanSpeed', fanspeed),
+            ('FeeRate', SPEED[wind]), ('Fee', fee)
         ])
         self.list[roomId].append(unit)
         return
@@ -111,9 +107,9 @@ class Room:
         if self.roomId in serving_queue:
             new_temp = delt_time * SPEED[self.wind]
             if self.mode == 0:
-                new_temp = max(self.current_temp - new_temp,self.target_temp)
+                new_temp = max(self.current_temp - new_temp, self.target_temp)
             else:
-                new_temp = min(self.current_temp + new_temp,self.target_temp)
+                new_temp = min(self.current_temp + new_temp, self.target_temp)
             self.price += (new_temp - self.current_temp)
             self.current_temp = new_temp
         return
@@ -232,7 +228,8 @@ class ClientController:
         :param roomid:
         :return:
         """
-        return ServerController.RequestState(roomid)
+        error_code = 0
+        return error_code, ServerController.RequestState(roomid)
 
     @staticmethod
     def ChangeTargetTemp(roomId, targetTemp):
@@ -276,24 +273,27 @@ class ServerController:
     """
 
     @staticmethod
-    def PowerOn(roomId,current_temp,wind):
+    def PowerOn(roomId, current_temp, wind):
         """
         响应空调开机操作
         :param wind:
         :param current_temp:
         :param roomId:
-        :return:roomstate 房间状态，用一个Room类表示
+        :return:error_code
         """
-        #todo battle
-        if detailed_list.list[roomId] is not None:
+        # todo battle
+        if detailed_list.list[roomId].state == 0:
             detailed_list.save(roomId)
-            detailed_list.list[roomId] = None
+        else:
+            error_code = 1
+            return error_code
         room_list[roomId].poweron()
         room_list[roomId].current_temp = current_temp
         room_list[roomId].wind = wind
         SchedulingController.AddRoom(roomId)
         detailed_list.list[roomId] = dict()
-        return room_list[roomId]
+        error_code = 0
+        return error_code
 
     @staticmethod
     def RequestState(roomId):
@@ -329,7 +329,7 @@ class ServerController:
         """
         SchedulingController.move_out(roomId)
         room_list[roomId].SetSpeed(fanSpeed)
-        SchedulingController.insert(roomId)
+        SchedulingController.AddRoom(roomId)
         return 0
 
     @staticmethod
@@ -351,7 +351,8 @@ class ServerController:
         :return:
         """
         # 数据库中查询入住时间
-        return dict([
+        error_code = 0
+        return error_code, dict([
             ('RoomId', RoomId), ('Total_Fee', room_list[RoomId].price), ('date_in',), ('date_out', str(datetime.now()))
         ])
 
@@ -360,7 +361,8 @@ class ServerController:
         """"
         响应创建详单请求
         """
-        return detailed_list.list[RoomId]
+        error_code = 0
+        return error_code, detailed_list.list[RoomId]
 
     @staticmethod
     def CheckRoomState(list_Room):
@@ -380,13 +382,14 @@ class ServerController:
                 unit['state'] = 'tempUp'
             if room_list[roomId].mode == 0:
                 unit['mode'] = 1
-            else :
+            else:
                 unit['mode'] = -1
             unit['targetTemp'] = room_list[roomId].target_temp
             unit['currentTemp'] = room_list[roomId].current_temp
             unit['fanSpeed'] = room_list[roomId].wind
             res_list.append(unit)
-        return res_list
+        error_code = 0
+        return error_code, res_list
 
     @staticmethod
     def PowerON():
@@ -400,7 +403,8 @@ class ServerController:
         SchedulingController.Initialize()
         waiting_queue = []
         serving_queue = []
-        return 1
+        error_code = 0
+        return error_code
 
     @staticmethod
     def update():
@@ -459,15 +463,16 @@ class ServerController:
         """
         global central_ac
         if central_ac.state != SET_MODE:
-            return 0
+            return 1
         central_ac.setPara(Mode, Temp_highLimit, Temp_lowLimit, default_TargetTemp, FeeRate_H, FeeRate_M, FeeRate_L)
-        return 1
+        return 0
 
 
 class SchedulingController:
     """
     调度控制器，用以进行空调调度操作
     """
+
     @staticmethod
     def Initialize():
         """
@@ -502,8 +507,8 @@ class SchedulingController:
         if room_list[waiting_queue[0]].wind == room_list[roomid]:
             res = waiting_queue[0]
             serving_queue.remove(roomid)
-            detailed_list.insert(roomid,last_in_serving[roomid],
-                                 time_in_serving[roomid],room_list[roomid].wind,room_list[roomid].price)
+            detailed_list.insert(roomid, last_in_serving[roomid],
+                                 time_in_serving[roomid], room_list[roomid].wind, room_list[roomid].price)
             waiting_queue.remove(res)
             serving_queue.append(res)
             waiting_queue.append(roomid)
@@ -570,7 +575,7 @@ class log:
     类属性：token_pool,一个用来存储token和帐号对应用户名和类型
     方法：
     """
-    token_pool = [hashlib.md5(random.randint(-1e7, 1e7)).hexdigest() for i in range(1, 10)]
+    token_pool = [i for i in range(1, 10)]
 
     @staticmethod
     def stuff_login(username: str, password: str, privilege):
@@ -598,3 +603,16 @@ class log:
     @staticmethod
     def check_token(token):
         return token in log.token_pool
+
+
+class ManagerController:
+    
+
+class ReceptionController:
+    @staticmethod
+    def CreateInvoice(RoomId):
+        return ServerController.CreateInvoice(RoomId)
+
+    @staticmethod
+    def CreateRDR(RoomId):
+        return ServerController.CreateRDR(RoomId)
