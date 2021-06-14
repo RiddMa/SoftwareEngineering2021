@@ -342,7 +342,7 @@ def set_param():
     temp_h = int(form['temp_h'])
     temp_l = int(form['temp_l'])
     defalut_target_temp = int(form['defalut_targetTemp'])
-    default_fan_speed = form['default_fan_speed']
+    default_fan_speed = form['default_fanSpeed']
     fee_rate_h = float(form['feeRate_h'])
     fee_rate_m = float(form['feeRate_m'])
     fee_rate_l = float(form['feeRate_l'])

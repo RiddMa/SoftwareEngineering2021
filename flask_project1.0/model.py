@@ -172,6 +172,7 @@ class CentralAirConditioner:
         self.high_fee = 3 / 60
         self.mid_fee = 2 / 60
         self.low_fee = 1 / 60
+        self.wind = 1
 
     def setState(self, mode):
         """
@@ -180,8 +181,9 @@ class CentralAirConditioner:
         """
         self.state = mode
 
-    def setPara(self, Mode, Temp_highLimit, Temp_lowLimit, default_TargetTemp, FeeRate_H, FeeRate_M, FeeRate_L):
+    def setPara(self, Mode, Temp_highLimit, Temp_lowLimit, default_TargetTemp, Wind,FeeRate_H, FeeRate_M, FeeRate_L):
         """
+        :param Wind: 风速
         :param Mode: 初始模式
         :param Temp_highLimit:温度上限
         :param Temp_lowLimit:温度下限
@@ -199,6 +201,7 @@ class CentralAirConditioner:
         self.temp_highlimit = Temp_highLimit
         self.temp_lowlimit = Temp_lowLimit
         self.default_targettemp = default_TargetTemp
+        self.wind = Wind
         self.high_fee = FeeRate_H
         self.mid_fee = FeeRate_M
         self.low_fee = FeeRate_L
@@ -542,7 +545,7 @@ class ServerController:
         room_list = dict()
         for i in range(1, 6):
             for j in range(1, 11):
-                room_list[str(i * 100 + j)] = Room(str(i * 100 + j), central_ac.default_targettemp, 26, 1, 0, 0, 0)
+                room_list[str(i * 100 + j)] = Room(str(i * 100 + j), central_ac.default_targettemp, 26, central_ac.wind, 0, 0, 0)
                 SchedulingController.last_in_serving[str(i * 100 + j)] = SchedulingController.last_in_wating[str(i * 100 + j)] = None
                 detailed_list.list[str(i * 100 + j)] = None
                 SchedulingController.time_in_serving[str(i * 100 + j)] = 0
@@ -554,9 +557,10 @@ class ServerController:
         return 0
 
     @staticmethod
-    def setPara(Mode, Temp_highLimit, Temp_lowLimit, default_TargetTemp, FeeRate_H, FeeRate_M, FeeRate_L):
+    def setPara(Mode, Temp_highLimit, Temp_lowLimit, default_TargetTemp, Wind, FeeRate_H, FeeRate_M, FeeRate_L):
         """
         响应赋值空调的缺省工作模式，包括初始温度，温度上限下限，不同风速的费率等
+        :param Wind: 默认风速
         :param Mode: 初始模式
         :param Temp_highLimit:温度上限
         :param Temp_lowLimit:温度下限
@@ -569,7 +573,7 @@ class ServerController:
         global central_ac
         if central_ac.state != SET_MODE:
             return 1
-        central_ac.setPara(Mode, Temp_highLimit, Temp_lowLimit, default_TargetTemp, FeeRate_H, FeeRate_M, FeeRate_L)
+        central_ac.setPara(Mode, Temp_highLimit, Temp_lowLimit, default_TargetTemp,Wind, FeeRate_H, FeeRate_M, FeeRate_L)
         return 0
 
     @staticmethod
