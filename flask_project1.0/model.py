@@ -400,7 +400,7 @@ class ServerController:
         room_list[roomId].current_temp = current_temp
         room_list[roomId].wind = wind
         SchedulingController.AddRoom(roomId)
-        detailed_list.list[roomId] = []
+        detailed_list.list[roomId].clear()
         error_code = 0
         return error_code
 
@@ -426,7 +426,7 @@ class ServerController:
             return 1
         SchedulingController.move_out(roomId)
         room_list[roomId].SetTemp(targetTemp)
-        SchedulingController.insert(roomId)
+        SchedulingController.AddRoom(roomId)
         return 0
 
     @staticmethod
