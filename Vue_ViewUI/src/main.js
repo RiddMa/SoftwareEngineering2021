@@ -11,6 +11,7 @@ import App from './app.vue';
 import 'view-design/dist/styles/iview.css';
 import './assets/digital_7/fonts.css'
 import './assets/Signatria/fonts.css'
+import store from "./libs/store";
 
 Vue.use(Vuex);
 Vue.use(VueRouter);
@@ -37,15 +38,15 @@ router.afterEach((to, from, next) => {
 });
 
 // Vuex仓库配置
-const store = new Vuex.Store({
-    state: {
-        CACState: false,//CAC for Central Air-Conditioning
-        sessionData: Object.create(null),
-        roomInfo: Object.create(null),
-        // roomInfo: Map.create(null)
-    },
-    mutations: {}
-})
+// const store = new Vuex.Store({
+//     state: {
+//         CACState: false,//CAC for Central Air-Conditioning
+//         sessionData: Object.create(null),
+//         roomInfo: Object.create(null),
+//         // roomInfo: Map.create(null)
+//     },
+//     mutations: {}
+// })
 
 
 new Vue({

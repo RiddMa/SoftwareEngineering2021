@@ -33,10 +33,17 @@ export default {
 		}
 	},
 	methods: {
-		adminLogin(event) {
-			login_a(this.username, this.password);
-			NetworkController.getInstance().login(this.username.toString(), this.password.toString(), 1);
-			this.$router.push({path: '/admin/main'});
+		async adminLogin(event) {
+			let nc = NetworkController.getInstance();
+			let errCode = await nc.login(this.username, this.password, 1);
+			if (errCode === 0) {
+				this.$router.push({path: '/admin/main'});
+			} else if (errCode === 1) {
+				//TODO:login failed
+			} else if (errCode === -1) {
+				//TODO:network error
+			}
+
 		},
 	}
 }

@@ -1,5 +1,6 @@
 import axios from "axios";
 import Vue from "vue";
+import store from "./store";
 
 /**
  * 使用getInstance()方法获取唯一实例
@@ -22,14 +23,33 @@ export class NetworkController {
 		return NetworkController.instance;
 	}
 
-	async enterRoom(roomId, password) {
+	/**
+	 * useless
+	 * @param that
+	 */
+	testVue(that) {
+		// Vue.set(that.$store.state.sessionData, 'test', 1);
+		console.log(that.$store);
+		that.$store.commit('setToken', {userType: 0, token: '123'});
+		console.log(that.$store);
+	}
+
+	/**
+	 * 客户进入房间（登录）
+	 * @param that
+	 * @param roomId
+	 * @param password
+	 * @returns {Promise<number|*>} token
+	 */
+	async enterRoom(that, roomId, password) {
 		try {
 			let postURL = this.serverURL + "api/usr/signup";
 			let response = await axios.post(postURL, {
 				roomId: roomId,
 				password: password
 			});
-			// Vue.set(this.$store.state.sessionData, 'tokenUser', response.data.data.token);
+			// Vue.set(that.$store.state.sessionData, 'tokenUser', response.data.data.token);
+			that.$store.commit('setToken', {userType: 0, token: response.data.token});
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
@@ -39,16 +59,17 @@ export class NetworkController {
 
 	/**
 	 * 通用登录方法，返回错误码
+	 * @param that
 	 * @param username 用户名
 	 * @param password 密码
-	 * @param loginType 0-客户，1-管理员，2-前台，3-经理
+	 * @param userType 0-客户，1-管理员，2-前台，3-经理
 	 * @returns {Promise<*>} 错误码0/1
 	 */
-	async login(username, password, loginType) {
+	async login(that, username, password, userType) {
 		// api/usr(mgr,ad,recp)/signup
 		try {
 			let postURL;
-			switch (loginType) {
+			switch (userType) {
 				case 0:
 					postURL = this.serverURL + "api/usr/signup";
 					break;
@@ -66,10 +87,9 @@ export class NetworkController {
 				user: username,
 				passwd: password
 			});
-			// if (response.data.error_code === 0) {
-			// 	// Vue.set(this.$store.state.sessionData, 'token', response.data.data.token);
-			// 	Vue.set(this.$store.state.sessionData, 'username', response.data.data.username);
-			// }
+			if (response.data.error_code === 0) {
+				that.$store.commit('setToken', {userType: userType, token: response.data.token});
+			}
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
