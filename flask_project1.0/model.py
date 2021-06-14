@@ -400,7 +400,7 @@ class ServerController:
         room_list[roomId].current_temp = current_temp
         room_list[roomId].wind = wind
         SchedulingController.AddRoom(roomId)
-        detailed_list.list[roomId] = dict()
+        detailed_list.list[roomId] = []
         error_code = 0
         return error_code
 
@@ -518,8 +518,10 @@ class ServerController:
 
     @staticmethod
     def update():
+
         while central_ac.mode != SHUT_DOWN:
             time.sleep(100)
+            print('asasaasa')
             for roomid in room_list:
                 room_list[roomid].settle()
                 print(roomid,room_list[roomid].target_temp,room_list[roomid].cuurent_temp)
@@ -556,7 +558,8 @@ class ServerController:
         room_list['102'].current_temp = INIT_TEMP['102']
         room_list['103'].current_temp = INIT_TEMP['103']
         room_list['104'].current_temp = INIT_TEMP['104']
-        threading.Thread(target=ServerController.update())
+        tr = threading.Thread(target=ServerController.update())
+        tr.start()
         return 0
 
     @staticmethod
