@@ -200,7 +200,7 @@ class CentralAirConditioner:
         self.low_fee = FeeRate_L
 
 
-central_ac: CentralAirConditioner
+central_ac = CentralAirConditioner()
 
 
 class ClientController:
