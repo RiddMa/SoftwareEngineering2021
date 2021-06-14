@@ -9,7 +9,7 @@ SET_MODE = 1
 READY = 2
 UNIT_FEE = 1
 SPEED = dict([(0, 1 / 60), (1, 2 / 60), (2, 3 / 60)])
-INIT_TEMP = dict()
+INIT_TEMP = dict([('101',26),('102',26),('103',26),('104',26)])
 
 waiting_queue = []
 serving_queue = []
@@ -496,6 +496,9 @@ class ServerController:
         :return:错误码
         """
         global central_ac, waiting_queue, serving_queue
+        if central_ac.state != SHUT_DOWN:
+            error_code = 1
+            return error_code
         central_ac = CentralAirConditioner()
         central_ac.setState(SET_MODE)
         SchedulingController.Initialize()
