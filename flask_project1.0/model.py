@@ -351,8 +351,7 @@ class ServerController:
         :return:
         """
         # 数据库中查询入住时间
-        error_code = 0
-        return error_code, dict([
+        return dict([
             ('RoomId', RoomId), ('Total_Fee', room_list[RoomId].price), ('date_in',), ('date_out', str(datetime.now()))
         ])
 
@@ -361,8 +360,7 @@ class ServerController:
         """"
         响应创建详单请求
         """
-        error_code = 0
-        return error_code, detailed_list.list[RoomId]
+        return detailed_list.list[RoomId]
 
     @staticmethod
     def CheckRoomState(list_Room):
@@ -466,6 +464,10 @@ class ServerController:
             return 1
         central_ac.setPara(Mode, Temp_highLimit, Temp_lowLimit, default_TargetTemp, FeeRate_H, FeeRate_M, FeeRate_L)
         return 0
+
+    @staticmethod
+    def queryreport(Roomid, type_Report, date1, date2):
+        return dict()
 
 
 class SchedulingController:
@@ -606,13 +608,19 @@ class log:
 
 
 class ManagerController:
-    
+    @staticmethod
+    def Queryreport(Roomid, type_Report, date1, date2):
+        error_code = 0
+        return error_code,ServerController.queryreport(Roomid, type_Report, date1, date2)
+
 
 class ReceptionController:
     @staticmethod
     def CreateInvoice(RoomId):
-        return ServerController.CreateInvoice(RoomId)
+        error_code = 0
+        return error_code,ServerController.CreateInvoice(RoomId)
 
     @staticmethod
     def CreateRDR(RoomId):
-        return ServerController.CreateRDR(RoomId)
+        error_code = 0
+        return error_code,ServerController.CreateRDR(RoomId)
