@@ -41,7 +41,7 @@ export default {
 				'roomId': roomId,
 				'power': false,
 				'targetTemp': 24,
-				'targetWind': 3,
+				'targetWind': 2,
 				'currentMode': '致冷',
 				'currentTemp': 26,
 				'currentFee': 0.0,
@@ -57,7 +57,7 @@ export default {
 			let nc = NetworkController.getInstance();
 			let errCode = await nc.enterRoom(this, this.roomId, this.password);
 			if (errCode === 0) {
-				this.addDefaultRoom2Vuex(this.roomId);
+				// this.addDefaultRoom2Vuex(this.roomId);
 				this.$router.push({path: '/client'});// route to client view
 			} else if (errCode === 1) {
 				//TODO:login failed

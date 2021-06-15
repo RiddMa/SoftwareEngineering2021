@@ -9,7 +9,7 @@
 				<Col :lg="10" :md="12" :sm="16" :xl="8" :xs="24" :xxl="6">
 					<CellGroup>
 						<Cell class="settings" title="中央空调控制">
-							<Switch slot="extra" v-model="this.$store.state.CAC" :before-change="handleBeforeSetCAC"
+							<Switch slot="extra" v-model="CAC" :before-change="handleBeforeSetCAC"
 							        shape="circle" size="large" type="primary" @on-change="handleSetCAC">
 								<span slot="open">ON</span>
 								<span slot="close">OFF</span>
@@ -50,6 +50,7 @@ export default {
 	name: "adminSettings",
 	data: function () {
 		return {
+			CAC : false,
 			CACMode: true,
 			minTemp: '16',
 			maxTemp: '30',
@@ -60,7 +61,7 @@ export default {
 	methods: {
 		handleBeforeSetCAC() {
 			return new Promise((resolve) => {
-				if (this.CAC === true) {
+				if (this.$store.state.CAC === true) {
 					this.$Modal.confirm({
 						title: '关机',
 						content: '您确认要关闭中央空调吗？',
@@ -87,7 +88,7 @@ export default {
 		 */
 		async handleSetCAC() {
 			let nc = NetworkController.getInstance();
-			if (this.$store.state.CAC === false) {
+			if (this.$store.state.CAC === true) {
 				await nc.setServerPower(true);
 				await nc.setCACMode((this.CACMode === true ? 1 : -1), this.maxTemp, this.minTemp, this.defaultTemp, this.defaultFanSpeed, 1.5, 1.0, 0.5);
 				await nc.setCACPower(true);

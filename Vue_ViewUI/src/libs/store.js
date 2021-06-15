@@ -62,6 +62,9 @@ export default new Vuex.Store({
 		setClientRoomState(state, {roomState}) {
 			state.clientRoomState = roomState;
 		},
+		setClientCurrentTemp(state, {currentTemp}) {
+			state.clientRoomState.currentTemp = currentTemp;
+		},
 		/**
 		 *
 		 * @param state Vuex的状态变量，commit无需传入

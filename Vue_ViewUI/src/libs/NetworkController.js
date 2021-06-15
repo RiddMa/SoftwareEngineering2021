@@ -7,7 +7,7 @@ import store from "./store";
  */
 export class NetworkController {
 	constructor() {
-		this.serverURL = "http://192.168.43.159:5000/";
+		this.serverURL = "http://192.168.43.124:5000/";
 		// this.adminToken = this.dataStore.adminToken;
 		// this.userToken = this.dataStore.userToken;
 	}
@@ -49,7 +49,19 @@ export class NetworkController {
 				password: password
 			});
 			// Vue.set(that.$store.state.sessionData, 'tokenUser', response.data.data.token);
-			that.$store.commit('setToken', {'userType': 0, 'token': response.data.token});
+			console.log(response.data);
+			let roomState = {
+				'roomId': roomId,
+				'power': false,
+				'targetTemp': 24,
+				'targetWind': 2,
+				'currentMode': '致冷',
+				'currentTemp': response.data.data.currentTemp,
+				'currentFee': 0.0,
+				'totalFee': 0.0,
+			};
+			that.$store.commit('setClientRoomState', {roomState: roomState});
+			that.$store.commit('setToken', {'userType': 0, 'token': response.data.data.token});
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
@@ -88,7 +100,7 @@ export class NetworkController {
 				passwd: password
 			});
 			if (response.data.error_code === 0) {
-				that.$store.commit('setToken', {'userType': userType, 'token': response.data.token});
+				that.$store.commit('setToken', {'userType': userType, 'token': response.data.data.token});
 			}
 			return response.data.error_code;
 		} catch (e) {
@@ -113,7 +125,7 @@ export class NetworkController {
 				let response = await axios.post(postURL, {
 					roomId: roomId,
 					targetTemp: newRoomState.targetTemp,
-					fanSpeed: newRoomState.fanSpeed,
+					fanSpeed: newRoomState.targetWind.toString(),
 					currentTemp: newRoomState.currentTemp,
 				});
 				newRoomState.power = true;
@@ -147,7 +159,7 @@ export class NetworkController {
 		try {
 			let postURL = this.serverURL + "api/usr/requeststate";
 			let response = await axios.post(postURL, {
-				roomid: roomId
+				roomId: roomId
 			});
 			let newRoomState = {
 				'roomId': roomId,
@@ -155,9 +167,9 @@ export class NetworkController {
 				'targetTemp': that.$store.state.clientRoomState.targetTemp,
 				'targetWind': that.$store.state.clientRoomState.targetWind,
 				'currentMode': that.$store.state.clientRoomState.currentMode,
-				'currentTemp': response.data.currentTemp,
-				'currentFee': response.data.currentFee,
-				'totalFee': response.data.totalFee,
+				'currentTemp': response.data.data.currentTemp,
+				'currentFee': response.data.data.currentFee,
+				'totalFee': response.data.data.totalFee,
 			};
 			that.$store.commit('setClientRoomState', {'roomState': newRoomState});
 			return response.data.error_code;
@@ -169,22 +181,22 @@ export class NetworkController {
 
 	/**
 	 * 请求调温
-	 * @param store
+	 * @param that
 	 * @param roomId
 	 * @param requestTargetTemp
 	 * @returns {Promise<number>}
 	 */
-	async changeTargetTemp(store, roomId, requestTargetTemp) {
+	async changeTargetTemp(that, roomId, requestTargetTemp) {
 		try {
 			let postURL = this.serverURL + "api/usr/changetargettemp";
 			let response = await axios.post(postURL, {
-				roomid: roomId,
+				roomId: roomId,
 				targetTemp: requestTargetTemp
 			});
 			if (response.data.error_code === 0) {
-				let newRoomState = store.state.clientRoomState;
+				let newRoomState = that.$store.state.clientRoomState;
 				newRoomState.targetTemp = requestTargetTemp;
-				store.commit('setClientRoomState', {'roomState': newRoomState});
+				that.$store.commit('setClientRoomState', {'roomState': newRoomState});
 			}
 			return response.data.error_code;
 		} catch (e) {
@@ -203,8 +215,8 @@ export class NetworkController {
 		try {
 			let postURL = this.serverURL + "api/usr/changefanspeed";
 			let response = await axios.post(postURL, {
-				roomid: roomId,
-				fanSpeed: requestFanSpeed
+				roomId: roomId,
+				fanSpeed: (requestFanSpeed - 1).toString()
 			});
 			if (response.data.error_code === 0) {
 				let newRoomState = store.state.clientRoomState;

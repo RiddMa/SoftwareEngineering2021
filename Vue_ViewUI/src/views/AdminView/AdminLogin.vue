@@ -35,7 +35,7 @@ export default {
 	methods: {
 		async adminLogin(event) {
 			let nc = NetworkController.getInstance();
-			let errCode = await nc.login(this.username, this.password, 1);
+			let errCode = await nc.login(this, this.username, this.password, 1);
 			if (errCode === 0) {
 				this.$store.commit('setUsername', {username: this.username});
 				this.$router.push({path: '/admin/main'});

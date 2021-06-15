@@ -13,7 +13,7 @@
 							<span class="acCardContentText">当前状态：</span>
 						</Col>
 						<Col :span="12" align="middle" class="acCardContentText">
-							<Switch v-model="thisRoom.power" shape="circle" size="large" type="primary"
+							<Switch v-model="this.$store.state.clientRoomState.power" shape="circle" size="large" type="primary"
 							        @on-change="handlePowerSwitch()">
 								<span slot="open">ON</span>
 								<span slot="close">OFF</span>
@@ -21,10 +21,10 @@
 						</Col>
 					</Row>
 
-					<div v-if="thisRoom.power" class="acStateInfo">
+					<div v-if="this.$store.state.clientRoomState.power" class="acStateInfo">
 						<Row class="acCardContent">
 							<Col :span="12">
-								<span class="acCardContentText">当前温度：</span>
+								<span class="acCardContentText">目标温度：</span>
 							</Col>
 							<Col :span="12">
 								<Row>
@@ -33,7 +33,7 @@
 										        @click="changeTemp($event,-1)"></Button>
 									</Col>
 									<Col :span="8" align="middle">
-										<span class="digitFont">{{ this.thisRoom.targetTemp }}</span>
+										<span class="digitFont">{{ this.$store.state.clientRoomState.targetTemp }}</span>
 									</Col>
 									<Col :span="8" align="middle">
 										<Button class="acCardContentText" icon="ios-arrow-up" shape="circle" size="large"
@@ -45,7 +45,7 @@
 
 						<Row class="acCardContent">
 							<Col :span="12">
-								<span class="acCardContentText">当前风速：</span>
+								<span class="acCardContentText">目标风速：</span>
 							</Col>
 							<Col :span="12" class="acCardContentText">
 								<Row>
@@ -54,7 +54,7 @@
 										        @click="changeWind($event,-1)"></Button>
 									</Col>
 									<Col :span="8" align="middle">
-										<span class="digitFont">{{ this.thisRoom.targetWind }}</span>
+										<span class="digitFont">{{ this.$store.state.clientRoomState.targetWind }}</span>
 									</Col>
 									<Col :span="8" align="middle">
 										<Button icon="md-add" shape="circle" size="large"
@@ -71,17 +71,19 @@
 							<Col :span="12" class="acCardContentText">
 								<Row>
 									<Col :span="8" align="middle">
-										<Button v-if="thisRoom.currentMode==='致冷'" icon="ios-snow" shape="circle" size="large"
+										<Button v-if="this.$store.state.clientRoomState.currentMode==='致冷'" icon="ios-snow" shape="circle"
+										        size="large"
 										        type="primary"
 										        @click="changeMode($event,'致冷')"></Button>
 										<Button v-else icon="ios-snow" shape="circle" size="large"
 										        @click="changeMode($event,'致冷')"></Button>
 									</Col>
 									<Col :span="8" align="middle">
-										<span style="vertical-align: middle">{{ thisRoom.currentMode }}</span>
+										<span style="vertical-align: middle">{{ this.$store.state.currentMode }}</span>
 									</Col>
 									<Col :span="8" align="middle">
-										<Button v-if="thisRoom.currentMode==='制热'" icon="ios-sunny" shape="circle" size="large"
+										<Button v-if="this.$store.state.clientRoomState.currentMode==='制热'" icon="ios-sunny" shape="circle"
+										        size="large"
 										        type="primary"
 										        @click="changeMode($event,'制热')"></Button>
 										<Button v-else icon="ios-sunny" shape="circle" size="large"
@@ -108,7 +110,6 @@ export default {
 	data: function () {
 		return {
 			title: null,
-			thisRoom: this.$store.state.clientRoomState,
 			polling: null,
 			networkController: NetworkController.getInstance(),
 		}
@@ -117,10 +118,12 @@ export default {
 		async handlePowerSwitch() {
 			let nc = NetworkController.getInstance()
 			if (this.thisRoom.power === true) {
-				console.log(this.thisRoom);
+				console.log(this.$store.state.clientRoomState);
 				await nc.setUserPower(this, this.thisRoom.roomId, true);
+				this.pollClientRoomState();
 			} else {
 				await nc.setUserPower(this, this.thisRoom.roomId, false);
+				clearInterval(this.polling);
 			}
 		},
 		/**
@@ -132,7 +135,7 @@ export default {
 			let requestTargetTemp = this.thisRoom.targetTemp + turnUp;
 			let nc = NetworkController.getInstance();
 			if (util.validateTemp(requestTargetTemp) === true) {
-				await nc.changeTargetTemp(this.$store, this.thisRoom.roomId, requestTargetTemp);
+				await nc.changeTargetTemp(this, this.thisRoom.roomId, requestTargetTemp);
 			} else {
 				//no-op
 			}
@@ -175,10 +178,9 @@ export default {
 		if (this.thisRoom === null) {
 			this.$router.push({path: '/client/login'});
 		}
-		this.pollClientRoomState();
 	},
 	beforeDestroy() {
-		clearInterval(this.polling);
+
 	},
 
 }
