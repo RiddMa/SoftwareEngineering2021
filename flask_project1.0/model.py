@@ -3,6 +3,14 @@ import threading
 import time
 from datetime import datetime
 from threading import Timer
+import database
+
+#todo
+'''
+ 详单数量不对
+ token
+'''
+
 
 SHUT_DOWN = 0
 SET_MODE = 1
@@ -11,24 +19,63 @@ UNIT_FEE = 1
 SPEED = dict([('0', 1 / 60), ('1', 2 / 60), ('2', 3 / 60)])
 INIT_TEMP = dict([('101',26),('102',26),('103',26),('104',26)])
 
-waiting_queue = []
-serving_queue = []
-room_list = dict()
+
+class WorkQueue:
+    def __init__(self):
+        self.array = []
+
+    def __setitem__(self,key,value):
+        self.array[key] = value
+
+    def __getitem__(self,item):
+        return self.array[item]
+
+    def append(self,item):
+        self.array.append(item)
+
+    def remove(self,item):
+        self.array.remove(item)
+
+    def len(self):
+        return len(self.array)
+
+    def pop(self,key):
+        self.array.pop(key)
+
+
+waiting_queue = WorkQueue()
+serving_queue = WorkQueue()
+
+
+class Roomlist:
+    def __init__(self):
+        self.set = dict()
+
+    def check(self,roomid):
+        return roomid in self.set
+
+    def __getitem__(self, item):
+        return self.set[item]
+
+    def __setitem__(self, key, value):
+        self.set[key] = value
+
+
+room_list = Roomlist()
 
 
 class Detailedlist:
     def __init__(self):
         self.list = dict()
 
-    def save(self, id):
-        if id not in self.list:
-            return
-        if len(self.list[id]) == 0:
-            return
-        for i in self.list:
-            # 存入详单数据库
-            i = i
-        return
+    def clear(self,roomid):
+        self.list[roomid].clear()
+
+    def deltaprice(self,roomId):
+        delta = room_list[roomId].price
+        if len(self.list[roomId]) > 0:
+            delta -= self.list[roomId][-1]['Fee']
+        return delta
 
     def insert(self, roomId, requesttime, requestduration, wind, fee):
         """
@@ -47,13 +94,15 @@ class Detailedlist:
         :return:
         """
         unit = dict([
-            ('RoomId', roomId), ('RequestTime', requesttime), ('requestduration', requestduration),
+            ('RoomId', roomId), ('RequestTime', requesttime.strftime("%Y-%m-%d %H:%m:%S")), ('requestduration', requestduration),
             ('FanSpeed', wind),
             ('FeeRate', SPEED[wind]), ('Fee', fee)
         ])
         if len(self.list[roomId]) > 0:
             unit['Fee'] -= self.list[roomId][-1]['Fee']
         self.list[roomId].append(unit)
+        database.addbill(unit['Roomid'],unit['RequestTime'],unit['requestduration'],
+                         unit['FanSpeed'],unit['FeeRate'],unit['Fee'])
         return
 
 
@@ -92,7 +141,7 @@ class Room:
         :return:
         """
         new_time = datetime.now()
-        delt_time = (new_time - self.last_settle_time).seconds
+        delt_time = (new_time - self.last_settle_time).microseconds / 1e6
         self.last_settle_time = new_time
         if not (self.roomId in waiting_queue) and not (self.roomId in serving_queue):
             # 关机状态
@@ -106,9 +155,15 @@ class Room:
         if self.roomId in serving_queue:
             new_temp = delt_time * SPEED[self.wind]
             if self.mode == 0:
-                new_temp = max(self.current_temp - new_temp, self.target_temp)
+                if self.target_temp >= self.current_temp:
+                    new_temp = self.current_temp
+                else :
+                    new_temp = max(self.current_temp - new_temp, self.target_temp)
             else:
-                new_temp = min(self.current_temp + new_temp, self.target_temp)
+                if self.target_temp <= self.current_temp:
+                    new_temp = self.current_temp
+                else :
+                    new_temp = min(self.current_temp + new_temp, self.target_temp)
             self.price += (new_temp - self.current_temp)
             self.current_temp = new_temp
         return
@@ -137,19 +192,16 @@ class Room:
         """
         return self.current_temp
 
-    def SetPower(self):
+    def SetPower(self,state):
         """
         设定开关机状态
-        :param power:
+        :param state: 新状态
         :return:
         """
-        return self.state
+        self.state = state
 
-    def CheckRoomState(self, list_Room):
-        """
-        监控房间
-        :return:
-        """
+    def On(self):
+        return self.state
 
 
 class CentralAirConditioner:
@@ -309,7 +361,7 @@ class SchedulingController:
             return
         if (datetime.now() - SchedulingController.last_in_serving[roomid]).seconds < 120:
             return
-        if len(waiting_queue) == 0:
+        if waiting_queue.len() == 0:
             return
         waiting_queue.sort(key=lambda x: (room_list[x].wind, SchedulingController.last_in_wating[room_list[x].roomid]))
         if room_list[waiting_queue[0]].wind == room_list[roomid]:
@@ -333,7 +385,7 @@ class SchedulingController:
         :param price:
         :return:
         """
-        if len(serving_queue) < 3:
+        if serving_queue.len() < 3:
             serving_queue.append(roomId)
             SchedulingController.last_in_serving[roomId] = datetime.now()
             return
@@ -367,7 +419,7 @@ class SchedulingController:
             serving_queue.remove(roomId)
             detailed_list.insert(roomId, SchedulingController.last_in_serving[roomId],
                                  SchedulingController.time_in_serving[roomId], room_list[roomId].wind, room_list[roomId].price)
-            if len(waiting_queue) == 0:
+            if waiting_queue.len() == 0:
                 return
             waiting_queue.sort(key=lambda x: (room_list[x].wind, SchedulingController.last_in_wating[room_list[x].roomid]))
             serving_queue.append(waiting_queue[0])
@@ -391,12 +443,10 @@ class ServerController:
         :return:error_code
         """
         # todo battle
-        if room_list[roomId].state == 0:
-            detailed_list.save(roomId)
-        else:
+        if room_list[roomId].On():
             error_code = 1
             return error_code
-        room_list[roomId].state = 1
+        room_list[roomId].SetPower(1)
         room_list[roomId].current_temp = current_temp
         room_list[roomId].wind = wind
         SchedulingController.AddRoom(roomId)
@@ -422,6 +472,8 @@ class ServerController:
         :param targetTemp:
         :return:
         """
+        if not room_list[roomId].On():
+            return 1
         if targetTemp > central_ac.temp_highlimit or targetTemp < central_ac.temp_lowlimit:
             return 1
         SchedulingController.move_out(roomId)
@@ -436,6 +488,9 @@ class ServerController:
         :param fanSpeed:
         :return:
         """
+        if not room_list[roomId].On():
+            return 1
+        database.
         SchedulingController.move_out(roomId)
         room_list[roomId].SetSpeed(fanSpeed)
         SchedulingController.AddRoom(roomId)
@@ -447,11 +502,15 @@ class ServerController:
         响应空调关机操作
         :return:
         """
+        if not room_list[roomId].On():
+            return 1
+        else:
+            detailed_list.clear(roomId)
         SchedulingController.move_out(roomId)
         detailed_list.insert(roomId, SchedulingController.last_in_serving[roomId],
                              SchedulingController.time_in_serving[roomId], room_list[roomId].wind,
                              room_list[roomId].price)
-        room_list[roomId].state = 0
+        room_list[roomId].SetPower(0)
         return 0
 
     @staticmethod
@@ -462,17 +521,22 @@ class ServerController:
         :param date_out:
         :return:
         """
-        # 数据库中查询入住时间
+        # todo 数据库中查询入住时间
+        res = database.getbills(RoomId,datetime.now()).get_json()
         return dict([
-            ('RoomId', RoomId), ('Total_Fee', room_list[RoomId].price), ('date_in',), ('date_out', str(datetime.now()))
+            ('RoomId', RoomId), ('Total_Fee', res['price'] + detailed_list.deltaprice(RoomId)), ('date_in',res['time']),
+            ('date_out', datetime.now().strftime("%Y-%m-%d %H:%m:%S"))
         ])
 
     @staticmethod
     def CreateRDR(RoomId):
-        """"
+        """
         响应创建详单请求
         """
-        return detailed_list.list[RoomId]
+        res = database.getbill(RoomId,datetime.now()).get_json()
+        if 'msg' in res:
+            return []
+        return res
 
     @staticmethod
     def CheckRoomState(list_Room):
@@ -514,8 +578,8 @@ class ServerController:
         central_ac = CentralAirConditioner()
         central_ac.setState(SET_MODE)
         SchedulingController.Initialize()
-        waiting_queue = []
-        serving_queue = []
+        waiting_queue = WorkQueue()
+        serving_queue = WorkQueue()
         error_code = 0
         return error_code
 
@@ -529,10 +593,18 @@ class ServerController:
                     SchedulingController.time_in_serving[roomid] += 1
                     if room_list[roomid].current_temp == room_list[roomid].target_temp:
                         SchedulingController.move_out(roomid)
+                    elif room_list[roomid].mode == 0 and room_list[roomid].current_temp < room_list[roomid].target_temp:
+                        SchedulingController.move_out(roomid)
+                    elif room_list[roomid].mode == 1 and room_list[roomid].current_temp > room_list[roomid].target_temp:
+                        SchedulingController.move_out(roomid)
                 else:
                     SchedulingController.time_in_serving[roomid] = 0
-                    if (not roomid in waiting_queue) and (not roomid in serving_queue):
-                        if abs(room_list[roomid].current_temp - INIT_TEMP[roomid]) > 1:
+                    if (roomid not in waiting_queue) and (roomid not in serving_queue):
+                        if room_list[roomid].current_temp - room_list[roomid].target_temp > 1 \
+                                and room_list[roomid].mode == 0:
+                            SchedulingController.AddRoom(roomid)
+                        elif room_list[roomid].current_temp - room_list[roomid].target_temp < -1 \
+                                and room_list[roomid].mode == 1:
                             SchedulingController.AddRoom(roomid)
         return
 
@@ -561,8 +633,8 @@ class ServerController:
         room_list['102'].current_temp = INIT_TEMP['102']
         room_list['103'].current_temp = INIT_TEMP['103']
         room_list['104'].current_temp = INIT_TEMP['104']
-        #tr = threading.Thread(target=ServerController.update())
-        #tr.start()
+        tr = threading.Thread(target=ServerController.update)
+        tr.start()
         return 0
 
     @staticmethod
@@ -587,6 +659,7 @@ class ServerController:
 
     @staticmethod
     def queryreport(Roomid, type_Report, date1, date2):
+
         return dict()
 
 
