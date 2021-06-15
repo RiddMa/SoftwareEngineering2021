@@ -62,29 +62,66 @@ export default new Vuex.Store({
 		setClientRoomState(state, {roomState}) {
 			state.clientRoomState = roomState;
 		},
-		setClientCurrentTemp(state, {currentTemp}) {
+		setClientPower(state, power) {
+			state.clientRoomState.power = power;
+		},
+		setClientTargetTemp(state, targetTemp) {
+			state.clientRoomState.targetTemp = targetTemp;
+		},
+		setClientTargetWind(state, targetWind) {
+			state.clientRoomState.targetWind = targetWind;
+		},
+		setClientCurrentMode(state, currentMode) {
+			state.clientRoomState.currentMode = currentMode;
+		},
+		setClientCurrentTemp(state, currentTemp) {
 			state.clientRoomState.currentTemp = currentTemp;
 		},
-		/**
-		 *
-		 * @param state Vuex的状态变量，commit无需传入
-		 */
-		initAdminRoomState(state) {
-			state.adminRoomState = {};
+		setClientCurrentFee(state, currentFee) {
+			state.clientRoomState.currentFee = currentFee;
 		},
+		setClientTotalFee(state, totalFee) {
+			state.clientRoomState.totalFee = totalFee;
+		},
+		// /**
+		//  *
+		//  * @param state Vuex的状态变量，commit无需传入
+		//  */
+		// initAdminRoomState(state) {
+		// 	state.adminRoomState = {};
+		// },
 		/**
 		 *
 		 * @param state Vuex的状态变量，commit无需传入
 		 * @param roomState 房间对象
 		 */
-		setAdminRoomState(state, {roomState}) {
+		setAdminRoomState(state, roomState) {
 			if (state.adminRoomState === null) {
-				state.adminRoomState = {};
+				state.adminRoomState = [];
 			}
-			let roomId = roomState.roomId;
-			state.adminRoomState[roomId] = roomState;
+			let targetRoomIndex = state.adminRoomState.findIndex(item => {
+				return item.roomId === roomState.roomId;
+			})
+			if (targetRoomIndex === -1) {
+				state.adminRoomState.push(roomState);
+			} else {
+				Vue.set(state.adminRoomState, targetRoomIndex, roomState);
+			}
 		},
-
+		/**
+		 *
+		 * @param state
+		 * @param roomStateList
+		 */
+		setAdminAllRoomState(state, roomStateList) {
+			if (state.adminRoomState === null) {
+				state.adminRoomState = [];
+			}
+			state.adminRoomState.clear();
+			for (let i = 0; i < roomStateList.length; i++) {
+				state.adminRoomState.push(roomStateList[i]);
+			}
+		}
 
 	},
 	actions: {},

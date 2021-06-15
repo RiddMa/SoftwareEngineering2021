@@ -53,20 +53,25 @@ export default {
 		 * 用户登录
 		 * @param event
 		 */
+		// async userLogin(event) {
+		// 	let nc = NetworkController.getInstance();
+		// 	let errCode = await nc.enterRoom(this, this.roomId, this.password);
+		// 	if (errCode === 0) {
+		// 		// this.addDefaultRoom2Vuex(this.roomId);
+		// 		this.$router.push({path: '/client'});// route to client view
+		// 	} else if (errCode === 1) {
+		// 		//TODO:login failed
+		// 		// this.$router.push({path: '/client'});// route to client view
+		// 	} else if (errCode === -1) {
+		// 		//TODO:network error
+		// 		this.addDefaultRoom2Vuex(this.roomId);
+		// 		this.$router.push({path: '/client'});// route to client view
+		// 	}
+		// },
 		async userLogin(event) {
-			let nc = NetworkController.getInstance();
-			let errCode = await nc.enterRoom(this, this.roomId, this.password);
-			if (errCode === 0) {
-				// this.addDefaultRoom2Vuex(this.roomId);
-				this.$router.push({path: '/client'});// route to client view
-			} else if (errCode === 1) {
-				//TODO:login failed
-				// this.$router.push({path: '/client'});// route to client view
-			} else if (errCode === -1) {
-				//TODO:network error
-				this.addDefaultRoom2Vuex(this.roomId);
-				this.$router.push({path: '/client'});// route to client view
-			}
+			this.addDefaultRoom2Vuex(this.roomId);
+			this.$router.push({path: '/client'});// route to client view
+
 		},
 	}
 }

@@ -3,9 +3,9 @@
 		<Header class="aHeader">
 			<h2 class="aHeaderContent">
 				酒店空调管理系统
-				<Button shape="circle" type="primary" @click="addAC(defaultAC)">[测试用]添加空调</Button>
-				<Button shape="circle" type="primary" @click="checkRoomsState()">[测试用]查看房间状态</Button>
-				<Switch slot="extra" v-model="this.isPolling" shape="circle" size="large" type="primary"
+				<Button shape="circle" type="primary" @click="addAC()">[测试用]添加空调</Button>
+				<Button shape="circle" type="primary" @click="getAdminRoomState()">[测试用]查看房间状态</Button>
+				<Switch slot="extra" v-model="isPolling" shape="circle" size="large" type="primary"
 				        @on-change="handlePollingSwitch()">
 					<span slot="open">ON</span>
 					<span slot="close">OFF</span>
@@ -52,30 +52,33 @@ export default {
 		};
 	},
 	methods: {
-		/**
-		 * 向 Vuex 注册空调
-		 * @param acInfo
-		 */
-		addAC: function (acInfo) {
-			Vue.set(this.$store.state.roomInfo, acInfo.rid, acInfo);
-			console.log(this.$store.state);
+		addAC() {
+			let roomState = {
+				'roomId': random_str(8),
+				'power': true,
+				'targetTemp': 24,
+				'targetWind': 2,
+				'currentMode': '致冷',
+				'currentTemp': 26,
+				'currentFee': 0.0,
+				'totalFee': 0.0,
+			};
+			this.$store.commit('setAdminRoomState', roomState);
 		},
 		handlePollingSwitch() {
 			if (this.isPolling === true) {
-				this.isPolling = false;
-				clearInterval(this.polling);
-				console.log('Stop polling');
-			} else {
-				this.isPolling = true;
 				this.polling = setInterval(() => {
 					this.getAdminRoomState();
 				}, 5000);
 				console.log('Start polling');
+			} else {
+				clearInterval(this.polling);
+				console.log('Stop polling');
 			}
 		},
 		async getAdminRoomState() {
 			let nc = NetworkController.getInstance();
-			let response = await nc.getRoomsState();
+			let response = await nc.getRoomsState(this);
 			console.log('Polled');
 		}
 	},

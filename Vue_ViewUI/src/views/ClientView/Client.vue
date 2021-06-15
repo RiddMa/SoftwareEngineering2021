@@ -13,15 +13,31 @@
 							<span class="acCardContentText">当前状态：</span>
 						</Col>
 						<Col :span="12" align="middle" class="acCardContentText">
-							<Switch v-model="this.$store.state.clientRoomState.power" shape="circle" size="large" type="primary"
+							<Switch v-model="power" shape="circle" size="large" type="primary"
 							        @on-change="handlePowerSwitch()">
 								<span slot="open">ON</span>
 								<span slot="close">OFF</span>
 							</Switch>
 						</Col>
 					</Row>
+					<Row class="acCardContent">
+						<Col :span="12">
+							<span class="acCardContentText">当前费用：</span>
+						</Col>
+						<Col :span="12" align="middle" class="acCardContentText">
+							<span class="acCardContentText">{{ currentFee }}</span>
+						</Col>
+					</Row>
+					<Row class="acCardContent">
+						<Col :span="12">
+							<span class="acCardContentText">总计费用：</span>
+						</Col>
+						<Col :span="12" align="middle" class="acCardContentText">
+							<span class="acCardContentText">{{ totalFee }}</span>
+						</Col>
+					</Row>
 
-					<div v-if="this.$store.state.clientRoomState.power" class="acStateInfo">
+					<div v-if="power" class="acStateInfo">
 						<Row class="acCardContent">
 							<Col :span="12">
 								<span class="acCardContentText">目标温度：</span>
@@ -30,14 +46,14 @@
 								<Row>
 									<Col :span="8" align="middle" class="acCardContentText">
 										<Button icon="ios-arrow-down" shape="circle" size="large"
-										        @click="changeTemp($event,-1)"></Button>
+										        @click="changeTemp(-1)"></Button>
 									</Col>
 									<Col :span="8" align="middle">
-										<span class="digitFont">{{ this.$store.state.clientRoomState.targetTemp }}</span>
+										<span class="digitFont">{{ targetTemp }}</span>
 									</Col>
 									<Col :span="8" align="middle">
 										<Button class="acCardContentText" icon="ios-arrow-up" shape="circle" size="large"
-										        @click="changeTemp($event,1)"></Button>
+										        @click="changeTemp(1)"></Button>
 									</Col>
 								</Row>
 							</Col>
@@ -51,14 +67,14 @@
 								<Row>
 									<Col :span="8" align="middle">
 										<Button icon="md-remove" shape="circle" size="large"
-										        @click="changeWind($event,-1)"></Button>
+										        @click="changeWind(-1)"></Button>
 									</Col>
 									<Col :span="8" align="middle">
-										<span class="digitFont">{{ this.$store.state.clientRoomState.targetWind }}</span>
+										<span class="digitFont">{{ targetWind }}</span>
 									</Col>
 									<Col :span="8" align="middle">
 										<Button icon="md-add" shape="circle" size="large"
-										        @click="changeWind($event,1)"></Button>
+										        @click="changeWind(1)"></Button>
 									</Col>
 								</Row>
 							</Col>
@@ -71,23 +87,23 @@
 							<Col :span="12" class="acCardContentText">
 								<Row>
 									<Col :span="8" align="middle">
-										<Button v-if="this.$store.state.clientRoomState.currentMode==='致冷'" icon="ios-snow" shape="circle"
+										<Button v-if="currentMode==='致冷'" icon="ios-snow" shape="circle"
 										        size="large"
 										        type="primary"
-										        @click="changeMode($event,'致冷')"></Button>
+										        @click="changeMode('致冷')"></Button>
 										<Button v-else icon="ios-snow" shape="circle" size="large"
-										        @click="changeMode($event,'致冷')"></Button>
+										        @click="changeMode('致冷')"></Button>
 									</Col>
 									<Col :span="8" align="middle">
-										<span style="vertical-align: middle">{{ this.$store.state.currentMode }}</span>
+										<span style="vertical-align: middle">{{ currentMode }}</span>
 									</Col>
 									<Col :span="8" align="middle">
-										<Button v-if="this.$store.state.clientRoomState.currentMode==='制热'" icon="ios-sunny" shape="circle"
+										<Button v-if="currentMode==='制热'" icon="ios-sunny" shape="circle"
 										        size="large"
 										        type="primary"
-										        @click="changeMode($event,'制热')"></Button>
+										        @click="changeMode('制热')"></Button>
 										<Button v-else icon="ios-sunny" shape="circle" size="large"
-										        @click="changeMode($event,'制热')"></Button>
+										        @click="changeMode('制热')"></Button>
 									</Col>
 								</Row>
 							</Col>
@@ -109,79 +125,141 @@ export default {
 	name: 'Client',
 	data: function () {
 		return {
+			roomId: this.$store.state.clientRoomState.roomId,
 			title: null,
 			polling: null,
 			networkController: NetworkController.getInstance(),
 		}
 	},
+	computed: {
+		// roomId: {
+		// 	get(){
+		// 		return this.$store.state.clientRoomState.roomId;
+		// 	},
+		// 	set(){
+		// 		this.$store.commit('set')
+		// 	}
+		//
+		// },
+		power: {
+			get: function () {
+				return this.$store.state.clientRoomState.power;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientPower', newState);
+			},
+		},
+		targetTemp: {
+			get: function () {
+				return this.$store.state.clientRoomState.targetTemp;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientTargetTemp', newState);
+			},
+		},
+		targetWind: {
+			get: function () {
+				return this.$store.state.clientRoomState.targetWind;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientTargetWind', newState);
+			},
+		},
+		currentMode: {
+			get: function () {
+				return this.$store.state.clientRoomState.currentMode;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientCurrentMode', newState);
+			},
+		},
+		currentTemp: {
+			get: function () {
+				return this.$store.state.clientRoomState.currentTemp;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientCurrentTemp', newState);
+			},
+		},
+		currentFee: {
+			get: function () {
+				return this.$store.state.clientRoomState.currentFee;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientCurrentFee', newState);
+			},
+		},
+		totalFee: {
+			get: function () {
+				return this.$store.state.clientRoomState.totalFee;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientTotalFee', newState);
+			},
+		},
+	},
 	methods: {
 		async handlePowerSwitch() {
-			let nc = NetworkController.getInstance()
-			if (this.thisRoom.power === true) {
-				console.log(this.$store.state.clientRoomState);
-				await nc.setUserPower(this, this.thisRoom.roomId, true);
+			let nc = NetworkController.getInstance();
+			if (this.power === true) {
+				await nc.setUserPower(this, this.roomId, true);
 				this.pollClientRoomState();
 			} else {
-				await nc.setUserPower(this, this.thisRoom.roomId, false);
+				await nc.setUserPower(this, this.roomId, false);
 				clearInterval(this.polling);
 			}
 		},
 		/**
 		 * 空调温度控制
-		 * @param event
 		 * @param turnUp 升高的温度值，取值+1、-1
 		 */
-		async changeTemp(event, turnUp) {
-			let requestTargetTemp = this.thisRoom.targetTemp + turnUp;
+		async changeTemp(turnUp) {
+			let requestTargetTemp = this.targetTemp + turnUp;
 			let nc = NetworkController.getInstance();
 			if (util.validateTemp(requestTargetTemp) === true) {
-				await nc.changeTargetTemp(this, this.thisRoom.roomId, requestTargetTemp);
+				await nc.changeTargetTemp(this, this.roomId, requestTargetTemp);
 			} else {
 				//no-op
 			}
 		},
 		/**
 		 * 空调风速控制
-		 * @param event
 		 * @param turnUp 升高的风速档位，取值+1、-1
 		 */
-		async changeWind(event, turnUp) {
-			let targetWind = this.thisRoom.targetWind + turnUp;
+		async changeWind(turnUp) {
+			let targetWind = this.targetWind + turnUp;
 			let nc = NetworkController.getInstance();
 			if (util.validateWind(targetWind) === true) {
-				await nc.changeTargetFanSpeed(this.thisRoom.roomId, targetWind);
-				this.thisRoom.targetWind = targetWind;
+				await nc.changeTargetFanSpeed(this, this.roomId, targetWind);
 			} else {
 				//no-op
 			}
-			console.log(this.thisRoom.targetWind);
-
 		},
 		/**
 		 * 空调模式控制
 		 * @param event
 		 * @param toMode 目标模式，取值 致冷、制热
 		 */
-		changeMode: function (event, toMode) {
-			this.thisRoom.currentMode = toMode;
+		changeMode: function (toMode) {
+			this.currentMode = toMode;
 			//TODO:目前还没有这个功能
 		},
 		pollClientRoomState() {
 			this.polling = setInterval(async () => {
-				let errCode = await this.networkController.heartBeat(this, this.thisRoom.roomId);
+				let errCode = await this.networkController.heartBeat(this, this.roomId);
 				console.log('Polled');
 			}, 5000);
 		}
 
 	},
 	created() {
-		if (this.thisRoom === null) {
+		if (this.$store.state.clientRoomState === null) {
 			this.$router.push({path: '/client/login'});
 		}
 	},
-	beforeDestroy() {
-
-	},
+	// beforeDestroy() {
+	//
+	// },
 
 }
 </script>

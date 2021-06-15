@@ -7,13 +7,13 @@
 		<Card>
 			<div class="acList">
 				<Row>
-					<Col v-for="item in this.$store.state.roomInfo" v-bind:key="item.rid" :lg="8" :md="12" :sm="12" :xl="6"
+					<Col v-for="item in adminRoomState" v-bind:key="item.roomId" :lg="8" :md="12" :sm="12" :xl="6"
 					     :xs="24"
 					     :xxl="4">
 						<Card class="acCard">
 							<Row slot="title">
 								<Col :span="20" class="acCardTitle">
-									<h3 class="acCardTitleText">房间{{ item.rid }}</h3>
+									<h3 class="acCardTitleText">房间{{ item.roomId }}</h3>
 								</Col>
 								<Col :span="4" align="end">
 									<Button icon="ios-information-circle-outline" shape="circle"></Button>
@@ -22,10 +22,11 @@
 
 							<Row class="acCardContent">
 								<Col :span="12">
-									<span>当前状态：</span>
+									<span>目标状态：</span>
 								</Col>
 								<Col :span="12" align="middle">
-									<Switch v-model="item.power" shape="circle" size="large" type="primary">
+									<Switch v-model="item.power" shape="circle" size="large" type="primary"
+									        @on-change="handlePowerSwitch(item.roomId)">
 										<span slot="open">ON</span>
 										<span slot="close">OFF</span>
 									</Switch>
@@ -34,19 +35,20 @@
 							<div v-if="item.power" class="acStateInfo">
 								<Row class="acCardContent">
 									<Col :span="12">
-										<span>当前温度：</span>
+										<span>目标温度：</span>
 									</Col>
 									<Col :span="12">
 										<Row>
 											<Col :span="8" align="middle">
 												<Button icon="ios-arrow-down" shape="circle" size="small"
-												        @click="changeTemp($event,item.curnTemp,-1)"></Button>
+												        @click="changeTargetTemp(item.roomId,item.targetTemp-1)"></Button>
 											</Col>
 											<Col :span="8" align="middle">
-												<span>{{ item.curnTemp }}</span>
+												<span>{{ item.targetTemp }}</span>
 											</Col>
 											<Col :span="8" align="middle">
-												<Button icon="ios-arrow-up" shape="circle" size="small"></Button>
+												<Button icon="ios-arrow-up" shape="circle" size="small"
+												        @click="changeTargetTemp(item.roomId,item.targetTemp+1)"></Button>
 											</Col>
 										</Row>
 									</Col>
@@ -54,18 +56,20 @@
 
 								<Row class="acCardContent">
 									<Col :span="12">
-										<span>当前风速：</span>
+										<span>目标风速：</span>
 									</Col>
 									<Col :span="12">
 										<Row>
 											<Col :span="8" align="middle">
-												<Button icon="md-remove" shape="circle" size="small"></Button>
+												<Button icon="md-remove" shape="circle" size="small"
+												        @click="changeTargetWind(item.roomId,item.targetWind-1)"></Button>
 											</Col>
 											<Col :span="8" align="middle">
-												<span>{{ item.curnWind }}</span>
+												<span>{{ item.targetWind }}</span>
 											</Col>
 											<Col :span="8" align="middle">
-												<Button icon="md-add" shape="circle" size="small"></Button>
+												<Button icon="md-add" shape="circle" size="small"
+												        @click="changeTargetWind(item.roomId,item.targetWind+1)"></Button>
 											</Col>
 										</Row>
 									</Col>
@@ -78,19 +82,21 @@
 									<Col :span="12">
 										<Row>
 											<Col :span="8" align="middle">
-												<Button v-if="item.curnMode==='致冷'" icon="ios-snow" shape="circle" size="small" type="primary"
-												        @click="changeMode($event,'致冷')"></Button>
+												<Button v-if="item.currentMode==='致冷'" icon="ios-snow" shape="circle" size="small"
+												        type="primary"
+												        @click="changeMode(item.roomId,'致冷')"></Button>
 												<Button v-else icon="ios-snow" shape="circle" size="small"
-												        @click="changeMode($event,'致冷')"></Button>
+												        @click="changeMode(item.roomId,'致冷')"></Button>
 											</Col>
 											<Col :span="8" align="middle">
-												<span>{{ item.curnMode }}</span>
+												<span>{{ item.currentMode }}</span>
 											</Col>
 											<Col :span="8" align="middle">
-												<Button v-if="item.curnMode==='制热'" icon="ios-sunny" shape="circle" size="small" type="primary"
-												        @click="changeMode($event,'制热')"></Button>
+												<Button v-if="item.currentMode==='制热'" icon="ios-sunny" shape="circle" size="small"
+												        type="primary"
+												        @click="changeMode(item.roomId,'制热')"></Button>
 												<Button v-else icon="ios-sunny" shape="circle" size="small"
-												        @click="changeMode($event,'制热')"></Button>
+												        @click="changeMode(item.roomId,'制热')"></Button>
 											</Col>
 										</Row>
 									</Col>
@@ -108,21 +114,66 @@
 </template>
 
 <script>
+import {NetworkController} from "../../libs/NetworkController";
+import util from "../../libs/util";
+
 export default {
 	name: "adminMain",
 	data: function () {
-		return {
-			adminRoomState: this.$store.state.adminRoomState
-		}
+		return {}
+	},
+	computed: {
+		adminRoomState: {
+			get: function () {
+				return this.$store.state.adminRoomState;
+			},
+			set: function () {
+			}
+		},
+
 	},
 	methods: {
 		popSettings(e, rid) {
 
 		},
-		changeTemp: function (e, turnUp) {
-
+		async handlePowerSwitch(roomId) {
+			let nc = NetworkController.getInstance();
+			let targetRoomState = this.$store.state.adminRoomState.find(roomState => {
+				return roomState.roomId === roomId;
+			});
+			if (targetRoomState.power === true) {
+				await nc.setUserPower(this, roomId, true, 1);
+			} else {
+				await nc.setUserPower(this, roomId, false, 1);
+			}
 		},
-		changeMode: function (e, toMode) {
+		async changeTargetTemp(roomId, targetTemp) {
+			let nc = NetworkController.getInstance();
+			if (util.validateTemp(targetTemp) === true) {
+				await nc.changeTargetTemp(this, roomId, targetTemp, 1);
+				// let targetRoomState = this.$store.state.adminRoomState.find(roomState => {
+				// 	return roomState.roomId === roomId;
+				// });
+				// targetRoomState.targetTemp = targetTemp;
+				// this.$store.commit('setAdminRoomState', targetRoomState);
+			} else {
+				//no-op
+			}
+		},
+		async changeTargetWind(roomId, targetWind) {
+			let nc = NetworkController.getInstance();
+			if (util.validateWind(targetWind) === true) {
+				await nc.changeTargetFanSpeed(this, this.roomId, targetWind, 1);
+				// let targetRoomState = this.$store.state.adminRoomState.find(roomState => {
+				// 	return roomState.roomId === roomId;
+				// })
+				// targetRoomState.targetWind = targetWind;
+				// this.$store.commit('setAdminRoomState', targetRoomState);
+			} else {
+				//no-op
+			}
+		},
+		changeMode: function (toMode) {
 
 		},
 	}

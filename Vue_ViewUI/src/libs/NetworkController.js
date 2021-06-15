@@ -115,36 +115,81 @@ export class NetworkController {
 	 * @param that
 	 * @param roomId 这tmd是个String！！！！！！
 	 * @param toPower
+	 * @param operator
 	 * @returns {Promise<*>}
 	 */
-	async setUserPower(that, roomId, toPower) {
-		if (toPower === true) {
-			try {
+	async setUserPower(that, roomId, toPower, operator = 0) {
+		let response;
+		switch (operator) {
+			case 0: {
 				let newRoomState = that.$store.state.clientRoomState;
-				let postURL = this.serverURL + "api/usr/poweron";
-				let response = await axios.post(postURL, {
-					roomId: roomId,
-					targetTemp: newRoomState.targetTemp,
-					fanSpeed: newRoomState.targetWind.toString(),
-					currentTemp: newRoomState.currentTemp,
-				});
-				newRoomState.power = true;
-				that.$store.commit('setClientRoomState', {'roomState': newRoomState});
-				return response.data.error_code;
-			} catch (e) {
-				console.log(e);
-				return -1;//network error
+				if (toPower === true) {
+					try {
+						let postURL = this.serverURL + "api/usr/poweron";
+						response = await axios.post(postURL, {
+							roomId: roomId,
+							targetTemp: newRoomState.targetTemp,
+							fanSpeed: (newRoomState.targetWind - 1).toString(),
+							currentTemp: newRoomState.currentTemp,
+						});
+					} catch (e) {
+						console.log(e);
+						return -1;//network error
+					}
+				} else {
+					try {
+						let postURL = this.serverURL + "api/usr/poweroff";
+						response = await axios.post(postURL, {
+							roomId: roomId
+						});
+					} catch (e) {
+						console.log(e);
+						return -1;//network error
+					}
+				}
+				if (response.error_code === 0) {
+					newRoomState.power = toPower;
+					that.$store.commit('setClientRoomState', {'roomState': newRoomState});
+				}
+				return response.error_code;
 			}
-		} else {
-			try {
-				let postURL = this.serverURL + "api/usr/poweroff";
-				let response = await axios.post(postURL, {
-					roomId: roomId
+			case 1: {
+				let targetRoomIndex = that.$store.state.adminRoomState.findIndex(item => {
+					return item.roomId === roomId;
 				});
-				return response.data.error_code;
-			} catch (e) {
-				console.log(e);
-				return -1;//network error
+				if (targetRoomIndex !== -1) {
+					let targetRoomState = that.$store.state.adminRoomState[targetRoomIndex];
+					if (toPower === true) {
+						try {
+							console.log('send');
+							let postURL = this.serverURL + "api/usr/poweron";
+							response = await axios.post(postURL, {
+								roomId: roomId,
+								targetTemp: targetRoomState.targetTemp,
+								fanSpeed: (targetRoomState.targetWind - 1).toString(),
+								currentTemp: targetRoomState.currentTemp,
+							});
+						} catch (e) {
+							console.log(e);
+							return -1;//network error
+						}
+					} else {
+						try {
+							let postURL = this.serverURL + "api/usr/poweroff";
+							response = await axios.post(postURL, {
+								roomId: roomId
+							});
+						} catch (e) {
+							console.log(e);
+							return -1;//network error
+						}
+					}
+					if (response.error_code === 0) {
+						targetRoomState.power = toPower;
+						that.$store.commit('setAdminRoomState', targetRoomState);
+					}
+					return response.error_code;
+				}
 			}
 		}
 	}
@@ -184,9 +229,10 @@ export class NetworkController {
 	 * @param that
 	 * @param roomId
 	 * @param requestTargetTemp
+	 * @param operator
 	 * @returns {Promise<number>}
 	 */
-	async changeTargetTemp(that, roomId, requestTargetTemp) {
+	async changeTargetTemp(that, roomId, requestTargetTemp, operator = 0) {
 		try {
 			let postURL = this.serverURL + "api/usr/changetargettemp";
 			let response = await axios.post(postURL, {
@@ -194,9 +240,22 @@ export class NetworkController {
 				targetTemp: requestTargetTemp
 			});
 			if (response.data.error_code === 0) {
-				let newRoomState = that.$store.state.clientRoomState;
-				newRoomState.targetTemp = requestTargetTemp;
-				that.$store.commit('setClientRoomState', {'roomState': newRoomState});
+				switch (operator) {
+					case 0: {
+						that.$store.commit('setClientTargetTemp', requestTargetTemp);
+						break;
+					}
+					case 1: {
+						let targetRoomIndex = that.$store.state.adminRoomState.findIndex(item => {
+							return item.roomId === roomId;
+						})
+						if (targetRoomIndex !== -1) {
+							let newRoomState = that.$store.state.adminRoomState[targetRoomIndex];
+							newRoomState.targetTemp = requestTargetTemp;
+							that.$store.commit('setAdminRoomState', newRoomState);
+						}
+					}
+				}
 			}
 			return response.data.error_code;
 		} catch (e) {
@@ -207,11 +266,13 @@ export class NetworkController {
 
 	/**
 	 * 请求调风
+	 * @param that
 	 * @param roomId
 	 * @param requestFanSpeed
+	 * @param operator
 	 * @returns {Promise<number|*>}
 	 */
-	async changeTargetFanSpeed(roomId, requestFanSpeed) {
+	async changeTargetFanSpeed(that, roomId, requestFanSpeed, operator = 0) {
 		try {
 			let postURL = this.serverURL + "api/usr/changefanspeed";
 			let response = await axios.post(postURL, {
@@ -219,9 +280,22 @@ export class NetworkController {
 				fanSpeed: (requestFanSpeed - 1).toString()
 			});
 			if (response.data.error_code === 0) {
-				let newRoomState = store.state.clientRoomState;
-				newRoomState.targetWind = requestFanSpeed;
-				store.commit('setClientRoomState', {'roomState': newRoomState});
+				switch (operator) {
+					case 0: {
+						that.$store.commit('setClientTargetWind', requestFanSpeed);
+						break;
+					}
+					case 1: {
+						let targetRoomIndex = that.$store.state.adminRoomState.findIndex(item => {
+							return item.roomId === roomId;
+						})
+						if (targetRoomIndex !== -1) {
+							let newRoomState = that.$store.state.adminRoomState[targetRoomIndex];
+							newRoomState.targetWind = requestFanSpeed;
+							that.$store.commit('setAdminRoomState', newRoomState);
+						}
+					}
+				}
 			}
 			return response.data.error_code;
 		} catch (e) {
@@ -313,16 +387,12 @@ export class NetworkController {
 	 * 管理员查看房间状态
 	 * @returns {Promise<number|*>}
 	 */
-	async getRoomsState() {
-		//TODO:接口有问题，不知道房间列表
+	async getRoomsState(that) {
 		try {
 			let postURL = this.serverURL + "api/admin/checkroomstate";
 			let response = await axios.post(postURL);
-			//todo 存储结果
 			let roomStateList = response.data.data;
-			for (let i = 0; i < Object.keys(roomStateList).length; i++) {
-				// Vue.set(this.$store.state.roomInfo, 'invoice', response.data.data);
-			}
+			that.$store.commit('setAdminAllRoomState', roomStateList);
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
