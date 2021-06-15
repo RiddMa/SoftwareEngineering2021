@@ -37,9 +37,17 @@ export default {
 		 * @param roomId
 		 */
 		addDefaultRoom2Vuex(roomId) {
-			let roomInfo = {'roomId': roomId, 'power': false, 'targetTemp': 24, 'targetWind': 3, 'currentMode': '致冷'};
-			this.$store.commit('setRoomInfo', {roomInfo: roomInfo});
-
+			let roomState = {
+				'roomId': roomId,
+				'power': false,
+				'targetTemp': 24,
+				'targetWind': 3,
+				'currentMode': '致冷',
+				'currentTemp': 26,
+				'currentFee': 0.0,
+				'totalFee': 0.0,
+			};
+			this.$store.commit('setClientRoomState', {roomState: roomState});
 		},
 		/**
 		 * 用户登录
@@ -56,8 +64,8 @@ export default {
 				// this.$router.push({path: '/client'});// route to client view
 			} else if (errCode === -1) {
 				//TODO:network error
-				//this.addDefaultRoom2Vuex(this.roomId);
-				// this.$router.push({path: '/client'});// route to client view
+				this.addDefaultRoom2Vuex(this.roomId);
+				this.$router.push({path: '/client'});// route to client view
 			}
 		},
 	}

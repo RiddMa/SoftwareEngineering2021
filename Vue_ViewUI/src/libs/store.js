@@ -6,17 +6,20 @@ Vue.use(Vuex);
 export default new Vuex.Store({
 	state: {
 		CAC: false,//CAC for Central Air-Conditioning
+		username: '',
 		userToken: '',
 		adminToken: '',
 		receptionToken: '',
 		managerToken: '',
+		clientRoomState: null,
+		adminRoomState: null,
 	},
 	getters: {},
 	mutations: {
 		/**
-		 *
-		 * @param state
-		 * @param toPower
+		 * 设置中央空调状态
+		 * @param state Vuex的状态变量，commit无需传入
+		 * @param toPower 目标状态
 		 */
 		setCAC(state, {toPower}) {
 			state.CAC = toPower;
@@ -24,8 +27,16 @@ export default new Vuex.Store({
 		/**
 		 *
 		 * @param state
+		 * @param username
+		 */
+		setUsername(state, {username}) {
+			state.username = username;
+		},
+		/**
+		 *
+		 * @param state Vuex的状态变量，commit无需传入
 		 * @param userType 0-客户，1-管理员，2-前台，3-经理
-		 * @param token
+		 * @param token token
 		 */
 		setToken(state, {userType, token}) {
 			switch (userType) {
@@ -45,22 +56,30 @@ export default new Vuex.Store({
 		},
 		/**
 		 * 仅在客户端调用
-		 * @param state
-		 * @param roomInfo
+		 * @param state Vuex的状态变量，commit无需传入
+		 * @param roomState 房间对象
 		 */
 		setClientRoomState(state, {roomState}) {
 			state.clientRoomState = roomState;
 		},
-
+		/**
+		 *
+		 * @param state Vuex的状态变量，commit无需传入
+		 */
 		initAdminRoomState(state) {
 			state.adminRoomState = {};
 		},
+		/**
+		 *
+		 * @param state Vuex的状态变量，commit无需传入
+		 * @param roomState 房间对象
+		 */
 		setAdminRoomState(state, {roomState}) {
-			if (state.adminRoomState === undefined) {
+			if (state.adminRoomState === null) {
 				state.adminRoomState = {};
 			}
 			let roomId = roomState.roomId;
-			state.adminRoomState.roomId = roomState;
+			state.adminRoomState[roomId] = roomState;
 		},
 
 

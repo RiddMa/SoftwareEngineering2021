@@ -37,13 +37,13 @@ export default {
 			let nc = NetworkController.getInstance();
 			let errCode = await nc.login(this.username, this.password, 1);
 			if (errCode === 0) {
+				this.$store.commit('setUsername', {username: this.username});
 				this.$router.push({path: '/admin/main'});
 			} else if (errCode === 1) {
 				//TODO:login failed
 			} else if (errCode === -1) {
 				//TODO:network error
 			}
-
 		},
 	}
 }
