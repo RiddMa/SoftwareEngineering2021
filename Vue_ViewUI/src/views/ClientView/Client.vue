@@ -13,29 +13,47 @@
 							<span class="acCardContentText">当前状态：</span>
 						</Col>
 						<Col :span="12" align="middle" class="acCardContentText">
-							<Switch v-model="thisRoom.power" shape="circle" size="large" type="primary" @on-change="handleSwitch()">
+							<Switch v-model="power" shape="circle" size="large" type="primary"
+							        @on-change="handlePowerSwitch()">
 								<span slot="open">ON</span>
 								<span slot="close">OFF</span>
 							</Switch>
 						</Col>
 					</Row>
-					<div v-if="thisRoom.power" class="acStateInfo">
+					<Row class="acCardContent">
+						<Col :span="12">
+							<span class="acCardContentText">当前费用：</span>
+						</Col>
+						<Col :span="12" align="middle" class="acCardContentText">
+							<span class="acCardContentText">{{ currentFee }}</span>
+						</Col>
+					</Row>
+					<Row class="acCardContent">
+						<Col :span="12">
+							<span class="acCardContentText">总计费用：</span>
+						</Col>
+						<Col :span="12" align="middle" class="acCardContentText">
+							<span class="acCardContentText">{{ totalFee }}</span>
+						</Col>
+					</Row>
+
+					<div v-if="power" class="acStateInfo">
 						<Row class="acCardContent">
 							<Col :span="12">
-								<span class="acCardContentText">当前温度：</span>
+								<span class="acCardContentText">目标温度：</span>
 							</Col>
 							<Col :span="12">
 								<Row>
 									<Col :span="8" align="middle" class="acCardContentText">
 										<Button icon="ios-arrow-down" shape="circle" size="large"
-										        @click="changeTemp($event,-1)"></Button>
+										        @click="changeTemp(-1)"></Button>
 									</Col>
 									<Col :span="8" align="middle">
-										<span class="digitFont">{{ this.thisRoom.curnTemp }}</span>
+										<span class="digitFont">{{ targetTemp }}</span>
 									</Col>
 									<Col :span="8" align="middle">
 										<Button class="acCardContentText" icon="ios-arrow-up" shape="circle" size="large"
-										        @click="changeTemp($event,1)"></Button>
+										        @click="changeTemp(1)"></Button>
 									</Col>
 								</Row>
 							</Col>
@@ -43,20 +61,20 @@
 
 						<Row class="acCardContent">
 							<Col :span="12">
-								<span class="acCardContentText">当前风速：</span>
+								<span class="acCardContentText">目标风速：</span>
 							</Col>
 							<Col :span="12" class="acCardContentText">
 								<Row>
 									<Col :span="8" align="middle">
 										<Button icon="md-remove" shape="circle" size="large"
-										        @click="changeWind($event,-1)"></Button>
+										        @click="changeWind(-1)"></Button>
 									</Col>
 									<Col :span="8" align="middle">
-										<span class="digitFont">{{ this.thisRoom.curnWind }}</span>
+										<span class="digitFont">{{ targetWind }}</span>
 									</Col>
 									<Col :span="8" align="middle">
 										<Button icon="md-add" shape="circle" size="large"
-										        @click="changeWind($event,1)"></Button>
+										        @click="changeWind(1)"></Button>
 									</Col>
 								</Row>
 							</Col>
@@ -69,70 +87,30 @@
 							<Col :span="12" class="acCardContentText">
 								<Row>
 									<Col :span="8" align="middle">
-										<Button v-if="thisRoom.curnMode==='致冷'" icon="ios-snow" shape="circle" size="large" type="primary"
-										        @click="changeMode($event,'致冷')"></Button>
+										<Button v-if="currentMode==='致冷'" icon="ios-snow" shape="circle"
+										        size="large"
+										        type="primary"
+										        @click="changeMode('致冷')"></Button>
 										<Button v-else icon="ios-snow" shape="circle" size="large"
-										        @click="changeMode($event,'致冷')"></Button>
+										        @click="changeMode('致冷')"></Button>
 									</Col>
 									<Col :span="8" align="middle">
-										<span style="vertical-align: middle">{{ thisRoom.curnMode }}</span>
+										<span style="vertical-align: middle">{{ currentMode }}</span>
 									</Col>
 									<Col :span="8" align="middle">
-										<Button v-if="thisRoom.curnMode==='制热'" icon="ios-sunny" shape="circle" size="large" type="primary"
-										        @click="changeMode($event,'制热')"></Button>
+										<Button v-if="currentMode==='制热'" icon="ios-sunny" shape="circle"
+										        size="large"
+										        type="primary"
+										        @click="changeMode('制热')"></Button>
 										<Button v-else icon="ios-sunny" shape="circle" size="large"
-										        @click="changeMode($event,'制热')"></Button>
+										        @click="changeMode('制热')"></Button>
 									</Col>
 								</Row>
 							</Col>
 						</Row>
 					</div>
 					<div v-else class="acStateInfo"></div>
-
-
 				</Card>
-
-				<!--        <Card class="CtrlPanel">-->
-				<!--          <h2 class="CardTitle" slot="title">控制面板</h2>-->
-				<!--          <Switch class="CardTitle" slot="title" size="large" v-model="acSwitch" @on-change="handleSwitch">-->
-				<!--            <span slot="open">ON</span>-->
-				<!--            <span slot="close">OFF</span>-->
-				<!--          </Switch>-->
-				<!--          <h3>-->
-				<!--            <ButtonGroup class="CtrlGroup" size="large" shape="circle">-->
-				<!--              <Button type="primary" :disabled="acDisabled" @click="changeTemp($event,-1)">-->
-				<!--                <Icon type="ios-arrow-down"></Icon>-->
-				<!--                温度减-->
-				<!--              </Button>-->
-				<!--              <Button type="primary" :disabled="acDisabled" @click="changeTemp($event,1)">-->
-				<!--                温度加-->
-				<!--                <Icon type="ios-arrow-up"></Icon>-->
-				<!--              </Button>-->
-				<!--            </ButtonGroup>-->
-				<!--            <br>-->
-				<!--            <ButtonGroup class="CtrlGroup" size="large" shape="circle">-->
-				<!--              <Button type="primary" :disabled="acDisabled" @click="changeWind($event,-1)">-->
-				<!--                <Icon type="md-remove"></Icon>-->
-				<!--                风速减-->
-				<!--              </Button>-->
-				<!--              <Button type="primary" :disabled="acDisabled" @click="changeWind($event,1)">-->
-				<!--                风速加-->
-				<!--                <Icon type="md-add"></Icon>-->
-				<!--              </Button>-->
-				<!--            </ButtonGroup>-->
-				<!--            <br>-->
-				<!--            <ButtonGroup class="CtrlGroup" size="large" shape="circle">-->
-				<!--              <Button type="primary" :disabled="acDisabled" @click="changeMode($event,'致冷')">-->
-				<!--                <Icon type="ios-snow"></Icon>-->
-				<!--                致冷-->
-				<!--              </Button>-->
-				<!--              <Button type="primary" :disabled="acDisabled" @click="changeMode($event,'制热')">-->
-				<!--                制热-->
-				<!--                <Icon type="ios-sunny"></Icon>-->
-				<!--              </Button>-->
-				<!--            </ButtonGroup>-->
-				<!--          </h3>-->
-				<!--        </Card>-->
 			</Col>
 			<col flex="auto"></col>
 		</Row>
@@ -147,72 +125,142 @@ export default {
 	name: 'Client',
 	data: function () {
 		return {
+			roomId: this.$store.state.clientRoomState.roomId,
 			title: null,
-			thisRoom: this.$store.state.roomInfo[Object.keys(this.$store.state.roomInfo)[0]],
+			polling: null,
+			networkController: NetworkController.getInstance(),
 		}
 	},
+	computed: {
+		// roomId: {
+		// 	get(){
+		// 		return this.$store.state.clientRoomState.roomId;
+		// 	},
+		// 	set(){
+		// 		this.$store.commit('set')
+		// 	}
+		//
+		// },
+		power: {
+			get: function () {
+				return this.$store.state.clientRoomState.power;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientPower', newState);
+			},
+		},
+		targetTemp: {
+			get: function () {
+				return this.$store.state.clientRoomState.targetTemp;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientTargetTemp', newState);
+			},
+		},
+		targetWind: {
+			get: function () {
+				return this.$store.state.clientRoomState.targetWind;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientTargetWind', newState);
+			},
+		},
+		currentMode: {
+			get: function () {
+				return this.$store.state.clientRoomState.currentMode;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientCurrentMode', newState);
+			},
+		},
+		currentTemp: {
+			get: function () {
+				return this.$store.state.clientRoomState.currentTemp;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientCurrentTemp', newState);
+			},
+		},
+		currentFee: {
+			get: function () {
+				return this.$store.state.clientRoomState.currentFee;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientCurrentFee', newState);
+			},
+		},
+		totalFee: {
+			get: function () {
+				return this.$store.state.clientRoomState.totalFee;
+			},
+			set: function (newState) {
+				this.$store.commit('setClientTotalFee', newState);
+			},
+		},
+	},
 	methods: {
-
-		async handleSwitch() {
-			let nc = NetworkController.getInstance()
-			if (this.thisRoom.power === true) {
-				console.log(this.thisRoom);
-				await nc.toggleUserPower(this.thisRoom.roomId, true);
+		async handlePowerSwitch() {
+			let nc = NetworkController.getInstance();
+			if (this.power === true) {
+				await nc.setUserPower(this, this.roomId, true);
+				this.pollClientRoomState();
 			} else {
-				await nc.toggleUserPower(this.thisRoom.roomId, false);
+				await nc.setUserPower(this, this.roomId, false);
+				clearInterval(this.polling);
 			}
-
-			// this.acDisabled = !status;
-			// //TODO:传入用户名
-			// if (status === true) {
-			//   console.log(turnonoff_u('testOnly', 1));
-			// } else {
-			//   console.log(turnonoff_u('testOnly', 0));
-			// }
 		},
 		/**
 		 * 空调温度控制
-		 * @param event
 		 * @param turnUp 升高的温度值，取值+1、-1
 		 */
-		async changeTemp(event, turnUp) {
-			let targetTemp = this.thisRoom.targetTemp + turnUp;
+		async changeTemp(turnUp) {
+			let requestTargetTemp = this.targetTemp + turnUp;
 			let nc = NetworkController.getInstance();
-			if (util.validateTemp(targetTemp) === true) {
-				await nc.changeTargetTemp(this.thisRoom.roomId, targetTemp);
-				this.thisRoom.targetTemp = targetTemp;
+			if (util.validateTemp(requestTargetTemp) === true) {
+				await nc.changeTargetTemp(this, this.roomId, requestTargetTemp);
 			} else {
 				//no-op
 			}
 		},
 		/**
 		 * 空调风速控制
-		 * @param event
 		 * @param turnUp 升高的风速档位，取值+1、-1
 		 */
-		async changeWind(event, turnUp) {
-			let targetWind = this.thisRoom.targetWind + turnUp;
+		async changeWind(turnUp) {
+			let targetWind = this.targetWind + turnUp;
 			let nc = NetworkController.getInstance();
 			if (util.validateWind(targetWind) === true) {
-				await nc.changeTargetFanSpeed(this.thisRoom.roomId, targetWind);
-				this.thisRoom.targetWind = targetWind;
+				await nc.changeTargetFanSpeed(this, this.roomId, targetWind);
 			} else {
 				//no-op
 			}
-			console.log(this.thisRoom.targetWind);
-
 		},
 		/**
 		 * 空调模式控制
 		 * @param event
 		 * @param toMode 目标模式，取值 致冷、制热
 		 */
-		changeMode: function (event, toMode) {
-			this.thisRoom.curnMode = toMode;
+		changeMode: function (toMode) {
+			this.currentMode = toMode;
 			//TODO:目前还没有这个功能
+		},
+		pollClientRoomState() {
+			this.polling = setInterval(async () => {
+				let errCode = await this.networkController.heartBeat(this, this.roomId);
+				console.log('Polled');
+			}, 5000);
 		}
 
-	}
+	},
+	created() {
+		if (this.$store.state.clientRoomState === null) {
+			this.$router.push({path: '/client/login'});
+		}
+	},
+	// beforeDestroy() {
+	//
+	// },
+
 }
 </script>
 

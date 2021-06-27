@@ -33,36 +33,45 @@ export default {
 	},
 	methods: {
 		/**
-		 * 向Vuex注册空调
-		 */
-		addAC(roomId) {
-			console.log(this.$store.state);
-		},
-		/**
 		 * 向Vuex注册用户
 		 * @param roomId
 		 */
 		addDefaultRoom2Vuex(roomId) {
-			let acInfo = {'roomId': roomId, 'power': false, 'targetTemp': 24, 'targetWind': 3, 'currentMode': '致冷'};
-			Vue.set(this.$store.state.roomInfo, acInfo.rid, acInfo);
+			let roomState = {
+				'roomId': roomId,
+				'power': false,
+				'targetTemp': 24,
+				'targetWind': 2,
+				'currentMode': '致冷',
+				'currentTemp': 26,
+				'currentFee': 0.0,
+				'totalFee': 0.0,
+			};
+			this.$store.commit('setClientRoomState', {roomState: roomState});
 		},
 		/**
 		 * 用户登录
 		 * @param event
 		 */
+		// async userLogin(event) {
+		// 	let nc = NetworkController.getInstance();
+		// 	let errCode = await nc.enterRoom(this, this.roomId, this.password);
+		// 	if (errCode === 0) {
+		// 		// this.addDefaultRoom2Vuex(this.roomId);
+		// 		this.$router.push({path: '/client'});// route to client view
+		// 	} else if (errCode === 1) {
+		// 		//TODO:login failed
+		// 		// this.$router.push({path: '/client'});// route to client view
+		// 	} else if (errCode === -1) {
+		// 		//TODO:network error
+		// 		this.addDefaultRoom2Vuex(this.roomId);
+		// 		this.$router.push({path: '/client'});// route to client view
+		// 	}
+		// },
 		async userLogin(event) {
-			// let result = await NetworkController.getInstance().login(this.roomId.toString(), this.password.toString(), 0);
-			let result = await NetworkController.getInstance().enterRoom(this.roomId.toString(), this.password.toString());
-			if (result === 0) {
-				//TODO:初始化房间信息
-				this.addDefaultRoom2Vuex(this.roomId);
-				this.$router.push({path: '/client'});// route to client view
-			} else {
-				//TODO:login failed
-				// this.addUser(this.roomId);
-				// this.addAC();
-				this.$router.push({path: '/client'});// route to client view
-			}
+			this.addDefaultRoom2Vuex(this.roomId);
+			this.$router.push({path: '/client'});// route to client view
+
 		},
 	}
 }

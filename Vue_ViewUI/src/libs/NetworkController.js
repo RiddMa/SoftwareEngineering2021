@@ -1,12 +1,13 @@
 import axios from "axios";
 import Vue from "vue";
+import store from "./store";
 
 /**
  * 使用getInstance()方法获取唯一实例
  */
 export class NetworkController {
 	constructor() {
-		this.serverURL = "http://192.168.43.159:5000/";
+		this.serverURL = "http://192.168.43.124:5000/";
 		// this.adminToken = this.dataStore.adminToken;
 		// this.userToken = this.dataStore.userToken;
 	}
@@ -22,14 +23,45 @@ export class NetworkController {
 		return NetworkController.instance;
 	}
 
-	async enterRoom(roomId, password) {
+	/**
+	 * useless
+	 * @param that
+	 */
+	testVue(that) {
+		// Vue.set(that.$store.state.sessionData, 'test', 1);
+		console.log(that.$store);
+		that.$store.commit('setToken', {'userType': 0, 'token': '123'});
+		console.log(that.$store);
+	}
+
+	/**
+	 * 客户进入房间（登录）
+	 * @param that
+	 * @param roomId
+	 * @param password
+	 * @returns {Promise<number|*>} token
+	 */
+	async enterRoom(that, roomId, password) {
 		try {
 			let postURL = this.serverURL + "api/usr/signup";
 			let response = await axios.post(postURL, {
 				roomId: roomId,
 				password: password
 			});
-			// Vue.set(this.$store.state.sessionData, 'tokenUser', response.data.data.token);
+			// Vue.set(that.$store.state.sessionData, 'tokenUser', response.data.data.token);
+			console.log(response.data);
+			let roomState = {
+				'roomId': roomId,
+				'power': false,
+				'targetTemp': 24,
+				'targetWind': 2,
+				'currentMode': '致冷',
+				'currentTemp': response.data.data.currentTemp,
+				'currentFee': 0.0,
+				'totalFee': 0.0,
+			};
+			that.$store.commit('setClientRoomState', {roomState: roomState});
+			that.$store.commit('setToken', {'userType': 0, 'token': response.data.data.token});
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
@@ -39,16 +71,17 @@ export class NetworkController {
 
 	/**
 	 * 通用登录方法，返回错误码
+	 * @param that
 	 * @param username 用户名
 	 * @param password 密码
-	 * @param loginType 0-客户，1-管理员，2-前台，3-经理
+	 * @param userType 0-客户，1-管理员，2-前台，3-经理
 	 * @returns {Promise<*>} 错误码0/1
 	 */
-	async login(username, password, loginType) {
+	async login(that, username, password, userType) {
 		// api/usr(mgr,ad,recp)/signup
 		try {
 			let postURL;
-			switch (loginType) {
+			switch (userType) {
 				case 0:
 					postURL = this.serverURL + "api/usr/signup";
 					break;
@@ -66,10 +99,9 @@ export class NetworkController {
 				user: username,
 				passwd: password
 			});
-			// if (response.data.error_code === 0) {
-			// 	// Vue.set(this.$store.state.sessionData, 'token', response.data.data.token);
-			// 	Vue.set(this.$store.state.sessionData, 'username', response.data.data.username);
-			// }
+			if (response.data.error_code === 0) {
+				that.$store.commit('setToken', {'userType': userType, 'token': response.data.data.token});
+			}
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
@@ -80,51 +112,111 @@ export class NetworkController {
 
 	/**
 	 * 用户请求开机
+	 * @param that
 	 * @param roomId 这tmd是个String！！！！！！
 	 * @param toPower
+	 * @param operator
 	 * @returns {Promise<*>}
 	 */
-	async toggleUserPower(roomId, toPower) {
-		if (toPower === true) {
-			try {
-				let postURL = this.serverURL + "api/usr/poweron";
-				let response = await axios.post(postURL, {
-					roomId: roomId,
-					targetTemp: 24,
-					fanSpeed: 2,
-					currentTemp: 26,
-				});
-				return response.data.error_code;
-			} catch (e) {
-				console.log(e);
-				return -1;//network error
+	async setUserPower(that, roomId, toPower, operator = 0) {
+		let response;
+		switch (operator) {
+			case 0: {
+				let newRoomState = that.$store.state.clientRoomState;
+				if (toPower === true) {
+					try {
+						let postURL = this.serverURL + "api/usr/poweron";
+						response = await axios.post(postURL, {
+							roomId: roomId,
+							targetTemp: newRoomState.targetTemp,
+							fanSpeed: (newRoomState.targetWind - 1).toString(),
+							currentTemp: newRoomState.currentTemp,
+						});
+					} catch (e) {
+						console.log(e);
+						return -1;//network error
+					}
+				} else {
+					try {
+						let postURL = this.serverURL + "api/usr/poweroff";
+						response = await axios.post(postURL, {
+							roomId: roomId
+						});
+					} catch (e) {
+						console.log(e);
+						return -1;//network error
+					}
+				}
+				if (response.error_code === 0) {
+					newRoomState.power = toPower;
+					that.$store.commit('setClientRoomState', {'roomState': newRoomState});
+				}
+				return response.error_code;
 			}
-		} else {
-			try {
-				let postURL = this.serverURL + "api/usr/poweroff";
-				let response = await axios.post(postURL, {
-					roomId: roomId
+			case 1: {
+				let targetRoomIndex = that.$store.state.adminRoomState.findIndex(item => {
+					return item.roomId === roomId;
 				});
-				return response.data.error_code;
-			} catch (e) {
-				console.log(e);
-				return -1;//network error
+				if (targetRoomIndex !== -1) {
+					let targetRoomState = that.$store.state.adminRoomState[targetRoomIndex];
+					if (toPower === true) {
+						try {
+							console.log('send');
+							let postURL = this.serverURL + "api/usr/poweron";
+							response = await axios.post(postURL, {
+								roomId: roomId,
+								targetTemp: targetRoomState.targetTemp,
+								fanSpeed: (targetRoomState.targetWind - 1).toString(),
+								currentTemp: targetRoomState.currentTemp,
+							});
+						} catch (e) {
+							console.log(e);
+							return -1;//network error
+						}
+					} else {
+						try {
+							let postURL = this.serverURL + "api/usr/poweroff";
+							response = await axios.post(postURL, {
+								roomId: roomId
+							});
+						} catch (e) {
+							console.log(e);
+							return -1;//network error
+						}
+					}
+					if (response.error_code === 0) {
+						targetRoomState.power = toPower;
+						that.$store.commit('setAdminRoomState', targetRoomState);
+					}
+					return response.error_code;
+				}
 			}
 		}
 	}
 
 	/**
 	 * 发送心跳包
+	 * @param that
 	 * @param roomId
 	 * @returns {Promise<number>}
 	 */
-	async heartBeat(roomId) {
+	async heartBeat(that, roomId) {
 		try {
 			let postURL = this.serverURL + "api/usr/requeststate";
 			let response = await axios.post(postURL, {
-				roomid: roomId
+				roomId: roomId
 			});
-			Vue.set(this.$store.state.roomInfo, roomId, response.data.data);
+			let newRoomState = {
+				'roomId': roomId,
+				'power': that.$store.state.clientRoomState.power,
+				'targetTemp': that.$store.state.clientRoomState.targetTemp,
+				'targetWind': that.$store.state.clientRoomState.targetWind,
+				'currentMode': that.$store.state.clientRoomState.currentMode,
+				'currentTemp': response.data.data.currentTemp,
+				'currentFee': response.data.data.currentFee,
+				'totalFee': response.data.data.totalFee,
+			};
+			that.$store.commit('setClientRoomState', {'roomState': newRoomState});
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
@@ -134,18 +226,37 @@ export class NetworkController {
 
 	/**
 	 * 请求调温
+	 * @param that
 	 * @param roomId
-	 * @param targetTemp
+	 * @param requestTargetTemp
+	 * @param operator
 	 * @returns {Promise<number>}
 	 */
-	async changeTargetTemp(roomId, targetTemp) {
+	async changeTargetTemp(that, roomId, requestTargetTemp, operator = 0) {
 		try {
 			let postURL = this.serverURL + "api/usr/changetargettemp";
 			let response = await axios.post(postURL, {
-				roomid: roomId,
-				targetTemp: targetTemp
+				roomId: roomId,
+				targetTemp: requestTargetTemp
 			});
-			Vue.set(this.$store.state.roomInfo, roomId, response.data.data);
+			if (response.data.error_code === 0) {
+				switch (operator) {
+					case 0: {
+						that.$store.commit('setClientTargetTemp', requestTargetTemp);
+						break;
+					}
+					case 1: {
+						let targetRoomIndex = that.$store.state.adminRoomState.findIndex(item => {
+							return item.roomId === roomId;
+						})
+						if (targetRoomIndex !== -1) {
+							let newRoomState = that.$store.state.adminRoomState[targetRoomIndex];
+							newRoomState.targetTemp = requestTargetTemp;
+							that.$store.commit('setAdminRoomState', newRoomState);
+						}
+					}
+				}
+			}
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
@@ -155,18 +266,37 @@ export class NetworkController {
 
 	/**
 	 * 请求调风
+	 * @param that
 	 * @param roomId
-	 * @param fanSpeed
+	 * @param requestFanSpeed
+	 * @param operator
 	 * @returns {Promise<number|*>}
 	 */
-	async changeTargetFanSpeed(roomId, fanSpeed) {
+	async changeTargetFanSpeed(that, roomId, requestFanSpeed, operator = 0) {
 		try {
 			let postURL = this.serverURL + "api/usr/changefanspeed";
 			let response = await axios.post(postURL, {
-				roomid: roomId,
-				fanSpeed: fanSpeed
+				roomId: roomId,
+				fanSpeed: (requestFanSpeed - 1).toString()
 			});
-			Vue.set(this.$store.state.roomInfo, roomId, response.data.data);
+			if (response.data.error_code === 0) {
+				switch (operator) {
+					case 0: {
+						that.$store.commit('setClientTargetWind', requestFanSpeed);
+						break;
+					}
+					case 1: {
+						let targetRoomIndex = that.$store.state.adminRoomState.findIndex(item => {
+							return item.roomId === roomId;
+						})
+						if (targetRoomIndex !== -1) {
+							let newRoomState = that.$store.state.adminRoomState[targetRoomIndex];
+							newRoomState.targetWind = requestFanSpeed;
+							that.$store.commit('setAdminRoomState', newRoomState);
+						}
+					}
+				}
+			}
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
@@ -182,7 +312,7 @@ export class NetworkController {
 	 * @param toPower
 	 * @returns {Promise<number|*>}
 	 */
-	async toggleServerPower(toPower) {
+	async setServerPower(toPower) {
 		try {
 			if (toPower === true) {
 				let postURL = this.serverURL + "api/admin/poweron";
@@ -236,7 +366,7 @@ export class NetworkController {
 	 * @param toPower
 	 * @returns {Promise<number|*>}
 	 */
-	async toggleCACPower(toPower) {
+	async setCACPower(toPower) {
 		try {
 			if (toPower === true) {
 				let postURL = this.serverURL + "api/admin/startup";
@@ -255,21 +385,14 @@ export class NetworkController {
 
 	/**
 	 * 管理员查看房间状态
-	 * @param roomList 查询房间名列表
 	 * @returns {Promise<number|*>}
 	 */
-	async getRoomsState(roomList) {
-		//TODO:接口有问题，不知道房间列表
+	async getRoomsState(that) {
 		try {
 			let postURL = this.serverURL + "api/admin/checkroomstate";
-			let response = await axios.post(postURL, {
-				list_Room: roomList
-			});
-			//todo 存储结果
+			let response = await axios.post(postURL);
 			let roomStateList = response.data.data;
-			for (let i = 0; i < Object.keys(roomStateList).length; i++) {
-				// Vue.set(this.$store.state.roomInfo, 'invoice', response.data.data);
-			}
+			that.$store.commit('setAdminAllRoomState', roomStateList);
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);

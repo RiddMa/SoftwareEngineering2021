@@ -1,13 +1,20 @@
-from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import Column, String, create_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
-
+from sqlalchemy.ext.declarative import declarative_base
+from flask import Flask, jsonify, abort, make_response
+import pymysql
+from sqlalchemy.sql.functions import count
+from sqlalchemy.sql.sqltypes import DateTime
 from myglobal import app
+import time
+import datetime
 
 # app=Flask(__name__) #创建1个Flask实例
 # test
-# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:xzc19991208@localhost/rg"
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:L1nQ1T@ng0xCC@localhost/soft"
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:xzc19991208@localhost/rg"
+# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:L1nQ1T@ng0xCC@localhost/soft"
 # 指定当视图执行完毕后,自动提交数据库操作
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
@@ -31,10 +38,10 @@ class Room(mydb.Model):
 
 class User(mydb.Model):
     __tablename__ = 'user'
-    user_id = mydb.Column(mydb.String(255), primary_key=True)
+    user_id = mydb.Column(mydb.String(255), nullable=False)
     user_password = mydb.Column(mydb.String(255), nullable=False)
     user_name = mydb.Column(mydb.String(255), nullable=False)
-    user_kind = mydb.Column(mydb.String(255))  # 标识人员身份
+    user_kind = mydb.Column(mydb.String(255), nullable=False)  # 标识人员身份
 
     def __repr__(self):
         return '<User %r>' % self.user_id  # = self.func_wxplhdyt()
@@ -42,23 +49,24 @@ class User(mydb.Model):
 
 class Bill(mydb.Model):
     __tablename__ = 'bill'
-    room = mydb.Column(mydb.String(255), primary_key=True)
-    start_time = mydb.Column(mydb.Integer, primary_key=True)
-    end_time = mydb.Column(mydb.Integer, primary_key=True)
-    speed = mydb.Column(mydb.Integer, primary_key=True)  # 风速
+    room = mydb.Column(mydb.String(255), nullable=False)
+    start_time = mydb.Column(mydb.String(255), nullable=False)
+    end_time = mydb.Column(mydb.String(255), nullable=False)
+    time = mydb.Column(mydb.Integer, nullable=False)
+    speed = mydb.Column(mydb.Integer, nullable=False)  # 风速
     feerate = mydb.Column(mydb.Float, nullable=False)  # 费率
     cost = mydb.Column(mydb.Float, nullable=False)  # 这段时间花费
 
+    # kind = mydb.Column(mydb.Integer, primary_key=True)#1：调风，2：调温，3：两个都调,4：开关机
     def __repr__(self):
         return '<room %r>' % self.room
 
 
-class Report(mydb.Model):
-    __tablename__ = 'report'
-    room = mydb.Column(mydb.String(255), primary_key=True)
-    kind = mydb.Column(mydb.Integer, primary_key=True)
-    # 类型 1调风 2调温 3开机 4关机
-    time = mydb.Column(mydb.Integer, primary_key=True)
+class Record(mydb.Model):
+    __tablename__ = 'record'
+    room = mydb.Column(mydb.String(255), nullable=False)
+    time = mydb.Column(mydb.String(255), nullable=False)  # 当前时间
+    kind = mydb.Column(mydb.Integer, primary_key=True)  # 1：开机，2：关机，3：调温,4：调风
 
     def __repr__(self):
         return '<room %r>' % self.room
@@ -70,7 +78,59 @@ with app.app_context():
     mydb.create_all()
 
 
+def addrecord(roomid, kind, time):
+    time = time.strftime("%Y-%m-%d %H:%M:%S")
+    record = Record(roomid=roomid, kind=kind, time=time)
+    try:
+        mydb.session.add(record)
+        mydb.session.commit()
+        result = {'msg': 'accept'}
+    except:
+        # 插入失败的话进行回滚
+        mydb.session.rollback()
+        mydb.session.flush()
+        result = {'msg': '插入失败'}
+    return jsonify(result)
+
+
+def askrecord(roomid, stattime, endtime):
+    stattime = stattime.strftime("%Y-%m-%d %H:%M:%S")
+    endtime = endtime.strftime("%Y-%m-%d %H:%M:%S")
+    try:
+        count1 = mydb.session.query(func.sum(Record.kind)).filter(Record.kind == 3).all()  # 调温
+        count2 = mydb.session.query(func.sum(Record.kind)).filter(Record.kind == 2).all()  # 调风
+        count3 = mydb.session.query(func.sum(Record.kind)).filter(Record.kind == 1).all()  # 关机
+        record = mydb.session.query(Record).filter(Record.time >= stattime,
+                                                   Record.time <= endtime, Record.kind < 2).order_by("time").all()
+        if (not record):
+            count4 = 0
+        else:
+            timeArray1 = time.strptime(stattime, "%Y-%m-%d %H:%M:%S")
+            timeArray2 = time.strptime(endtime, "%Y-%m-%d %H:%M:%S")
+            timeStamp1 = int(time.mktime(timeArray1))
+            timeStamp2 = int(time.mktime(timeArray2))
+            q = 0
+            count4 = 0
+            for i in record:
+                if (i.kind == 1):
+                    timeArray = time.strptime(i.time, "%Y-%m-%d %H:%M:%S")
+                    timeStamp = int(time.mktime(timeArray))
+                    count4 = count4 + timeStamp - timeStamp1
+                    q = 1
+                else:
+                    q = 0
+                    timeArray1 = time.strptime(i.time, "%Y-%m-%d %H:%M:%S")
+                    timeStamp1 = int(time.mktime(timeArray1))
+            if (q == 0):
+                count4 = count4 + timeStamp2 - timeStamp1
+        result = {'count1': count1, 'count2': count2, 'count3': count3, 'count4': count4}
+    except:
+        result = {'msg': 'fail'}
+    return jsonify(result)
+
+
 def addRoom(userid, roomid, password, date):
+    date = date.strftime("%Y-%m-%d %H:%M:%S")
     room = Room(userid=userid, roomid=roomid, password=password, date=date)
     try:
         mydb.session.add(room)
@@ -119,9 +179,9 @@ def deleteUser(userId):
     return jsonify(result)
 
 
-def getUser(userId, password):
+def getUser(userId, password, kind):
     # 也可以先加密password再查询，数据库保存加密后的内容
-    user = User.query.filter_by(user_id=userId, user_password=password).first()
+    user = User.query.filter_by(user_id=userId, user_password=password, kind=kind).first()
     if (user is None):
         result = {'msg': '用户名或密码错误'}
     else:
@@ -129,10 +189,11 @@ def getUser(userId, password):
     return jsonify(result)
 
 
-# 包括某个房间空调的请求时间，请求时长，风速，费率，费用。
-def addbill(room, time1, time2, speed, feerate, cost):
-    bill = Bill(room=room, start_time=time1, end_time=time2, speed=speed, feerate=feerate,
-                cost=cost)
+# 包括某个房间空调的请求时间，当前时间，请求时长，风速，费率，费用。
+def adddr(room, time1, time2, time, speed, feerate, cost):
+    time1 = time1.strftime("%Y-%m-%d %H:%M:%S")
+    time2 = time2.strftime("%Y-%m-%d %H:%M:%S")
+    bill = Bill(room=room, start_time=time1, end_time=time2, time=time, speed=speed, feerate=feerate, cost=cost)
     try:
         mydb.session.add(bill)
         mydb.session.commit()
@@ -145,67 +206,80 @@ def addbill(room, time1, time2, speed, feerate, cost):
     return jsonify(result)
 
 
-def getbill(roomid, end_time):
+def askdr(roomid, end_time):
+    end_time = end_time.strftime("%Y-%m-%d %H:%M:%S")
     try:
         room = Room.query.filter_by(roomid=roomid).first()
         time = room.date
-        bill = mydb.session.query(Bill).filter(Bill.start_time >= time, roomid=roomid).all()
-        if bill is None:
+        bill = mydb.session.query(Bill).filter(Bill.start_time >= time,
+                                               Bill.start_time <= end_time).all()
+        if (bill is None):
             result = {'msg': '未查询到数据'}
         else:
             datas = []
             for q in bill:
                 datas.append(
-                    {'RoomId': q.room, 'RequestTime': q.start_time, 'RequestDuration': q.time,
-                     'FanSpeed': q.speed, 'FeeRate': q.feerate, 'Fee': q.cost})
+                    {'room': q.room, 'start_time': q.start_time, 'time': q.time, 'speed': q.speed, 'feerate': q.feerate,
+                     'cost': q.cost})
             return jsonify(data=datas)
     except:
         result = {'msg': 'fail'}
-    return result
+    return jsonify(result)
 
 
 # 某个房间空调的总费用，入住时间
-def getbills(roomid, end_time):
+def asktotalfee(roomid, end_time):
+    end_time = end_time.strftime("%Y-%m-%d %H:%M:%S")
     try:
         room = Room.query.filter_by(roomid=roomid).first()
         time = room.date
         price = mydb.session.query(func.sum(Bill.cost)).filter(Bill.start_time >= time,
-                                                               Bill.start_time <= end_time, roomid=roomid).all()
+                                                               Bill.start_time <= end_time).all()
         result = {'roomid': roomid, 'price': price, 'time': time}
     except:
         result = {'msg': 'fail'}
     return jsonify(result)
 
 
-def addreport(roomId, kind, time):
-    report = Report(room=roomId, kind=kind, time=time)
+# 详单数目
+def askdrnum(roomid, end_time):
+    end_time = end_time.strftime("%Y-%m-%d %H:%M:%S")
     try:
-        mydb.session.add(report)
-        mydb.session.commit()
-        result = {'msg': 'accept'}
+        room = Room.query.filter_by(roomid=roomid).first()
+        start_time = room.date
+        count3 = mydb.session.query(func.count(Bill.start_time)).filter(Bill.start_time >= start_time,
+                                                                        Bill.start_time <= end_time,
+                                                                        Bill.room == roomid).all()
+        result = {'num': count3}
     except:
-        # 插入失败的话进行回滚
-        mydb.session.rollback()
-        mydb.session.flush()
-        result = {'msg': '插入失败'}
+        result = {'msg': 'fail'}
     return jsonify(result)
 
 
-# 给定时间段内某一个房间调风次数，调温次数，关机次数，空调工作时间
-# 类型 1调风 2调温 3开机 4关机
-def getreport(roomid, start_time, end_time):
+# 给定时间段内某一个房间的开关次数,空调使用时长,总费用详单数,调温次数,调风次数，应该不用该接口
+def getreport111(roomid, start_time, end_time):
+    start_time = start_time.strftime("%Y-%m-%d %H:%M:%S")
+    end_time = end_time.strftime("%Y-%m-%d %H:%M:%S")
     try:
-        count1 = mydb.session.query(func.count(Report.time)).filter(Bill.start_time >= start_time,
-                                                                    Bill.start_time <= end_time, Bill.room == roomid,
-                                                                    Bill.kind == 1).all()
-        count2 = mydb.session.query(func.count(Report.time)).filter(Bill.start_time >= start_time,
-                                                                    Bill.start_time <= end_time, Bill.room == roomid,
-                                                                    Bill.kind == 2).all()
-        count3 = mydb.session.query(func.count(Report.time)).filter(Bill.start_time >= start_time,
-                                                                    Bill.start_time <= end_time, Bill.room == roomid,
-                                                                    Bill.kind == 4).all()
-        count4 = 0
-        result = {'count1': count1, 'count2': count2, 'count3': count3, 'count4': count4}
+        count1 = mydb.session.query(func.sum(Bill.kind)).filter(Bill.start_time >= start_time,
+                                                                Bill.start_time <= end_time, Bill.room == roomid,
+                                                                Bill.kind == 4).all()
+        count2 = mydb.session.query(func.sum(Bill.time)).filter(Bill.start_time >= start_time,
+                                                                Bill.start_time <= end_time, Bill.room == roomid).all()
+        count3 = mydb.session.query(func.count(Bill.start_time)).filter(Bill.start_time >= start_time,
+                                                                        Bill.start_time <= end_time,
+                                                                        Bill.room == roomid).all()
+        count4 = mydb.session.query(func.sum(Bill.kind)).filter(Bill.start_time >= start_time,
+                                                                Bill.start_time <= end_time, Bill.room == roomid,
+                                                                Bill.kind == 1).all()
+        count5 = mydb.session.query(func.sum(Bill.kind)).filter(Bill.start_time >= start_time,
+                                                                Bill.start_time <= end_time, Bill.room == roomid,
+                                                                Bill.kind == 2).all()
+        count6 = mydb.session.query(func.sum(Bill.kind)).filter(Bill.start_time >= start_time,
+                                                                Bill.start_time <= end_time, Bill.room == roomid,
+                                                                Bill.kind == 3).all()
+        result = {'count1': count1, 'count2': count2, 'count3': count3, 'count4': count4 + count6,
+                  'count5': count5 + count6}
     except:
         result = {'msg': 'fail'}
     return jsonify(result)
