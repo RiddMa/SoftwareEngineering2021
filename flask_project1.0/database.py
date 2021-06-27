@@ -45,12 +45,20 @@ class Bill(mydb.Model):
     room = mydb.Column(mydb.String(255), primary_key=True)
     start_time = mydb.Column(mydb.Integer, primary_key=True)
     end_time = mydb.Column(mydb.Integer, primary_key=True)
-    time = mydb.Column(mydb.Integer, primary_key=True)
-    tem = mydb.Column(mydb.Float, nullable=False)  # 温度
     speed = mydb.Column(mydb.Integer, primary_key=True)  # 风速
     feerate = mydb.Column(mydb.Float, nullable=False)  # 费率
     cost = mydb.Column(mydb.Float, nullable=False)  # 这段时间花费
-    kind = mydb.Column(mydb.Integer, primary_key=True)  # 1：调风，2：调温，3：两个都调,4：开关机
+
+    def __repr__(self):
+        return '<room %r>' % self.room
+
+
+class Report(mydb.Model):
+    __tablename__ = 'report'
+    room = mydb.Column(mydb.String(255), primary_key=True)
+    kind = mydb.Column(mydb.Integer, primary_key=True)
+    # 类型 1调风 2调温 3开机 4关机
+    time = mydb.Column(mydb.Integer, primary_key=True)
 
     def __repr__(self):
         return '<room %r>' % self.room
@@ -122,9 +130,9 @@ def getUser(userId, password):
 
 
 # 包括某个房间空调的请求时间，请求时长，风速，费率，费用。
-def addbill(room, time1, time2, time, tem, speed, feerate, cost, kind):
-    bill = Bill(room=room, start_time=time1, end_time=time2, time=time, tem=tem, speed=speed, feerate=feerate,
-                cost=cost, kind=kind)
+def addbill(room, time1, time2, speed, feerate, cost):
+    bill = Bill(room=room, start_time=time1, end_time=time2, speed=speed, feerate=feerate,
+                cost=cost)
     try:
         mydb.session.add(bill)
         mydb.session.commit()
@@ -141,16 +149,15 @@ def getbill(roomid, end_time):
     try:
         room = Room.query.filter_by(roomid=roomid).first()
         time = room.date
-        bill = mydb.session.query(Bill).filter(Bill.start_time >= time,
-                                               Bill.start_time <= end_time).all()
-        if (bill is None):
+        bill = mydb.session.query(Bill).filter(Bill.start_time >= time, roomid=roomid).all()
+        if bill is None:
             result = {'msg': '未查询到数据'}
         else:
             datas = []
             for q in bill:
                 datas.append(
                     {'RoomId': q.room, 'RequestTime': q.start_time, 'RequestDuration': q.time,
-                        'FanSpeed': q.speed, 'FeeRate': q.feerate, 'Fee': q.cost})
+                     'FanSpeed': q.speed, 'FeeRate': q.feerate, 'Fee': q.cost})
             return jsonify(data=datas)
     except:
         result = {'msg': 'fail'}
@@ -163,35 +170,42 @@ def getbills(roomid, end_time):
         room = Room.query.filter_by(roomid=roomid).first()
         time = room.date
         price = mydb.session.query(func.sum(Bill.cost)).filter(Bill.start_time >= time,
-                                                               Bill.start_time <= end_time).all()
+                                                               Bill.start_time <= end_time, roomid=roomid).all()
         result = {'roomid': roomid, 'price': price, 'time': time}
     except:
         result = {'msg': 'fail'}
     return jsonify(result)
 
 
-# 给定时间段内某一个房间的开关次数,空调使用时长,总费用详单数,调温次数,调风次数
+def addreport(roomId, kind, time):
+    report = Report(room=roomId, kind=kind, time=time)
+    try:
+        mydb.session.add(report)
+        mydb.session.commit()
+        result = {'msg': 'accept'}
+    except:
+        # 插入失败的话进行回滚
+        mydb.session.rollback()
+        mydb.session.flush()
+        result = {'msg': '插入失败'}
+    return jsonify(result)
+
+
+# 给定时间段内某一个房间调风次数，调温次数，关机次数，空调工作时间
+# 类型 1调风 2调温 3开机 4关机
 def getreport(roomid, start_time, end_time):
     try:
-        count1 = mydb.session.query(func.sum(Bill.kind)).filter(Bill.start_time >= start_time,
-                                                                Bill.start_time <= end_time, Bill.room == roomid,
-                                                                Bill.kind == 4).all()
-        count2 = mydb.session.query(func.sum(Bill.time)).filter(Bill.start_time >= start_time,
-                                                                Bill.start_time <= end_time, Bill.room == roomid).all()
-        count3 = mydb.session.query(func.count(Bill.start_time)).filter(Bill.start_time >= start_time,
-                                                                        Bill.start_time <= end_time,
-                                                                        Bill.room == roomid).all()
-        count4 = mydb.session.query(func.sum(Bill.kind)).filter(Bill.start_time >= start_time,
-                                                                Bill.start_time <= end_time, Bill.room == roomid,
-                                                                Bill.kind == 1).all()
-        count5 = mydb.session.query(func.sum(Bill.kind)).filter(Bill.start_time >= start_time,
-                                                                Bill.start_time <= end_time, Bill.room == roomid,
-                                                                Bill.kind == 2).all()
-        count6 = mydb.session.query(func.sum(Bill.kind)).filter(Bill.start_time >= start_time,
-                                                                Bill.start_time <= end_time, Bill.room == roomid,
-                                                                Bill.kind == 3).all()
-        result = {'count1': count1, 'count2': count2, 'count3': count3, 'count4': count4 + count6,
-                  'count5': count5 + count6}
+        count1 = mydb.session.query(func.count(Report.time)).filter(Bill.start_time >= start_time,
+                                                                    Bill.start_time <= end_time, Bill.room == roomid,
+                                                                    Bill.kind == 1).all()
+        count2 = mydb.session.query(func.count(Report.time)).filter(Bill.start_time >= start_time,
+                                                                    Bill.start_time <= end_time, Bill.room == roomid,
+                                                                    Bill.kind == 2).all()
+        count3 = mydb.session.query(func.count(Report.time)).filter(Bill.start_time >= start_time,
+                                                                    Bill.start_time <= end_time, Bill.room == roomid,
+                                                                    Bill.kind == 4).all()
+        count4 = 0
+        result = {'count1': count1, 'count2': count2, 'count3': count3, 'count4': count4}
     except:
         result = {'msg': 'fail'}
     return jsonify(result)

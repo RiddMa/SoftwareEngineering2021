@@ -56,14 +56,14 @@ def enter_room():
     password = form['password']
 
     # TODO 调用用户登录函数
-    error_code, token = log.custom_login(room_id,password)
+    error_code, token,current_temp = log.custom_login(room_id,password)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
     res = dict()
     res['token'] = token
-    # res['currentTemp'] = current_temp
+    res['currentTemp'] = current_temp
 
     # set_token(False,res['token'])
     return jsonify({'error_code': error_code, 'data': res})
@@ -104,7 +104,7 @@ def request_state():
     :return:{"currentTemp":currentTemp，"totalFee":totalFee，"currentFee":currentFee}
     """
     form = request.get_json()
-    room_id = form['roomid']
+    room_id = form['roomId']
     # token = request.headers['authorization']
     #
     # if not verify_token(False, token):
@@ -135,7 +135,7 @@ def change_target_temp():
     :return:无
     """
     form = request.get_json()
-    room_id = form['roomid']
+    room_id = form['roomId']
     target_temp = int(form['targetTemp'])
     # token = request.headers['authorization']
     #
@@ -158,7 +158,7 @@ def change_fan_speed():
     :return:无
     """
     form = request.get_json()
-    room_id = form['roomid']
+    room_id = form['roomId']
     fan_speed = form['fanSpeed']
     # token = request.headers['authorization']
     #
@@ -180,7 +180,7 @@ def user_poweroff():
     :return:无
     """
     form = request.get_json()
-    room_id = form['roomid']
+    room_id = form['roomId']
     # token = request.headers['authorization']
     #
     # if not verify_token(False, token):
@@ -234,7 +234,7 @@ def create_invoice():
     }
     """
     form = request.get_json()
-    room_id = form['roomid']
+    room_id = form['roomId']
 
     # TODO 调用前台打印账单函数
     error_code, invoice = ReceptionController.CreateInvoice(room_id)
@@ -485,6 +485,7 @@ def create_report():
         return jsonify({'error_code': 1})
 
     return jsonify({'error_code': error_code, 'data': report_list})
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=5000)
