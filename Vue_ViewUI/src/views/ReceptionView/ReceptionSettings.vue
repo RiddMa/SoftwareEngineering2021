@@ -9,12 +9,10 @@
         <Col :xs="24" :sm="16" :md="12" :lg="10" :xl="8" :xxl="6">
           <CellGroup>
             <Cell class="settings" title="前台登出">
-              <Button slot="extra" type="error" shape="circle" @click="adminLogout($event,adminId)">登出</Button>
+              <Button slot="extra" shape="circle" type="error" @click="adminLogout(receptionId)">登出</Button>
             </Cell>
           </CellGroup>
-
         </Col>
-
       </Row>
     </Card>
   </div>

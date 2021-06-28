@@ -25,7 +25,7 @@
 							<span class="acCardContentText">当前费用：</span>
 						</Col>
 						<Col :span="12" align="middle" class="acCardContentText">
-							<span class="acCardContentText">{{ currentFee }}</span>
+							<span class="acCardContentText">￥{{ currentFee }}</span>
 						</Col>
 					</Row>
 					<Row class="acCardContent">
@@ -33,7 +33,7 @@
 							<span class="acCardContentText">总计费用：</span>
 						</Col>
 						<Col :span="12" align="middle" class="acCardContentText">
-							<span class="acCardContentText">{{ totalFee }}</span>
+							<span class="acCardContentText">￥{{ totalFee }}</span>
 						</Col>
 					</Row>
 
@@ -132,15 +132,6 @@ export default {
 		}
 	},
 	computed: {
-		// roomId: {
-		// 	get(){
-		// 		return this.$store.state.clientRoomState.roomId;
-		// 	},
-		// 	set(){
-		// 		this.$store.commit('set')
-		// 	}
-		//
-		// },
 		power: {
 			get: function () {
 				return this.$store.state.clientRoomState.power;

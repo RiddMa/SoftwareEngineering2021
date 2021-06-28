@@ -22,17 +22,30 @@
 
 							<Row class="acCardContent">
 								<Col :span="12">
-									<span>目标状态：</span>
+									<span>开关状态：</span>
 								</Col>
 								<Col :span="12" align="middle">
-									<Switch v-model="item.power" shape="circle" size="large" type="primary"
-									        @on-change="handlePowerSwitch(item.roomId)">
-										<span slot="open">ON</span>
-										<span slot="close">OFF</span>
-									</Switch>
+									<!--									<Switch v-model="true" shape="circle" size="large" type="primary"-->
+									<!--									        @on-change="handlePowerSwitch(item.roomId)">-->
+									<!--										<span slot="open">ON</span>-->
+									<!--										<span slot="close">OFF</span>-->
+									<!--									</Switch>-->
 								</Col>
 							</Row>
-							<div v-if="item.power" class="acStateInfo">
+							<Row class="acCardContent">
+								<Col :span="12">
+									<span>温度状态：</span>
+								</Col>
+								<Col :span="12" align="middle">
+									<span v-if="item.state==='tempUp'">回温中</span>
+									<span v-if="item.state==='server'">服务中</span>
+									<span v-if="item.state==='wait'">等待中</span>
+								</Col>
+							</Row>
+
+
+							<!--							<div v-if="item.power" class="acStateInfo">-->
+							<div class="acStateInfo">
 								<Row class="acCardContent">
 									<Col :span="12">
 										<span>目标温度：</span>
@@ -62,14 +75,14 @@
 										<Row>
 											<Col :span="8" align="middle">
 												<Button icon="md-remove" shape="circle" size="small"
-												        @click="changeTargetWind(item.roomId,item.targetWind-1)"></Button>
+												        @click="changeTargetWind(item.roomId,item.fanSpeed-1)"></Button>
 											</Col>
 											<Col :span="8" align="middle">
-												<span>{{ item.targetWind }}</span>
+												<span>{{ item.fanSpeed }}</span>
 											</Col>
 											<Col :span="8" align="middle">
 												<Button icon="md-add" shape="circle" size="small"
-												        @click="changeTargetWind(item.roomId,item.targetWind+1)"></Button>
+												        @click="changeTargetWind(item.roomId,item.fanSpeed+1)"></Button>
 											</Col>
 										</Row>
 									</Col>
@@ -82,17 +95,17 @@
 									<Col :span="12">
 										<Row>
 											<Col :span="8" align="middle">
-												<Button v-if="item.currentMode==='致冷'" icon="ios-snow" shape="circle" size="small"
+												<Button v-if="item.mode===1" icon="ios-snow" shape="circle" size="small"
 												        type="primary"
 												        @click="changeMode(item.roomId,'致冷')"></Button>
 												<Button v-else icon="ios-snow" shape="circle" size="small"
 												        @click="changeMode(item.roomId,'致冷')"></Button>
 											</Col>
 											<Col :span="8" align="middle">
-												<span>{{ item.currentMode }}</span>
+												<span>{{ item.mode }}</span>
 											</Col>
 											<Col :span="8" align="middle">
-												<Button v-if="item.currentMode==='制热'" icon="ios-sunny" shape="circle" size="small"
+												<Button v-if="item.mode===-1" icon="ios-sunny" shape="circle" size="small"
 												        type="primary"
 												        @click="changeMode(item.roomId,'制热')"></Button>
 												<Button v-else icon="ios-sunny" shape="circle" size="small"
@@ -102,7 +115,7 @@
 									</Col>
 								</Row>
 							</div>
-							<div v-else class="acStateInfo"></div>
+							<!--							<div v-else class="acStateInfo"></div>-->
 
 
 						</Card>
