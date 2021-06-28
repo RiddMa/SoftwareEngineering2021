@@ -530,6 +530,7 @@ class ServerController:
         """
         # todo 数据库中查询入住时间
         # res = database.getbills(RoomId,datetime.now()).get_json()
+        print(database.asktotalfee(RoomId, datetime.now()).get_json())
         return dict([
             ('RoomId', RoomId), ('Total_Fee',
                                  room_list[RoomId].price + database.asktotalfee(RoomId, datetime.now()).get_json()[
@@ -544,6 +545,7 @@ class ServerController:
         响应创建详单请求
         """
         res = database.askdr(RoomId, datetime.now()).get_json()
+        print(res)
         if 'msg' in res:
             return []
         return res
