@@ -92,7 +92,7 @@ def addrecord(roomid, kind, time):
             mydb.session.rollback()
             mydb.session.flush()
             result = {'msg': '插入失败'}
-    return jsonify(result)
+        return jsonify(result)
 
 
 def askrecord(roomid, stattime, endtime):
@@ -100,9 +100,9 @@ def askrecord(roomid, stattime, endtime):
         stattime = stattime.strftime("%Y-%m-%d %H:%M:%S")
         endtime = endtime.strftime("%Y-%m-%d %H:%M:%S")
         try:
-            count1 = mydb.session.query(func.sum(Record.kind)).filter(Record.kind == 3,Record.room == roomid).all()  # 调温
-            count2 = mydb.session.query(func.sum(Record.kind)).filter(Record.kind == 2,Record.room == roomid).all()  # 调风
-            count3 = mydb.session.query(func.sum(Record.kind)).filter(Record.kind == 1,Record.room == roomid).all()  # 关机
+            count1 = mydb.session.query(func.sum(Record.kind)).filter(Record.kind == 3,Record.room == roomid).all()[0][0]  # 调温
+            count2 = mydb.session.query(func.sum(Record.kind)).filter(Record.kind == 2,Record.room == roomid).all()[0][0]  # 调风
+            count3 = mydb.session.query(func.sum(Record.kind)).filter(Record.kind == 1,Record.room == roomid).all()[0][0]  # 关机
             record = mydb.session.query(Record).filter(Record.room == roomid,Record.time >= stattime,
                                                        Record.time <= endtime, Record.kind < 2).order_by("time").all()
             if (not record):
@@ -126,10 +126,18 @@ def askrecord(roomid, stattime, endtime):
                         timeStamp1 = int(time.mktime(timeArray1))
                 if (q == 0):
                     count4 = count4 + timeStamp2 - timeStamp1
+            if count1 is None:
+                count1 = 0
+            if count2 is None:
+                count2 = 0
+            if count3 is None:
+                count3 = 0
+            if count4 is None:
+                count4 = 0
             result = {'count1': count1, 'count2': count2, 'count3': count3, 'count4': count4}
         except:
             result = {'msg': 'fail'}
-    return jsonify(result)
+        return jsonify(result)
 
 
 def addRoom(userid, roomid, password, date):
@@ -213,8 +221,7 @@ def adddr(room : str, time1 : datetime, time2 : float, time : datetime, speed : 
             mydb.session.rollback()
             mydb.session.flush()
             result = {'msg': '插入失败'}
-
-    return jsonify(result)
+        return jsonify(result)
 
 
 def askdr(roomid, end_time):
@@ -223,7 +230,7 @@ def askdr(roomid, end_time):
         try:
             room = Room.query.filter_by(roomid=roomid).first()
             time = room.date
-            bill = mydb.session.query(Bill).filter(Bill.start_time >= time,
+            bill = mydb.session.query(Bill).filter(Bill.room == roomid,Bill.start_time >= time,
                                                    Bill.start_time <= end_time).all()
             if (bill is None):
                 result = {'msg': '未查询到数据'}
@@ -236,7 +243,7 @@ def askdr(roomid, end_time):
                 return jsonify(data=datas)
         except:
             result = {'msg': 'fail'}
-    return jsonify(result)
+        return jsonify(result)
 
 
 # 某个房间空调的总费用，入住时间
@@ -248,11 +255,12 @@ def asktotalfee(roomid, end_time):
             time = room.date
             price = mydb.session.query(func.sum(Bill.cost)).filter(Bill.start_time >= time,
                                                                    Bill.start_time <= end_time).all()[0][0]
-            print(price)
+            if price is None:
+                price = 0
             result = {'roomid': roomid, 'price': price, 'time': time}
         except:
             result = {'msg': 'fail'}
-    return jsonify(result)
+        return jsonify(result)
 
 
 # 详单数目
@@ -268,7 +276,7 @@ def askdrnum(roomid, end_time):
             result = {'num': count3}
         except:
             result = {'msg': 'fail'}
-    return jsonify(result)
+        return jsonify(result)
 
 
 # 给定时间段内某一个房间的开关次数,空调使用时长,总费用详单数,调温次数,调风次数，应该不用该接口
@@ -298,7 +306,7 @@ def getreport111(roomid, start_time, end_time):
                       'count5': count5 + count6}
         except:
             result = {'msg': 'fail'}
-    return jsonify(result)
+        return jsonify(result)
 
 # if __name__ == '__main__':
 #   app.run()

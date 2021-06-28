@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, make_response, sessions
 import json
 from flask_cors import CORS
-from model import log,ClientController, ServerController,ReceptionController
+from model import log, ClientController, ServerController, ReceptionController, ManagerController
 from myglobal import app
 import hashlib
 import time
@@ -119,8 +119,8 @@ def request_state():
     res = dict()
     res['currentTemp'] = room.current_temp
     # TODO 总费用与当前费用
-    res['totalFee'] = 100
-    res['currentFee'] = 100
+    res['totalFee'] = room.calc
+    res['currentFee'] = room.cost
 
     return jsonify({'error_code': error_code, 'data': res})
 
@@ -158,7 +158,7 @@ def change_fan_speed():
     :return:无
     """
     form = request.get_json()
-    room_id = form['roomid']
+    room_id = form['roomId']
     fan_speed = form['fanSpeed']
     # token = request.headers['authorization']
     #
@@ -180,7 +180,7 @@ def user_poweroff():
     :return:无
     """
     form = request.get_json()
-    room_id = form['roomid']
+    room_id = form['roomId']
     # token = request.headers['authorization']
     #
     # if not verify_token(False, token):
@@ -242,8 +242,8 @@ def create_invoice():
     if error_code == 1:
         return jsonify({'error_code': 1})
 
-    res = invoice
-    res['RoomId'] = room_id
+    res = dict()
+    res['roomId'] = room_id
     res['Total_Fee'] = invoice['Total_Fee']
     res['date_in'] = invoice['date_in']
     res['date_out'] = invoice['date_out']
@@ -268,6 +268,7 @@ def createrd():
 	} ]
     """
     form = request.get_json()
+    print(form)
     room_id = form['roomId']
 
     # TODO 调用前台打印详单函数
@@ -468,18 +469,18 @@ def create_report():
     #     return jsonify({'error_code': 1})
 
     # TODO 调用经理创建报表函数
-    # error_code, report_list = Manager.create_report(room_id, start_date, end_date)
+    error_code, report_list = ManagerController.Queryreport(room_id, start_date, end_date)
 
-    error_code = 0
-    report_list = [	{
-        'roomId':'101',                                 #string
-        'changetemptimes': 0, 		#int
-        'changespeedtimes': 0, 	#int
-        'totalfee': 0.0,						#float
-        'powerofftimes': 0, 			#int
-        'DRnum': 0,							#int
-        'ACworkingtime': 0		    #int
-    }	]
+    # error_code = 0
+    # report_list = [	{
+    #     'roomId':'101',                                 #string
+    #     'changetemptimes': 0, 		#int
+    #     'changespeedtimes': 0, 	#int
+    #     'totalfee': 0.0,						#float
+    #     'powerofftimes': 0, 			#int
+    #     'DRnum': 0,							#int
+    #     'ACworkingtime': 0		    #int
+    # }	]
 
     if error_code == 1:
         return jsonify({'error_code': 1})
