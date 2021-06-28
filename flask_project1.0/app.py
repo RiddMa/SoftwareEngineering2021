@@ -158,7 +158,7 @@ def change_fan_speed():
     :return:无
     """
     form = request.get_json()
-    room_id = form['roomId']
+    room_id = form['roomid']
     fan_speed = form['fanSpeed']
     # token = request.headers['authorization']
     #
@@ -180,7 +180,7 @@ def user_poweroff():
     :return:无
     """
     form = request.get_json()
-    room_id = form['roomId']
+    room_id = form['roomid']
     # token = request.headers['authorization']
     #
     # if not verify_token(False, token):
@@ -207,7 +207,7 @@ def recp_login():
     password = form['passwd']
 
     # TODO 调用前台登录函数
-    error_code = log.stuff_login(username,password,2)
+    error_code = log.stuff_login(username,password,'2')
 
     if error_code == 1:
         return jsonify({'error_code': 1})
@@ -294,7 +294,7 @@ def admin_login():
     password = form['passwd']
 
     # TODO 调用管理员登录函数
-    error_code = log.stuff_login(username,password,1)
+    error_code = log.stuff_login(username,password,'1')
 
     if error_code == 1:
         return jsonify({'error_code': 1})
@@ -397,14 +397,14 @@ def check_room_state():
     """
     form = request.get_json()
     # TODO 不需要房间Id列表,直接返回所有房间
-    room_list = form['list_Room']
+
     # token = request.headers['authorization']
     #
     # if not verify_token(True, token):
     #     return jsonify({'error_code' : 1})
 
     # TODO 调用管理员监视房间空调
-    error_code, state_list = ServerController.CheckRoomState(room_list)
+    error_code, state_list = ServerController.CheckRoomState()
 
     if error_code == 1:
         return jsonify({'error_code': 1})
@@ -427,7 +427,7 @@ def mgr_login():
     password = form['passwd']
 
     # TODO 调用经理登录函数
-    error_code = log.stuff_login(username,password,0)
+    error_code = log.stuff_login(username,password,'3')
 
     if error_code == 1:
         return jsonify({'error_code': 1})

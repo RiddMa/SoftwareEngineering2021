@@ -3,7 +3,7 @@ from sqlalchemy import Column, String, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import func
 from sqlalchemy.ext.declarative import declarative_base
-from flask import Flask, jsonify, abort, make_response
+from flask import Flask, jsonify, abort, make_response, current_app
 import pymysql
 from sqlalchemy.sql.functions import count
 from sqlalchemy.sql.sqltypes import DateTime
@@ -13,8 +13,8 @@ import datetime
 
 # app=Flask(__name__) #创建1个Flask实例
 # test
-app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:xzc19991208@localhost/rg"
-# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:L1nQ1T@ng0xCC@localhost/soft"
+# app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:xzc19991208@localhost/rg"
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql://root:L1nQ1T@ng0xCC@localhost/soft"
 # 指定当视图执行完毕后,自动提交数据库操作
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
@@ -22,7 +22,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 # app.config['SQLALCHEMY_ECHO'] = True
 # 防止jsonify出现中文乱码
 app.config['JSON_AS_ASCII'] = False
-mydb = SQLAlchemy()
+app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = False
+mydb = SQLAlchemy(app)
 
 
 class Room(mydb.Model):
@@ -38,10 +39,10 @@ class Room(mydb.Model):
 
 class User(mydb.Model):
     __tablename__ = 'user'
-    user_id = mydb.Column(mydb.String(255), nullable=False)
+    user_id = mydb.Column(mydb.String(255), nullable=False,primary_key=True)
     user_password = mydb.Column(mydb.String(255), nullable=False)
     user_name = mydb.Column(mydb.String(255), nullable=False)
-    user_kind = mydb.Column(mydb.String(255), nullable=False)  # 标识人员身份
+    user_kind = mydb.Column(mydb.String(255), nullable=False,primary_key=True)  # 标识人员身份
 
     def __repr__(self):
         return '<User %r>' % self.user_id  # = self.func_wxplhdyt()
@@ -49,11 +50,11 @@ class User(mydb.Model):
 
 class Bill(mydb.Model):
     __tablename__ = 'bill'
-    room = mydb.Column(mydb.String(255), nullable=False)
+    room = mydb.Column(mydb.String(255), nullable=False,primary_key=True)
     start_time = mydb.Column(mydb.String(255), nullable=False)
-    end_time = mydb.Column(mydb.String(255), nullable=False)
-    time = mydb.Column(mydb.Integer, nullable=False)
-    speed = mydb.Column(mydb.Integer, nullable=False)  # 风速
+    during_time = mydb.Column(mydb.Float, nullable=False)
+    time = mydb.Column(mydb.String(255), nullable=False,primary_key=True)
+    speed = mydb.Column(mydb.String(255), nullable=False,)  # 风速
     feerate = mydb.Column(mydb.Float, nullable=False)  # 费率
     cost = mydb.Column(mydb.Float, nullable=False)  # 这段时间花费
 
@@ -64,9 +65,9 @@ class Bill(mydb.Model):
 
 class Record(mydb.Model):
     __tablename__ = 'record'
-    room = mydb.Column(mydb.String(255), nullable=False)
-    time = mydb.Column(mydb.String(255), nullable=False)  # 当前时间
-    kind = mydb.Column(mydb.Integer, primary_key=True)  # 1：开机，2：关机，3：调温,4：调风
+    room = mydb.Column(mydb.String(255), nullable=False,primary_key=True)
+    time = mydb.Column(mydb.String(255), nullable=False,primary_key=True)  # 当前时间
+    kind = mydb.Column(mydb.Integer)  # 1：开机，2：关机，3：调温,4：调风
 
     def __repr__(self):
         return '<room %r>' % self.room
@@ -75,12 +76,12 @@ class Record(mydb.Model):
 mydb.init_app(app)
 with app.app_context():
     mydb.init_app(app)
-    mydb.create_all()
+    mydb.create_all(app=app)
 
 
 def addrecord(roomid, kind, time):
     time = time.strftime("%Y-%m-%d %H:%M:%S")
-    record = Record(roomid=roomid, kind=kind, time=time)
+    record = Record(room=roomid, kind=kind, time=time)
     try:
         mydb.session.add(record)
         mydb.session.commit()
@@ -190,19 +191,27 @@ def getUser(userId, password, kind):
 
 
 # 包括某个房间空调的请求时间，当前时间，请求时长，风速，费率，费用。
-def adddr(room, time1, time2, time, speed, feerate, cost):
-    time1 = time1.strftime("%Y-%m-%d %H:%M:%S")
-    time2 = time2.strftime("%Y-%m-%d %H:%M:%S")
-    bill = Bill(room=room, start_time=time1, end_time=time2, time=time, speed=speed, feerate=feerate, cost=cost)
-    try:
-        mydb.session.add(bill)
-        mydb.session.commit()
-        result = {'msg': 'accept'}
-    except:
-        # 插入失败的话进行回滚
-        mydb.session.rollback()
-        mydb.session.flush()
-        result = {'msg': '插入失败'}
+def adddr(room : str, time1 : datetime, time2 : float, time : datetime, speed : str, feerate : float, cost : float):
+    with app.app_context():
+        time1 = time1.strftime("%Y-%m-%d %H:%M:%S")
+        #time2 = time2.strftime("%Y-%m-%d %H:%M:%S") time2是float
+        time = time.strftime("%Y-%m-%d %H:%M:%S")
+        time2 = float(time2)
+        cost = float(cost)
+        #print(room,time1,time2,time,speed,feerate,cost)
+        #print(type(room), type(time1), type(time2), type(time), type(speed), type(feerate),type(cost))
+        bill = Bill(room=room,start_time=time1, during_time=time2,time=time, speed=speed, feerate=feerate, cost=cost)
+        try:
+            mydb.session.add(bill)
+            mydb.session.commit()
+            result = {'msg': 'accept'}
+            return jsonify(result)
+        except:
+            # 插入失败的话进行回滚
+            mydb.session.rollback()
+            mydb.session.flush()
+            result = {'msg': '插入失败'}
+
     return jsonify(result)
 
 
@@ -219,8 +228,8 @@ def askdr(roomid, end_time):
             datas = []
             for q in bill:
                 datas.append(
-                    {'room': q.room, 'start_time': q.start_time, 'time': q.time, 'speed': q.speed, 'feerate': q.feerate,
-                     'cost': q.cost})
+                    {'RoomId': q.room, 'RequestTime': q.start_time, 'RequestDuration': q.time, 'FanSpeed': q.speed, 'FeeRate': q.feerate,
+                     'Fee': q.cost})
             return jsonify(data=datas)
     except:
         result = {'msg': 'fail'}
