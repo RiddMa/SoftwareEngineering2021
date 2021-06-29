@@ -3,7 +3,6 @@
     <Header class="aHeader">
       <h2 class="aHeaderContent">
         酒店空调管理系统
-        <Button type="primary" shape="circle" @click="addAC($event)">[测试用]添加空调</Button>
       </h2>
       <Menu class="aMenu" mode="horizontal" active-name="1">
         <MenuItem name="1" to="/reception/main">

@@ -22,6 +22,7 @@
     "viser-vue": "^2.4.8",
     "vue": "^2.5.16",
     "vue-axios": "^3.2.4",
+    "vue-print-nb": "^1.7.4",
     "vue-router": "^2.8.1",
     "vuex": "^3.6.2"
   },

@@ -36,7 +36,7 @@ export default {
 	methods: {
 		async receptionLogin(event) {
 			let nc = NetworkController.getInstance();
-			let response = await nc.login(this.username, this.password, 2);
+			let response = await nc.login(this, this.username, this.password, 2);
 			if (response === 0) {
 				this.$router.push({path: '/reception/main'});
 			}

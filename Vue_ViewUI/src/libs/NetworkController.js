@@ -24,17 +24,6 @@ export class NetworkController {
 	}
 
 	/**
-	 * useless
-	 * @param that
-	 */
-	testVue(that) {
-		// Vue.set(that.$store.state.sessionData, 'test', 1);
-		console.log(that.$store);
-		that.$store.commit('setToken', {'userType': 0, 'token': '123'});
-		console.log(that.$store);
-	}
-
-	/**
 	 * 客户进入房间（登录）
 	 * @param that
 	 * @param roomId
@@ -405,17 +394,55 @@ export class NetworkController {
 	 * 前台部分
 	 */
 	/**
-	 * 打印详单
+	 * 打印账单
+	 * @param that
 	 * @param roomId
 	 * @returns {Promise<number|*>}
 	 */
-	async createInvoice(roomId) {
+	async createInvoice(that, roomId) {
 		try {
 			let postURL = this.serverURL + "api/recp/createinvoice";
 			let response = await axios.post(postURL, {
-				roomid: roomId,
+				roomId: roomId,
 			});
-			Vue.set(this.$store.state.roomInfo, 'invoice', response.data.data);
+			let invoiceData = [{
+				roomId: response.data.data.roomId,
+				totalFee: response.data.data.Total_Fee,
+				dateIn: response.data.data.date_in,
+				dateOut: response.data.data.date_out,
+			}];
+			that.$store.commit('setInvoice', invoiceData);
+			return response.data.error_code;
+		} catch (e) {
+			console.log(e);
+			return -1;//network error
+		}
+	}
+
+	/**
+	 *
+	 * @param that
+	 * @param roomId
+	 * @returns {Promise<number>}
+	 */
+	async createDetailedList(that, roomId) {
+		try {
+			let postURL = this.serverURL + "api/recp/createrd";
+			let response = await axios.post(postURL, {
+				roomId: roomId,
+			});
+			let detailedList = [];
+			for (let i = 0; i < response.data.data.data.length; i++) {
+				detailedList[i] = {
+					RoomId: response.data.data.data[i].RoomId,
+					RequestTime: response.data.data.data[i].RequestTime,
+					RequestDuration: response.data.data.data[i].RequestDuration,
+					FanSpeed: response.data.data.data[i].FanSpeed,
+					FeeRate: response.data.data.data[i].FeeRate,
+					Fee: response.data.data.data[i].Fee
+				};
+			}
+			that.$store.commit('setDetailedList', detailedList);
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
@@ -431,7 +458,7 @@ export class NetworkController {
 	 * @param roomList
 	 * @param beginDate
 	 * @param endDate
-	 * @returns {Promise<void>}
+	 * @returns {Promise<number>}
 	 */
 	async createReport(roomList, beginDate, endDate) {
 		try {

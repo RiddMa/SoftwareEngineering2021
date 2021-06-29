@@ -11,6 +11,8 @@ export default new Vuex.Store({
 		adminToken: '',
 		receptionToken: '',
 		managerToken: '',
+		invoice: [],
+		detailedList: [],
 		clientRoomState: null,
 		adminRoomState: null,
 	},
@@ -83,13 +85,6 @@ export default new Vuex.Store({
 		setClientTotalFee(state, totalFee) {
 			state.clientRoomState.totalFee = totalFee;
 		},
-		// /**
-		//  *
-		//  * @param state Vuex的状态变量，commit无需传入
-		//  */
-		// initAdminRoomState(state) {
-		// 	state.adminRoomState = {};
-		// },
 		/**
 		 *
 		 * @param state Vuex的状态变量，commit无需传入
@@ -109,20 +104,36 @@ export default new Vuex.Store({
 			}
 		},
 		/**
-		 *
+		 * 管理员轮询
 		 * @param state
 		 * @param roomStateList
 		 */
 		setAdminAllRoomState(state, roomStateList) {
-			if (state.adminRoomState === null) {
-				state.adminRoomState = [];
-			}
-			state.adminRoomState.clear();
+			state.adminRoomState = [];
 			for (let i = 0; i < roomStateList.length; i++) {
+				roomStateList[i].fanSpeed = (parseInt(roomStateList[i].fanSpeed) + 1);
 				state.adminRoomState.push(roomStateList[i]);
 			}
-		}
-
+		},
+		/**
+		 * 前台
+		 */
+		/**
+		 * 设置账单
+		 * @param state
+		 * @param invoiceItem
+		 */
+		setInvoice(state, invoiceItem) {
+			Vue.set(state, 'invoice', invoiceItem);
+		},
+		/**
+		 * 设置详单
+		 * @param state
+		 * @param detailedList 详单
+		 */
+		setDetailedList(state, detailedList) {
+			Vue.set(state, 'detailedList', detailedList);
+		},
 	},
 	actions: {},
 })
