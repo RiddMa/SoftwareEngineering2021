@@ -434,12 +434,12 @@ export class NetworkController {
 			let detailedList = [];
 			for (let i = 0; i < response.data.data.data.length; i++) {
 				detailedList[i] = {
-					RoomId: response.data.data.data[i].RoomId,
-					RequestTime: response.data.data.data[i].RequestTime,
-					RequestDuration: response.data.data.data[i].RequestDuration,
-					FanSpeed: response.data.data.data[i].FanSpeed,
-					FeeRate: response.data.data.data[i].FeeRate,
-					Fee: response.data.data.data[i].Fee
+					roomId: response.data.data.data[i].RoomId,
+					requestTime: response.data.data.data[i].RequestTime,
+					requestDuration: response.data.data.data[i].RequestDuration,
+					fanSpeed: response.data.data.data[i].FanSpeed,
+					feeRate: response.data.data.data[i].FeeRate,
+					fee: response.data.data.data[i].Fee
 				};
 			}
 			that.$store.commit('setDetailedList', detailedList);
@@ -455,29 +455,36 @@ export class NetworkController {
 	 */
 	/**
 	 * 经理创建报表
+	 * @param that
 	 * @param roomList
-	 * @param beginDate
-	 * @param endDate
+	 * @param queryDateRange
 	 * @returns {Promise<number>}
 	 */
-	async createReport(roomList, beginDate, endDate) {
+	async createReport(that, roomList, queryDateRange) {
 		try {
 			let postURL = this.serverURL + "api/mgr/createreport";
 			let response = await axios.post(postURL, {
 				list_RoomId: roomList,
-				date1: beginDate,
-				date2: endDate
+				date1: queryDateRange[0],
+				date2: queryDateRange[1]
 			});
-			let roomReports = response.data.data;
-			for (let i = 0; i < roomReports.length; i++) {
-				//todo
+			let roomReports = [];
+			for (let i = 0; i < response.data.data.data.length; i++) {
+				roomReports[i] = {
+					roomId: response.data.data.data[i].roomId,
+					changeTempTimes: response.data.data.data[i].changetemptimes,
+					changeSpeedTimes: response.data.data.data[i].changespeedtimes,
+					totalFee: response.data.data.data[i].totalfee,
+					powerOffTimes: response.data.data.data[i].powerofftimes,
+					detailedListNum: response.data.data.data[i].DRnum,
+					acWorkingTime: response.data.data.data[i].ACworkingtime
+				};
 			}
+			that.$store.commit('setManagerReport', roomReports);
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
 			return -1;//network error
 		}
 	}
-
-
 }

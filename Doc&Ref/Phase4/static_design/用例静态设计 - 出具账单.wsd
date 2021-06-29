@@ -4,13 +4,13 @@ skinparam classAttributeIconSize 0
 abstract class Reception {}
 
 class ReceptionController {
-    ​CreateInvoice(RoomId,date_in,date_out)
-    PrintInvoice(RoomId,date_out,Toal_fee)
+    ​CreateInvoice(roomId,date_in,date_out)
+    PrintInvoice(roomId,date_out,Toal_fee)
 }
 
 class ServerController {
-    ​CreateInvoice(RoomId,date_in,date_out)​
-    PrintInvoice(RoomId,date_out,Toal_fee)
+    ​CreateInvoice(roomId,date_in,date_out)​
+    PrintInvoice(roomId,date_out,Toal_fee)
 }
 class Invoice {
     infolist
@@ -19,8 +19,8 @@ class Invoice {
 
 
 class ListManager {
-    ​​CreateInvoice(RoomId,date_in,date_out)
-    PrintInvoice(RoomId,date_out,Toal_fee)
+    ​​CreateInvoice(roomId,date_in,date_out)
+    PrintInvoice(roomId,date_out,Toal_fee)
 }
 
 Reception -- ReceptionController

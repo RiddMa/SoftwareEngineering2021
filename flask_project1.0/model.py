@@ -72,9 +72,9 @@ class Detailedlist:
     def insert(self, roomId, requesttime, requestduration, wind, fee):
         """
         返回格式：
-        "RoomId": row.rid,                          #string
-        "RequestTime": row.starttime, 			    #datetime    上次进服务队列的时间（没有就返回None）
-        "RequestDuration" : row.duration,           #int（这次产生详单与上次产生详单，在服务队列的时间长度，以秒为单位）
+        "roomId": row.rid,                          #string
+        "requestTime": row.starttime, 			    #datetime    上次进服务队列的时间（没有就返回None）
+        "requestDuration" : row.duration,           #int（这次产生详单与上次产生详单，在服务队列的时间长度，以秒为单位）
         "FanSpeed": row.fanspeed, 					#char  "0","1","2"分别为低中高风速
         "FeeRate": feerate,							#float（每秒费用）
         "Fee": fee									#float（与上次产生详单之间，新产生的费用）
@@ -89,14 +89,14 @@ class Detailedlist:
         if tp is None:
             tp = datetime.strptime('2000-01-01 00:00:00', '%Y-%m-%d %H:%m:%S')
         unit = dict([
-            ('RoomId', roomId), ('RequestTime', tp.strftime("%Y-%m-%d %H:%m:%S")),
+            ('roomId', roomId), ('requestTime', tp.strftime("%Y-%m-%d %H:%m:%S")),
             ('requestduration', requestduration),
             ('FanSpeed', wind),
             ('FeeRate', SPEED[wind]), ('Fee', fee)
         ])
         room_list[roomId].price = 0  # 清空price
         self.list[roomId].append(unit)
-        return database.adddr(room=unit['RoomId'], time1=tp, time2=unit['requestduration'],
+        return database.adddr(room=unit['roomId'], time1=tp, time2=unit['requestduration'],
                               time=datetime.now(), speed=unit['FanSpeed'], feerate=unit['FeeRate'], cost=unit['Fee'])
 
 
@@ -528,27 +528,27 @@ class ServerController:
         return 0
 
     @staticmethod
-    def CreateInvoice(RoomId):
+    def CreateInvoice(roomId):
         """
         响应创建帐单请求
-        :param RoomId
+        :param roomId
         :return:
         """
         # todo 数据库中查询入住时间
-        # res = database.getbills(RoomId,datetime.now()).get_json()
-        print(database.asktotalfee(RoomId, datetime.now()).get_json())
+        # res = database.getbills(roomId,datetime.now()).get_json()
+        print(database.asktotalfee(roomId, datetime.now()).get_json())
         return dict([
-            ('RoomId', RoomId), ('Total_Fee',
-                                 room_list[RoomId].calc), ('date_in', datetime.now().strftime("%Y-%m-%d %H:%m:%S")),
+            ('roomId', roomId), ('Total_Fee',
+                                 room_list[roomId].calc), ('date_in', datetime.now().strftime("%Y-%m-%d %H:%m:%S")),
             ('date_out', datetime.now().strftime("%Y-%m-%d %H:%m:%S"))
         ])
 
     @staticmethod
-    def CreateRDR(RoomId):
+    def CreateRDR(roomId):
         """
         响应创建详单请求
         """
-        res = database.askdr(RoomId, datetime.now()).get_json()
+        res = database.askdr(roomId, datetime.now()).get_json()
         #print(res)
         if 'msg' in res:
             return []
@@ -776,11 +776,11 @@ class ManagerController:
 
 class ReceptionController:
     @staticmethod
-    def CreateInvoice(RoomId):
+    def CreateInvoice(roomId):
         error_code = 0
-        return error_code, ServerController.CreateInvoice(RoomId)
+        return error_code, ServerController.CreateInvoice(roomId)
 
     @staticmethod
-    def CreateRDR(RoomId):
+    def CreateRDR(roomId):
         error_code = 0
-        return error_code, ServerController.CreateRDR(RoomId)
+        return error_code, ServerController.CreateRDR(roomId)

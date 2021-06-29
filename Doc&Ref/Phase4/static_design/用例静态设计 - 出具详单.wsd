@@ -6,13 +6,13 @@ abstract class Reception {
 }
 
 class ReceptionController {
-    CreateRDR(RoomId,date_in,date_out)
-    ​PrintRDR(RoomId, list_RDR)
+    CreateRDR(roomId,date_in,date_out)
+    ​PrintRDR(roomId, list_RDR)
 }
 
 class ServerController {
-    CreateRDR(RoomId,date_in,date_out)
-    ​PrintRDR(RoomId, list_RDR)
+    CreateRDR(roomId,date_in,date_out)
+    ​PrintRDR(roomId, list_RDR)
 }
 
 class RDR {
@@ -21,8 +21,8 @@ class RDR {
 }
 
 class ListManager {
-    CreateRDR(RoomId,date_in,date_out)
-    ​PrintRDR(RoomId, list_RDR)
+    CreateRDR(roomId,date_in,date_out)
+    ​PrintRDR(roomId, list_RDR)
 }
 
 Reception -- ReceptionController

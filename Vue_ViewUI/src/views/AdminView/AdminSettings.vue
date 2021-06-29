@@ -61,7 +61,7 @@ export default {
 	methods: {
 		handleBeforeSetCAC() {
 			return new Promise((resolve) => {
-				if (this.$store.state.CAC === true) {
+				if (this.$store.state.centralAirCon === true) {
 					this.$Modal.confirm({
 						title: '关机',
 						content: '您确认要关闭中央空调吗？',
@@ -88,7 +88,7 @@ export default {
 		 */
 		async handleSetCAC() {
 			let nc = NetworkController.getInstance();
-			if (this.$store.state.CAC === true) {
+			if (this.$store.state.centralAirCon === true) {
 				await nc.setServerPower(true);
 				await nc.setCACMode((this.CACMode === true ? 1 : -1), this.maxTemp, this.minTemp, this.defaultTemp, this.defaultFanSpeed, 1.5, 1.0, 0.5);
 				await nc.setCACPower(true);

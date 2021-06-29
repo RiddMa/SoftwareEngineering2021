@@ -5,7 +5,7 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
 	state: {
-		CAC: false,//CAC for Central Air-Conditioning
+		centralAirCon: false,//centralAirCon for Central Air-Conditioning
 		username: '',
 		userToken: '',
 		adminToken: '',
@@ -13,6 +13,7 @@ export default new Vuex.Store({
 		managerToken: '',
 		invoice: [],
 		detailedList: [],
+		managerReport: [],
 		clientRoomState: null,
 		adminRoomState: null,
 	},
@@ -24,7 +25,7 @@ export default new Vuex.Store({
 		 * @param toPower 目标状态
 		 */
 		setCAC(state, {toPower}) {
-			state.CAC = toPower;
+			state.centralAirCon = toPower;
 		},
 		/**
 		 *
@@ -133,6 +134,9 @@ export default new Vuex.Store({
 		 */
 		setDetailedList(state, detailedList) {
 			Vue.set(state, 'detailedList', detailedList);
+		},
+		setManagerReport(state, roomReports) {
+			Vue.set(state, 'managerReport', roomReports);
 		},
 	},
 	actions: {},

@@ -238,7 +238,7 @@ def askdr(roomid, end_time):
                 datas = []
                 for q in bill:
                     datas.append(
-                        {'RoomId': q.room, 'RequestTime': q.start_time, 'RequestDuration': q.time, 'FanSpeed': q.speed, 'FeeRate': q.feerate,
+                        {'roomId': q.room, 'requestTime': q.start_time, 'requestDuration': q.time, 'FanSpeed': q.speed, 'FeeRate': q.feerate,
                          'Fee': q.cost})
                 return jsonify(data=datas)
         except:

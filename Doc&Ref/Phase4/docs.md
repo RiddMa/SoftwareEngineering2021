@@ -46,7 +46,7 @@
 
 ## 3.1.客户
 
-### 3.1.1 系统事件PowerOn(RoomId,CurrentTemp)
+### 3.1.1 系统事件PowerOn(roomId,CurrentTemp)
 
 操作契约：
 1. 一个新的（概念类）空调对象实例被创建；
@@ -66,14 +66,14 @@
 
 ![RequestState](Client/RequestState.png)
 
-### 3.1.3 系统事件Table ChangeTargetTemp(RoomId,TargetTemp) 
+### 3.1.3 系统事件Table ChangeTargetTemp(roomId,TargetTemp)
 
 操作契约：
 1. 当前空调对象实例的属性：目标温度被修改；
 
 ![ChangeTargetTemp](Client/ChangeTargetTemp.png)
 
-### 3.1.4 系统事件ChangeFanSpeed(RoomId,FanSpeed)
+### 3.1.4 系统事件ChangeFanSpeed(roomId,FanSpeed)
 
 操作契约：
 1. 当前空调对象实例的属性：风速、费率被修改；
@@ -82,7 +82,7 @@
 
 ![ChangeFanSpeed](Client/ChangeFanSpeed.png)
 
-### 3.1.5 系统事件PowerOff(RoomId)
+### 3.1.5 系统事件PowerOff(roomId)
 
 操作契约：
 1. 空调对象实例与详单建立关联；
@@ -91,7 +91,7 @@
 
 ![PowerOff](Client/PowerOff.png)
 
-### 3.1.6 系统事件RequestRelease(RoomId)
+### 3.1.6 系统事件RequestRelease(roomId)
 
 操作契约：
 1. 服务对象被删除；
@@ -111,7 +111,7 @@
 
 ## 2.前台
 
-### 3.2.1 系统事件CreateInvoice(RoomId,date_in,date_out)
+### 3.2.1 系统事件CreateInvoice(roomId,date_in,date_out)
 
 操作契约：
 1. 一个新的空调对象被创建；
@@ -130,7 +130,7 @@
 
 ![PrintInvoice](reception_dynamic/PrintInvoice.png)
 
-### 3.2.3 系统事件CreateRD(RoomId,data_in,date_out)
+### 3.2.3 系统事件CreateRD(roomId,data_in,date_out)
 
 操作契约：
 1. 一个新的空调对象被创建；
@@ -140,7 +140,7 @@
 
 ![CreateRDR](reception_dynamic/CreateRDR.png)
 
-### 3.2.4 系统事件PrintRD(RoomId,List_RD)
+### 3.2.4 系统事件PrintRD(roomId,List_RD)
 
 操作契约：
 1. 详单文件对象被创建
