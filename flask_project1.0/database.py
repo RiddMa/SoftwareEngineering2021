@@ -238,12 +238,12 @@ def askdr(roomid, end_time):
                 datas = []
                 for q in bill:
                     datas.append(
-                        {'roomId': q.room, 'requestTime': q.start_time, 'requestDuration': q.time, 'FanSpeed': q.speed, 'FeeRate': q.feerate,
+                        {'RoomId': q.room, 'RequestTime': q.start_time, 'RequestDuration': q.during_time, 'FanSpeed': q.speed, 'FeeRate': q.feerate,
                          'Fee': q.cost})
-                return jsonify(data=datas)
+                return datas
         except:
             result = {'msg': 'fail'}
-        return jsonify(result)
+        return result
 
 
 # 某个房间空调的总费用，入住时间
@@ -266,16 +266,17 @@ def asktotalfee(roomid, end_time):
 # 详单数目
 def askdrnum(roomid, end_time):
     with app.app_context():
-        end_time = end_time.strftime("%Y-%m-%d %H:%M:%S")
+        if type(end_time) == datetime:
+            end_time = end_time.strftime("%Y-%m-%d %H:%M:%S")
         try:
             room = Room.query.filter_by(roomid=roomid).first()
             start_time = room.date
             count3 = mydb.session.query(func.count(Bill.start_time)).filter(Bill.start_time >= start_time,
                                                                             Bill.start_time <= end_time,
-                                                                            Bill.room == roomid).all()
+                                                                            Bill.room == roomid).all()[0][0]
             result = {'num': count3}
         except:
-            result = {'msg': 'fail'}
+            result = {'num': 0}
         return jsonify(result)
 
 
