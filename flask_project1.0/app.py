@@ -52,6 +52,7 @@ def enter_room():
     :return:
     """
     form = request.get_json()
+    print(request)
     room_id = form['roomId']
     password = form['password']
 
@@ -79,8 +80,15 @@ def user_poweron():
     currentTemp:房间温度    int
     :return:无
     """
+    room_id = None
     form = request.get_json()
-    room_id = form['roomId']
+    if 'roomId' in form:
+        room_id = form['roomId']
+    elif 'user' in form:
+        room_id = form['user']
+    else:
+        error_code = 1
+        return jsonify({'error_code': error_code})
     target_temp = int(form['targetTemp'])
     fan_speed = form['fanSpeed']
     current_temp = int(form['currentTemp'])

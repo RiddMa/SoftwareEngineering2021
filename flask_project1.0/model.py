@@ -603,9 +603,9 @@ class ServerController:
 
     @staticmethod
     def update():
-        f = open('log.txt','w')
+        # f = open('log.txt','w')
         delt = 1 / speed
-        t = -1
+        # t = -1
         #time.sleep(1 / speed)
         while central_ac.state != SHUT_DOWN:
             time.sleep(delt)
@@ -630,36 +630,35 @@ class ServerController:
                         elif room_list[roomid].current_temp - room_list[roomid].target_temp < -1 \
                                 and room_list[roomid].mode == 1:
                             SchedulingController.AddRoom(roomid)
-
-            t = t + 1
-            if t % 30 == 0:
-                #f = open('log.txt', 'a')
-                f.write('\n' + str(t/30) + ':')
-                #print('\n' + str(t) + ':')
-                for i in room_list:
-                    f.write(
-                        i + ': ' + str(not (not (room_list[i].On()))) +
-                        '  S:'+ str(i in serving_queue) +
-                        '  W:'+ str(i in waiting_queue) +
-                        '  C:' + '{:.2f}'.format(room_list[i].calc) +
-                        '  Tar' + '{:.2f}'.format(room_list[i].target_temp) +
-                        '  Cur' + '{:.2f}'.format(room_list[i].current_temp) +
-                        '  F' + str(room_list[i].wind) + '     ')
-                        # print('temp', i, '; ', room_list[i].current_temp, 'S:', i in serving_queue, 'W:',
-                        #       i in waiting_queue,'C:',room_list[i].cost,'Tar',room_list[i].target_temp,'Cur',room_list[i].current_temp
-                        #       ,'F',room_list[i].wind)
-                    # print(
-                    #     i + ': ' + str(room_list[i].mode) + str(room_list[i].On()) +
-                    #         '  S:' + str(i in serving_queue) +
-                    #     '  W:' + str(i in waiting_queue) +
-                    #     '  C:' + '{:.2f}'.format(room_list[i].calc) +
-                    #     '  Tar' + '{:.2f}'.format(room_list[i].target_temp) +
-                    #     '  Cur' + '{:.2f}'.format(room_list[i].current_temp) +
-                    #     '  F' + str(room_list[i].wind) + '     ')
-                #f.close()
-            if t > 30 * 54:
-                f.close()
-                print('end')
+            # t = t + 1
+            # if t % 30 == 0:
+            #     #f = open('log.txt', 'a')
+            #     f.write('\n' + str(t/30) + ':')
+            #     #print('\n' + str(t) + ':')
+            #     for i in room_list:
+            #         f.write(
+            #             i + ': ' + str(not (not (room_list[i].On()))) +
+            #             '  S:'+ str(i in serving_queue) +
+            #             '  W:'+ str(i in waiting_queue) +
+            #             '  C:' + '{:.2f}'.format(room_list[i].calc) +
+            #             '  Tar' + '{:.2f}'.format(room_list[i].target_temp) +
+            #             '  Cur' + '{:.2f}'.format(room_list[i].current_temp) +
+            #             '  F' + str(room_list[i].wind) + '     ')
+            #             # print('temp', i, '; ', room_list[i].current_temp, 'S:', i in serving_queue, 'W:',
+            #             #       i in waiting_queue,'C:',room_list[i].cost,'Tar',room_list[i].target_temp,'Cur',room_list[i].current_temp
+            #             #       ,'F',room_list[i].wind)
+            #         # print(
+            #         #     i + ': ' + str(room_list[i].mode) + str(room_list[i].On()) +
+            #         #         '  S:' + str(i in serving_queue) +
+            #         #     '  W:' + str(i in waiting_queue) +
+            #         #     '  C:' + '{:.2f}'.format(room_list[i].calc) +
+            #         #     '  Tar' + '{:.2f}'.format(room_list[i].target_temp) +
+            #         #     '  Cur' + '{:.2f}'.format(room_list[i].current_temp) +
+            #         #     '  F' + str(room_list[i].wind) + '     ')
+            #     #f.close()
+            # if t > 30 * 54:
+            #     f.close()
+            #     print('end')
         return
 
     @staticmethod
