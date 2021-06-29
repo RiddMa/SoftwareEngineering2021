@@ -51,18 +51,33 @@ def enter_room():
             304e组选择将初始温度写进房间表中，在signup请求给出,在poweron时获取。
     :return:
     """
+    res = dict([
+        ('token',None),('currentTemp',None)
+    ]
+    )
     form = request.get_json()
-    print(request)
-    room_id = form['roomId']
-    password = form['password']
+    print(form)
+    if 'roomId' in form:
+        room_id = form['roomId']
+    elif 'user' in form:
+        room_id = form['user']
+    else:
+        error_code = 1
+        return jsonify({'error_code': error_code})
 
+    if 'password' in form:
+        password = form['password']
+    elif 'passwd' in form:
+        password = form['passwd']
+    else:
+        error_code = 1
+        return jsonify({'error_code': error_code})
     # TODO 调用用户登录函数
     error_code, token,current_temp = log.custom_login(room_id,password)
 
     if error_code == 1:
         return jsonify({'error_code': 1})
 
-    res = dict()
     res['token'] = token
     res['currentTemp'] = current_temp
 
@@ -82,23 +97,18 @@ def user_poweron():
     """
     room_id = None
     form = request.get_json()
-    if 'roomId' in form:
-        room_id = form['roomId']
-    elif 'user' in form:
-        room_id = form['user']
-    else:
-        error_code = 1
-        return jsonify({'error_code': error_code})
+    room_id = form['roomId']
     target_temp = int(form['targetTemp'])
     fan_speed = form['fanSpeed']
-    current_temp = int(form['currentTemp'])
+    if 'currentTemp' in form:
+        current_temp = int(form['currentTemp'])
     # token = request.headers['authorization']
     #
     # if not verify_token(False, token):
     #     return jsonify({'error_code': 1})
 
     # TODO 调用用户开机函数
-    error_code = ServerController.PowerOn(room_id, current_temp, fan_speed)
+    error_code = ServerController.PowerOn(room_id, fan_speed)
 
     return jsonify({'error_code': error_code})
 
@@ -251,7 +261,7 @@ def create_invoice():
         return jsonify({'error_code': 1})
 
     res = dict()
-    res['roomId'] = room_id
+    res['RoomId'] = room_id
     res['Total_Fee'] = invoice['Total_Fee']
     res['date_in'] = invoice['date_in']
     res['date_out'] = invoice['date_out']
@@ -283,9 +293,9 @@ def createrd():
     error_code, list = ReceptionController.CreateRDR(room_id)
 
     if error_code == 1:
-        return jsonify({'error_code': 1})
+        return jsonify({'error_code': 1,'data':[]})
 
-    return jsonify({"error_code": error_code, "data": list})
+    return jsonify({'error_code': error_code, 'data': list})
 
 
 # 管理员模块
@@ -298,22 +308,30 @@ def admin_login():
     passwd:
     :return: token
     """
-    form = request.get_json()
-    username = form['user']
-    password = form['passwd']
+    try:
+        form = request.get_json()
+        username = form['user']
+        if 'passwd' in form:
+            password = form['passwd']
+        elif 'password' in form:
+            password = form['password']
+        else:
+            error_code = 1
+            return jsonify({'error_code': error_code})
 
     # TODO 调用管理员登录函数
-    error_code = log.stuff_login(username,password,'1')
+        error_code = log.stuff_login(username,password,'1')
 
-    if error_code == 1:
-        return jsonify({'error_code': 1})
+        if error_code == 1:
+            return jsonify({'error_code': 1})
 
-    res = dict()
-    # res['token'] = token
+        res = dict()
+        # res['token'] = token
 
-    # set_token(False,res['token'])
-    return jsonify({'error_code': error_code, 'data': res})
-
+        # set_token(False,res['token'])
+        return jsonify({'error_code': error_code, 'data': res})
+    except:
+        return jsonify({'error_code': 1, 'data': dict()})
 
 @app.route('/api/admin/poweron', methods=['POST'])
 def admin_poweron():
