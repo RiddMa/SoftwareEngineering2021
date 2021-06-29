@@ -2,7 +2,7 @@ import requests
 import json
 import time
 
-speed = 50
+speed = 1
 
 t = 0
 

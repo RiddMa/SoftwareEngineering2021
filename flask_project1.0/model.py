@@ -2,18 +2,19 @@ import random
 import threading
 import time
 from datetime import datetime
-from threading import Timer
+
 import database
 
-speed = 50
+speed = 10
 
 SHUT_DOWN = 0
 SET_MODE = 1
 READY = 2
 UNIT_FEE = 1
-TEMPUP = 0.5 * speed
+TEMPUP = 0.5 * speed / 60
 SPEED = dict([('0', speed / 180), ('1', speed / 120), ('2', speed / 60)])
-INIT_TEMP = dict([('101', 32.0), ('102', 28.0), ('103', 27.0), ('104', 29.0)])
+# INIT_TEMP = dict([('101', 32.0), ('102', 28.0), ('103', 27.0), ('104', 29.0)])
+INIT_TEMP = dict([('101', 16.0), ('102', 15.0), ('103', 18.0), ('104', 19.0)])
 
 lock = threading.Lock()
 
@@ -138,11 +139,12 @@ class Room:
         """
         lock.acquire()
         new_time = datetime.now()
-        delt_time = (new_time - self.last_settle_time).microseconds / 1e6
+        delt_time = new_time - self.last_settle_time
+        delt_time = delt_time.seconds + delt_time.microseconds / 1e6
         self.last_settle_time = new_time
         if not (self.roomId in waiting_queue) and not (self.roomId in serving_queue):
             # 关机状态
-            new_temp = delt_time * TEMPUP / 60
+            new_temp = delt_time * TEMPUP
             if self.current_temp > INIT_TEMP[self.roomId]:
                 new_temp = max(self.current_temp - new_temp, INIT_TEMP[self.roomId])
             else:
@@ -152,7 +154,6 @@ class Room:
             return
         if self.roomId in serving_queue:
             new_temp = delt_time * SPEED[self.wind]
-            # print('delt',delt_time,'new',new_temp)
             if self.mode == 0:
                 if self.target_temp >= self.current_temp:
                     new_temp = self.current_temp
@@ -165,9 +166,6 @@ class Room:
                     new_temp = min(self.current_temp + new_temp, self.target_temp)
             self.price += abs(new_temp - self.current_temp)
             self.cost += abs(new_temp - self.current_temp)
-            # if self.roomId == '101':
-            #     print(self.cost,abs(new_temp - self.current_temp))
-
             self.calc += abs(new_temp - self.current_temp)
             self.current_temp = new_temp
         lock.release()
@@ -256,6 +254,7 @@ class CentralAirConditioner:
             Mode = 0
         else:
             Mode = 1
+        #print(Mode)
         self.mode = Mode
         self.temp_highlimit = Temp_highLimit
         self.temp_lowlimit = Temp_lowLimit
@@ -423,7 +422,7 @@ class SchedulingController:
             res = detailed_list.insert(roomId, SchedulingController.last_in_serving[roomId],
                                        SchedulingController.time_in_serving[roomId], room_list[roomId].wind,
                                        room_list[roomId].price)
-            print('res', res)
+            #print('res', res)
             if waiting_queue.len() == 0:
                 return
             waiting_queue.array.sort(key=lambda x: (room_list[x].wind, SchedulingController.last_in_wating[x]))
@@ -487,9 +486,7 @@ class ServerController:
         if targetTemp > central_ac.temp_highlimit or targetTemp < central_ac.temp_lowlimit:
             return 1
         database.addrecord(roomId, 3, datetime.now())
-        SchedulingController.move_out(roomId)
         room_list[roomId].SetTemp(targetTemp)
-        SchedulingController.AddRoom(roomId)
         return 0
 
     @staticmethod
@@ -503,7 +500,7 @@ class ServerController:
             return 1
         if not room_list[roomId].On():
             return 1
-        print(fanSpeed)
+        #print(fanSpeed)
         database.addrecord(roomId, 2, datetime.now())
         SchedulingController.move_out(roomId)
         room_list[roomId].SetSpeed(fanSpeed)
@@ -552,7 +549,7 @@ class ServerController:
         响应创建详单请求
         """
         res = database.askdr(RoomId, datetime.now()).get_json()
-        print(res)
+        #print(res)
         if 'msg' in res:
             return []
         return res
@@ -607,12 +604,13 @@ class ServerController:
     @staticmethod
     def update():
         f = open('log.txt','w')
-        f.close()
-        delt = 2 / speed
+        delt = 1 / speed
         t = -1
         #time.sleep(1 / speed)
         while central_ac.state != SHUT_DOWN:
             time.sleep(delt)
+            for roomid in room_list:
+                room_list[roomid].settle()
             for roomid in room_list:
                 room_list[roomid].settle()
                 if roomid in serving_queue:
@@ -625,41 +623,43 @@ class ServerController:
                         SchedulingController.move_out(roomid)
                 else:
                     SchedulingController.time_in_serving[roomid] = 0
-                    if room_list[roomid].On() and (roomid not in waiting_queue) and (roomid not in serving_queue):
+                    if room_list[roomid].On() and (roomid not in waiting_queue):
                         if room_list[roomid].current_temp - room_list[roomid].target_temp > 1 \
                                 and room_list[roomid].mode == 0:
                             SchedulingController.AddRoom(roomid)
-                        elif room_list[roomid].On() and room_list[roomid].current_temp - room_list[
-                            roomid].target_temp < -1 \
+                        elif room_list[roomid].current_temp - room_list[roomid].target_temp < -1 \
                                 and room_list[roomid].mode == 1:
                             SchedulingController.AddRoom(roomid)
+
             t = t + 1
             if t % 30 == 0:
-                f = open('log.txt', 'a')
-                f.write('\n' + str(t) + ':')
-                print('\n' + str(t) + ':')
+                #f = open('log.txt', 'a')
+                f.write('\n' + str(t/30) + ':')
+                #print('\n' + str(t) + ':')
                 for i in room_list:
                     f.write(
-                        i + ': '
+                        i + ': ' + str(not (not (room_list[i].On()))) +
                         '  S:'+ str(i in serving_queue) +
                         '  W:'+ str(i in waiting_queue) +
                         '  C:' + '{:.2f}'.format(room_list[i].calc) +
                         '  Tar' + '{:.2f}'.format(room_list[i].target_temp) +
                         '  Cur' + '{:.2f}'.format(room_list[i].current_temp) +
                         '  F' + str(room_list[i].wind) + '     ')
-                    print(
-                        i + ': '
-                        '  S:' + str(i in serving_queue) +
-                        '  W:' + str(i in waiting_queue) +
-                        '  C:' + '{:.2f}'.format(room_list[i].calc) +
-                        '  Tar' + '{:.2f}'.format(room_list[i].target_temp) +
-                        '  Cur' + '{:.2f}'.format(room_list[i].current_temp) +
-                        '  F' + str(room_list[i].wind) + '     '
-                    )
                         # print('temp', i, '; ', room_list[i].current_temp, 'S:', i in serving_queue, 'W:',
                         #       i in waiting_queue,'C:',room_list[i].cost,'Tar',room_list[i].target_temp,'Cur',room_list[i].current_temp
                         #       ,'F',room_list[i].wind)
+                    # print(
+                    #     i + ': ' + str(room_list[i].mode) + str(room_list[i].On()) +
+                    #         '  S:' + str(i in serving_queue) +
+                    #     '  W:' + str(i in waiting_queue) +
+                    #     '  C:' + '{:.2f}'.format(room_list[i].calc) +
+                    #     '  Tar' + '{:.2f}'.format(room_list[i].target_temp) +
+                    #     '  Cur' + '{:.2f}'.format(room_list[i].current_temp) +
+                    #     '  F' + str(room_list[i].wind) + '     ')
+                #f.close()
+            if t > 30 * 54:
                 f.close()
+                print('end')
         return
 
     @staticmethod
@@ -677,7 +677,7 @@ class ServerController:
         for i in range(1, 2):
             for j in range(1, 5):
                 roomId = str(i * 100 + j)
-                room_list[roomId] = Room(roomId, central_ac.default_targettemp, 26, central_ac.wind, 0, 0, 0)
+                room_list[roomId] = Room(roomId, central_ac.default_targettemp, 26, central_ac.wind,central_ac.mode, 0, 0)
                 SchedulingController.last_in_serving[roomId] = SchedulingController.last_in_wating[roomId] = None
                 detailed_list.list[roomId] = []
                 SchedulingController.time_in_serving[roomId] = 0
@@ -714,14 +714,15 @@ class ServerController:
 
     @staticmethod
     def queryreport(Roomid, date1, date2):
-        askres = database.askrecord(Roomid, date1, date2).get_json()
-
-        res = dict([
-            ('roomId', Roomid), ('changetemptimes', askres['count1']), ('changespeedtimes', askres['count2']),
-            ('totalfee', room_list[Roomid].calc),
-            ('powerofftimes', askres['count3']),
-            ('ACworkingtime', askres['count4'])
-        ])
+        res = []
+        for i in Roomid:
+            askres = database.askrecord(i, date1, date2).get_json()
+            res.append(dict([
+                ('roomId', Roomid), ('changetemptimes', askres['count1']), ('changespeedtimes', askres['count2']),
+                ('totalfee', room_list[Roomid].calc),
+                ('powerofftimes', askres['count3']),
+                ('ACworkingtime', askres['count4'])
+            ]))
         return res
 
 
