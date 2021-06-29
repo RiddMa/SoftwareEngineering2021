@@ -1,15 +1,15 @@
 import axios from "axios";
 import Vue from "vue";
 import store from "./store";
+import moment from "moment-timezone";
 
 /**
  * 使用getInstance()方法获取唯一实例
  */
 export class NetworkController {
 	constructor() {
-		this.serverURL = "http://192.168.43.124:5000/";
-		// this.adminToken = this.dataStore.adminToken;
-		// this.userToken = this.dataStore.userToken;
+		this.serverURL = "http://10.128.209.242:5000/";
+		this.useToken = false;
 	}
 
 	/**
@@ -37,20 +37,20 @@ export class NetworkController {
 				roomId: roomId,
 				password: password
 			});
-			// Vue.set(that.$store.state.sessionData, 'tokenUser', response.data.data.token);
-			console.log(response.data);
-			let roomState = {
-				'roomId': roomId,
-				'power': false,
-				'targetTemp': 24,
-				'targetWind': 2,
-				'currentMode': '致冷',
-				'currentTemp': response.data.data.currentTemp,
-				'currentFee': 0.0,
-				'totalFee': 0.0,
-			};
-			that.$store.commit('setClientRoomState', {roomState: roomState});
-			that.$store.commit('setToken', {'userType': 0, 'token': response.data.data.token});
+			if (response.data.error_code === 0) {
+				let roomState = {
+					'roomId': roomId,
+					'power': false,
+					'targetTemp': 24,
+					'targetWind': 2,
+					'currentMode': '致冷',
+					'currentTemp': response.data.data.currentTemp,
+					'currentFee': 0.0,
+					'totalFee': 0.0,
+				};
+				that.$store.commit('setClientRoomState', {roomState: roomState});
+				that.$store.commit('setToken', {'userType': 0, 'token': response.data.data.token});
+			}
 			return response.data.error_code;
 		} catch (e) {
 			console.log(e);
@@ -89,7 +89,9 @@ export class NetworkController {
 				passwd: password
 			});
 			if (response.data.error_code === 0) {
-				that.$store.commit('setToken', {'userType': userType, 'token': response.data.data.token});
+				if (this.useToken) {
+					that.$store.commit('setToken', {'userType': userType, 'token': response.data.data.token});
+				}
 			}
 			return response.data.error_code;
 		} catch (e) {
@@ -305,11 +307,11 @@ export class NetworkController {
 		try {
 			if (toPower === true) {
 				let postURL = this.serverURL + "api/admin/poweron";
-				let response = await axios.post(postURL);
+				let response = await axios.post(postURL,{});
 				return response.data.error_code;
 			} else {
 				let postURL = this.serverURL + "api/admin/poweroff";
-				let response = await axios.post(postURL);
+				let response = await axios.post(postURL,{});
 				return response.data.error_code;
 			}
 		} catch (e) {
@@ -359,11 +361,11 @@ export class NetworkController {
 		try {
 			if (toPower === true) {
 				let postURL = this.serverURL + "api/admin/startup";
-				let response = await axios.post(postURL);
+				let response = await axios.post(postURL,{});
 				return response.data.error_code;
 			} else {
 				let postURL = this.serverURL + "api/admin/stop";
-				let response = await axios.post(postURL);
+				let response = await axios.post(postURL,{});
 				return response.data.error_code;
 			}
 		} catch (e) {
@@ -379,7 +381,7 @@ export class NetworkController {
 	async getRoomsState(that) {
 		try {
 			let postURL = this.serverURL + "api/admin/checkroomstate";
-			let response = await axios.post(postURL);
+			let response = await axios.post(postURL,{});
 			let roomStateList = response.data.data;
 			that.$store.commit('setAdminAllRoomState', roomStateList);
 			return response.data.error_code;
@@ -406,7 +408,7 @@ export class NetworkController {
 				roomId: roomId,
 			});
 			let invoiceData = [{
-				roomId: response.data.data.roomId,
+				roomId: response.data.data.RoomId,
 				totalFee: response.data.data.Total_Fee,
 				dateIn: response.data.data.date_in,
 				dateOut: response.data.data.date_out,
@@ -432,14 +434,15 @@ export class NetworkController {
 				roomId: roomId,
 			});
 			let detailedList = [];
-			for (let i = 0; i < response.data.data.data.length; i++) {
+			console.log(response.data.data)
+			for (let i = 0; i < response.data.data.length; i++) {
 				detailedList[i] = {
-					roomId: response.data.data.data[i].RoomId,
-					requestTime: response.data.data.data[i].RequestTime,
-					requestDuration: response.data.data.data[i].RequestDuration,
-					fanSpeed: response.data.data.data[i].FanSpeed,
-					feeRate: response.data.data.data[i].FeeRate,
-					fee: response.data.data.data[i].Fee
+					roomId: response.data.data[i].RoomId,
+					requestTime: response.data.data[i].RequestTime,
+					requestDuration: response.data.data[i].RequestDuration,
+					fanSpeed: response.data.data[i].FanSpeed,
+					feeRate: response.data.data[i].FeeRate,
+					fee: response.data.data[i].Fee
 				};
 			}
 			that.$store.commit('setDetailedList', detailedList);
@@ -464,20 +467,21 @@ export class NetworkController {
 		try {
 			let postURL = this.serverURL + "api/mgr/createreport";
 			let response = await axios.post(postURL, {
-				list_RoomId: roomList,
-				date1: queryDateRange[0],
-				date2: queryDateRange[1]
+				roomId: roomList,
+				date1: moment(queryDateRange[0]).format('YYYY-MM-DD HH:mm:ss'),
+				date2: moment(queryDateRange[1]).format('YYYY-MM-DD HH:mm:ss'),
 			});
 			let roomReports = [];
-			for (let i = 0; i < response.data.data.data.length; i++) {
+			console.log(response.data.data)
+			for (let i = 0; i < response.data.data.length; i++) {
 				roomReports[i] = {
-					roomId: response.data.data.data[i].roomId,
-					changeTempTimes: response.data.data.data[i].changetemptimes,
-					changeSpeedTimes: response.data.data.data[i].changespeedtimes,
-					totalFee: response.data.data.data[i].totalfee,
-					powerOffTimes: response.data.data.data[i].powerofftimes,
-					detailedListNum: response.data.data.data[i].DRnum,
-					acWorkingTime: response.data.data.data[i].ACworkingtime
+					roomId: response.data.data[i].roomId,
+					changeTempTimes: response.data.data[i].changetemptimes,
+					changeSpeedTimes: response.data.data[i].changespeedtimes,
+					totalFee: response.data.data[i].totalfee,
+					powerOffTimes: response.data.data[i].powerofftimes,
+					detailedListNum: response.data.data[i].DRnum,
+					acWorkingTime: response.data.data[i].ACworkingtime
 				};
 			}
 			that.$store.commit('setManagerReport', roomReports);
