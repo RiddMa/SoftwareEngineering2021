@@ -91,7 +91,6 @@
 </template>
 
 <script>
-import Vue from "vue";
 import {NetworkController} from "../../libs/NetworkController";
 
 export default {
@@ -112,6 +111,7 @@ export default {
 		}
 	},
 	computed: {
+		//账单表格格式
 		invoiceColumns: {
 			get: function () {
 				return [
@@ -145,32 +145,33 @@ export default {
 
 			}
 		},
+		//详单表格格式
 		detailedListColumns: {
 			get: function () {
 				return [
 					{
 						title: '房间号',
-						key: 'RoomId'
+						key: 'roomId'
 					},
 					{
 						title: '请求时刻',
-						key: 'RequestTime'
+						key: 'requestTime'
 					},
 					{
 						title: '请求时长',
-						key: 'RequestDuration'
+						key: 'requestDuration'
 					},
 					{
 						title: '风速',
-						key: 'FanSpeed'
+						key: 'fanSpeed'
 					},
 					{
 						title: '费用速率',
-						key: 'FeeRate'
+						key: 'feeRate'
 					},
 					{
 						title: '产生费用',
-						key: 'Fee'
+						key: 'fee'
 					},
 				];
 			},

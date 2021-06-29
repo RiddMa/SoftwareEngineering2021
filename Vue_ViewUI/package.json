@@ -18,6 +18,7 @@
     "@antv/g2plot": "^2.3.21",
     "@opd/g2plot-vue": "^3.2.1",
     "es6-promise": "^4.2.8",
+    "moment": "^2.29.1",
     "view-design": "^4.5.0",
     "viser-vue": "^2.4.8",
     "vue": "^2.5.16",

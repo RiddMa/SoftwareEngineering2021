@@ -25,10 +25,10 @@ class ServerController {
     get_timeout_room()
     CheckRoomState(list_Room)
     queryreport(list_Roomid,type_Report,date1,date2)
-    ​CreateInvoice(RoomId,date_in,date_out)​
-    PrintInvoice(RoomId,date_out,Toal_fee)
-    CreateRDR(RoomId,date_in,date_out)
-    ​PrintRDR(RoomId, list_RDR)
+    ​CreateInvoice(roomId,date_in,date_out)​
+    PrintInvoice(roomId,date_out,Toal_fee)
+    CreateRDR(roomId,date_in,date_out)
+    ​PrintRDR(roomId, list_RDR)
     PowerOn(Roomid,currentTemp)
     RequestState(roomId)
     ChangeTargetTemp(roomId,targetTemp)
@@ -80,10 +80,10 @@ class DetailedList {
 
 
 class ReceptionController {
-    ​CreateInvoice(RoomId,date_in,date_out)
-    PrintInvoice(RoomId,date_out,Toal_fee)
-    CreateRDR(RoomId,date_in,date_out)
-    ​PrintRDR(RoomId, list_RDR)
+    ​CreateInvoice(roomId,date_in,date_out)
+    PrintInvoice(roomId,date_out,Toal_fee)
+    CreateRDR(roomId,date_in,date_out)
+    ​PrintRDR(roomId, list_RDR)
 }
 
 
@@ -98,10 +98,10 @@ class RDR {
 }
 
 class ListManager {
-    ​​CreateInvoice(RoomId,date_in,date_out)
-    PrintInvoice(RoomId,date_out,Toal_fee)
-    CreateRDR(RoomId,date_in,date_out)
-    ​PrintRDR(RoomId, list_RDR)
+    ​​CreateInvoice(roomId,date_in,date_out)
+    PrintInvoice(roomId,date_out,Toal_fee)
+    CreateRDR(roomId,date_in,date_out)
+    ​PrintRDR(roomId, list_RDR)
 }
 
 class CentralAirConditioner {
