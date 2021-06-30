@@ -18,7 +18,7 @@ UNIT_FEE = 1
 TEMPUP = 0.5 * speed / 60
 SPEED = dict([('0', speed / 180), ('1', speed / 120), ('2', speed / 60)])
 # INIT_TEMP = dict([('101', 32.0), ('102', 28.0), ('103', 27.0), ('104', 29.0)])
-INIT_TEMP = dict([('101', 26.0), ('102', 26.0), ('103', 26.0), ('104', 26.0)])
+INIT_TEMP = dict([('101', 16.0), ('102', 15.0), ('103', 18.0), ('104', 19.0)])
 
 lock = threading.Lock()
 
@@ -618,7 +618,7 @@ class ServerController:
 
     @staticmethod
     def update():
-        # f = open('log.txt','w')
+        f = open('log.txt','w')
         delt = 1 / speed
         t = -1
         #time.sleep(1 / speed)
@@ -647,33 +647,30 @@ class ServerController:
                             SchedulingController.AddRoom(roomid)
             t = t + 1
             if t % 30 == 0:
-            #     #f = open('log.txt', 'a')
-            #     f.write('\n' + str(t/30) + ':')
-            #     #print('\n' + str(t) + ':')
+                f.write('\n' + str(t/30) + ':')
                 for i in room_list:
-            #         f.write(
-            #             i + ': ' + str(not (not (room_list[i].On()))) +
-            #             '  S:'+ str(i in serving_queue) +
-            #             '  W:'+ str(i in waiting_queue) +
-            #             '  C:' + '{:.2f}'.format(room_list[i].calc) +
-            #             '  Tar' + '{:.2f}'.format(room_list[i].target_temp) +
-            #             '  Cur' + '{:.2f}'.format(room_list[i].current_temp) +
-            #             '  F' + str(room_list[i].wind) + '     ')
-            #             # print('temp', i, '; ', room_list[i].current_temp, 'S:', i in serving_queue, 'W:',
-            #             #       i in waiting_queue,'C:',room_list[i].cost,'Tar',room_list[i].target_temp,'Cur',room_list[i].current_temp
-            #             #       ,'F',room_list[i].wind)
-                    print(
-                        i + ': ' + str(room_list[i].mode) + str(room_list[i].On()) +
-                            '  S:' + str(i in serving_queue) +
-                        '  W:' + str(i in waiting_queue) +
+                    f.write(
+                        i + ': ' + str(not (not (room_list[i].On()))) +
+                        '  S:'+ str(i in serving_queue) +
+                        '  W:'+ str(i in waiting_queue) +
                         '  C:' + '{:.2f}'.format(room_list[i].calc) +
                         '  Tar' + '{:.2f}'.format(room_list[i].target_temp) +
                         '  Cur' + '{:.2f}'.format(room_list[i].current_temp) +
                         '  F' + str(room_list[i].wind) + '     ')
+                        # print('temp', i, '; ', room_list[i].current_temp, 'S:', i in serving_queue, 'W:',
+                        #       i in waiting_queue,'C:',room_list[i].cost,'Tar',room_list[i].target_temp,'Cur',room_list[i].current_temp
+                        #       ,'F',room_list[i].wind)
+                    # print(
+                    #     i + ': ' + str(room_list[i].mode) + str(room_list[i].On()) +
+                    #         '  S:' + str(i in serving_queue) +
+                    #     '  W:' + str(i in waiting_queue) +
+                    #     '  C:' + '{:.2f}'.format(room_list[i].calc) +
+                    #     '  Tar' + '{:.2f}'.format(room_list[i].target_temp) +
+                    #     '  Cur' + '{:.2f}'.format(room_list[i].current_temp) +
+                    #     '  F' + str(room_list[i].wind) + '     ')
                 #f.close()
-            # if t > 30 * 54:
-            #     f.close()
-            #     print('end')
+            if t > 30 * 53:
+                f.close()
         return
 
     @staticmethod
