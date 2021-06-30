@@ -17,8 +17,7 @@
 							<Row>
 								<Col span="12">
 									<DatePicker v-model="queryDateRange" :options="datePickerOptions" :start-date="startDate" clearable
-									            format="yyyy/MM/dd"
-									            placeholder="请选择日期" size="large" split-panels
+									            format="yyyy/MM/dd" placeholder="请选择日期" size="large" split-panels
 									            type="daterange"></DatePicker>
 								</Col>
 								<Col span="12" style="vertical-align: center;text-align: right">
@@ -36,7 +35,16 @@
 					<Table :columns="roomReportColumns" :data="roomReportData" stripe></Table>
 				</div>
 			</div>
-			<div id="feePlot"></div>
+			<Row>
+				<Col span="12">
+					<div id="feePlot"></div>
+				</Col>
+				<Col span="12">
+					<div id="acWorkingTimePlot"></div>
+				</Col>
+			</Row>
+
+
 
 
 		</Card>
@@ -46,9 +54,10 @@
 <script>
 import Vue from "vue";
 import {NetworkController} from "../../libs/NetworkController";
-import {Histogram} from "@antv/g2plot";
+import {Column} from '@antv/g2plot';
 
-const moment = require('moment');
+const moment = require('moment-timezone');
+moment.locale('zh-CN');
 
 const g2plot = require('@antv/g2plot'); // 1. 引入g2plot
 Vue.$g2plot = g2plot; // 2. 将g2plot挂载到vue中
@@ -59,11 +68,8 @@ export default {
 			searchText: '',
 			hasResult: false,
 			queryDateRange: [],
-			startDate: moment().subtract(1, 'months').toDate(),
+			startDate: new Date(),
 			datePickerOptions: {
-				disabledDate(date) {
-					return date && date.valueOf() > Date.now();
-				},
 				shortcuts: [
 					{
 						text: '近一周',
@@ -107,17 +113,6 @@ export default {
 					},
 				]
 			},
-			mockData: [
-				{year: '1991', value: 3},
-				{year: '1992', value: 4},
-				{year: '1993', value: 3.5},
-				{year: '1994', value: 5},
-				{year: '1995', value: 4.9},
-				{year: '1996', value: 6},
-				{year: '1997', value: 7},
-				{year: '1998', value: 9},
-				{year: '1999', value: 13}
-			]
 		}
 	},
 	computed: {
@@ -169,9 +164,40 @@ export default {
 		async getReport(roomId) {
 			if (roomId !== '') {
 				let nc = NetworkController.getInstance();
-				let errCode = await nc.createReport(this, roomId, this.queryDateRange);
+				console.log(this.queryDateRange);
+				let errCode = await nc.createReport(this, [roomId], this.queryDateRange);
 				if (errCode === 0) {
 					this.hasResult = true;
+					const feePlot = new Column('feePlot', {
+						data: this.roomReportData,
+						isGroup: true,
+						xField: 'roomId',
+						yField: 'totalFee',
+						label: {
+							position: 'middle', // 'top', 'middle', 'bottom'
+							layout: [
+								{type: 'interval-adjust-position'},
+								{type: 'interval-hide-overlap'},
+								{type: 'adjust-color'},
+							],
+						},
+					});
+					const acWorkingTimePlot = new Column('acWorkingTimePlot', {
+						data: this.roomReportData,
+						isGroup: true,
+						xField: 'roomId',
+						yField: 'acWorkingTime',
+						label: {
+							position: 'middle', // 'top', 'middle', 'bottom'
+							layout: [
+								{type: 'interval-adjust-position'},
+								{type: 'interval-hide-overlap'},
+								{type: 'adjust-color'},
+							],
+						},
+					});
+					feePlot.render();
+					acWorkingTimePlot.render();
 				} else {
 					this.hasResult = false;
 				}
@@ -182,16 +208,6 @@ export default {
 		},
 	},
 	mounted() {
-		const linePlot = new Vue.$g2plot.Line('canvas', {
-			data: this.mockData,
-			xField: 'year',
-			yField: 'value'
-		})
-		linePlot.render()
-		// const histogramPlot = new Histogram('feePlot',{
-		// 	data:objArray.map(this.roomReportData => this.roomReportData.totalFee),
-		// 	binField:'totalFee',
-		// })
 	}
 }
 </script>

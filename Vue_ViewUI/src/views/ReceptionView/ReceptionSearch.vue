@@ -41,7 +41,6 @@
 					</div>
 				</Row>
 				<Row class="searchContent">
-
 					<Button v-print="printDetailedList" shape="circle" size="large" type="primary">打印详单</Button>
 				</Row>
 			</div>
@@ -193,7 +192,7 @@ export default {
 				let errCode = await nc.createInvoice(this, roomId);
 				if (errCode === 0) {
 					this.showInvoice = true;
-					this.showDetailedList = false;
+					// this.showDetailedList = false;
 				}
 			} else {
 
@@ -205,7 +204,7 @@ export default {
 				let errCode = await nc.createDetailedList(this, roomId);
 				if (errCode === 0) {
 					this.showDetailedList = true;
-					this.showInvoice = false;
+					// this.showInvoice = false;
 				}
 			} else {
 
